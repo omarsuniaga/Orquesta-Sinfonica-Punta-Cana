@@ -146,7 +146,7 @@ const sesion = true;
 const links1 = ref([
   { icon: "watch_later", text: "Asistencia", to: "/" },
   { icon: "add", text: "Registrar Alumnos", to: "/Registrar_Alumnos" },
-  { icon: "chat", text: "Perfil de Alumnos" },
+  { icon: "chat", text: "Perfil de Alumnos", to: "/Perfil_Alumnos" },
 ]);
 
 const links2 = ref([

@@ -1,22 +1,20 @@
 <template>
   <q-layout>
     <q-page-container>
-      <div class="q-py-sm">
+      <div class="q-pa-md">
         <div class="row justify-end flex">
           <!-- <h4>{{ store.$state.sesion }}</h4> -->
           <q-btn-group rounded col-12 justify-end flex>
-            <q-btn color="amber" rounded glossy icon="timeline" />
+            <q-btn color="amber" rounded icon="timeline" />
             <q-btn
               color="amber"
               rounded
-              glossy
               icon="visibility"
-              @click="Funcion_Calendario"
+              @click="visible = true"
             />
             <q-btn
               color="amber"
               rounded
-              glossy
               icon-right="save"
               label="Guardar"
               @click="guardar"
@@ -37,20 +35,20 @@
           </div>
         </div>
       </div>
-      <div class="q-pa-md flex justify-center text-md text-h6" v-else>
+      <div class="q-px-md flex justify-center text-md text-h6" v-else>
         {{ date }}
       </div>
 
-      <div class="q-pa-xs doc-container">
+      <div class="q-pa-lg doc-container">
         <div class="row">
-          <div class="col-6 flex justify-center">
-            <h6>Ausentes</h6>
+          <div class="col-6">
+            <span class="text-body1">Ausentes</span>
             <div v-if="Loading">
               <q-spinner-cube color="indigo" />
             </div>
             <div
               v-else
-              class="q-pa-md row justify-center scrollList"
+              class="q-pa-md row flex justify-center scrollList"
               ref="chatRef"
             >
               <div style="width: 100%; max-width: 400px">
@@ -63,11 +61,18 @@
                   <q-item v-if="!item.asistencia">
                     <q-item-section avatar>
                       <q-avatar>
-                        <img src="https://cdn.quasar.dev/img/avatar2.jpg" />
+                        <q-img
+                          :src="url"
+                          style="height: 140px; max-width: 150px"
+                        >
+                          <template v-slot:loading>
+                            <q-spinner-gears color="white" />
+                          </template>
+                        </q-img>
                       </q-avatar>
                     </q-item-section>
                     <q-item-section>
-                      <q-item-label
+                      <q-item-label text-overline
                         >{{ item.nombre }} {{ item.apellido }}</q-item-label
                       >
                       <q-item-label caption
@@ -79,12 +84,15 @@
               </div>
             </div>
           </div>
-          <div class="col-6 flex justify-center">
-            <h6>Presentes</h6>
-            <div class="q-pa-md row justify-center scrollList" ref="chatRef">
+          <div class="col-6">
+            <span class="text-body1">Presentes</span>
+            <div
+              class="q-pa-md row flex justify-center scrollList"
+              ref="chatRef"
+            >
               <div style="width: 100%; max-width: 400px">
                 <q-card
-                  class="q-ma-sm bg-green-3"
+                  class="q-ma-xs bg-green-3"
                   v-for="(item, index) in Presentes"
                   :key="index"
                   @click="quitar(item)"
@@ -139,7 +147,8 @@ let Listado = reactive([]);
 let Presentes = reactive([]);
 let Loading = ref(false);
 let date = ref(moment().format("YYYY/MM/DD"));
-let Funcion_Calendario = () => (visible.value = !visible.value);
+const url = ref("https://placeimg.com/500/300/nature?t=" + Math.random());
+
 onMounted(() => {
   // Contar_Presentes();
 });
@@ -218,6 +227,7 @@ watchEffect(() => {
         Nuevo_Listado().then((Loading.value = false));
       }
     })
+    .then(() => (visible.value = false))
     .catch((error) => {
       console.log(error);
     });
