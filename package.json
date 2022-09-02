@@ -1,19 +1,21 @@
 {
   "name": "proyecto-uno-quasar",
   "version": "0.0.1",
-  "description": "Esta es una practica en la que quiero testear quasar",
-  "productName": "Practicas-01",
   "author": "omedsunriv <omareduardo74@gmail.com>",
   "private": true,
+  "homepage": "https://omarsuniaga.github.io/Orquesta/",
   "scripts": {
     "dev": "quasar dev",
     "build": "quasar build",
-    "build:pwa": "quasar build -m pwa"
+    "build:pwa": "quasar build -m pwa",
+    "predeploy": "quasar build",
+    "deploy": "gh-pages -d dist"
   },
   "dependencies": {
     "@quasar/extras": "^1.0.0",
     "axios": "^0.21.1",
     "firebase": "^9.8.4",
+    "gh-pages": "^4.0.0",
     "moment": "^2.29.4",
     "pinia": "^2.0.11",
     "quasar": "^2.6.0",

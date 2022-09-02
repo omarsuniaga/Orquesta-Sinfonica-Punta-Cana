@@ -1,6 +1,6 @@
 const routes = [
   {
-    path: "/",
+    path: "/Orquesta",
     component: () => import("layouts/MainLayout.vue"),
     children: [{ path: "", component: () => import("pages/IndexPage.vue") }],
   },
