@@ -22,7 +22,6 @@ import {
   limit,
   where,
 } from "firebase/firestore";
-import { Dialog } from "quasar";
 import moment from "moment";
 
 export const firebaseConfig = {
@@ -34,7 +33,6 @@ export const firebaseConfig = {
   messagingSenderId: import.meta.env.VITE_APP_MESSAGING_SENDER_ID,
   appId: import.meta.env.VITE_APP_APP_ID,
 };
-
 const app = initializeApp(firebaseConfig);
 const auth = getAuth(app);
 const db = getFirestore(app);
@@ -84,12 +82,9 @@ export const Leer_Alumnos = async () => {
 };
 export const Actualizar_Alumno = async (alumno) => {
   try {
-    let alumnoRef = collection(db, "ALUMNOS");
-    await addDoc(alumnoRef, alumno).then(() => {
-      alert("Alumno Actualizado");
-    });
+    const docRef = await setDoc(doc(db, "ALUMNOS", alumno.id), alumno);
   } catch (error) {
-    console.log(error);
+    alert("No se pudo completar esta operacion");
   }
 };
 export const Eliminar_Alumno = async (alumno) => {

@@ -26,6 +26,7 @@ const routes = [
   {
     path: "/Detalles_Alumnos/:id",
     name: "Detalles_Alumnos",
+    props: true,
     component: () => import("layouts/MainLayout.vue"),
     children: [
       { path: "", component: () => import("pages/Detalles_Alumnos.vue") },

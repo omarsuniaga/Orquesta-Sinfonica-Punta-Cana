@@ -1,104 +1,313 @@
 <template>
-  <div class="q-px-md doc-container row flex justify-center">
-    <q-list bordered class="rounded-borders" style="">
-      <q-item-label header>Listado de Alumnos</q-item-label>
-      <span>{{ id }}</span>
-      <div class="q-pa-md">
-        <q-table
-          style="height: 400px"
-          :title="id"
-          :rows="rows"
-          :columns="columns"
-          row-key="index"
-          virtual-scroll
-          v-model:pagination="pagination"
-          :rows-per-page-options="[0]"
+  <div class="q-pa-lg flex justify-center">
+    <q-list bordered separator style="width: 100%">
+      <q-item-label header class="flex justify-evenly row items-center">
+        <span class="text-h5 col-7"
+          >{{ alumno.nombre }} {{ alumno.apellido }}</span
+        >
+
+        <q-btn
+          class="col-2"
+          color="primary"
+          icon="save"
+          size="md"
+          @click="guardar(alumno)"
+        /><q-btn
+          class="col-2"
+          color="orange"
+          icon="edit"
+          size="md"
+          @click="editable = !editable"
+        />
+      </q-item-label>
+
+      <q-separator />
+      <div class="row q-mx-lg">
+        <div class="col-5">
+          <q-input
+            v-model="alumno.cedula"
+            :disable="editable"
+            label="Cedula"
+            stack-label
+          />
+          <q-input
+            v-model="alumno.edad"
+            :disable="editable"
+            label="Edad"
+            stack-label
+          />
+          <q-input
+            v-model="alumno.nac"
+            :disable="editable"
+            label="Fecha de Nacimiento"
+            stack-label
+          />
+          <q-input
+            v-model="alumno.direccion"
+            :disable="editable"
+            label="Direccion de Vivienda"
+            stack-label
+          />
+          <q-input
+            v-model="alumno.tlf"
+            :disable="editable"
+            label="Telefono del Alumno"
+            stack-label
+          />
+        </div>
+
+        <div class="col-5 offset-md-1">
+          <q-input
+            v-model="alumno.email"
+            :disable="editable"
+            label="Email"
+            stack-label
+          />
+          <q-input
+            v-model="alumno.emergencia"
+            :disable="editable"
+            label="Telefono de Emergencia"
+            stack-label
+          />
+          <q-input
+            v-model="alumno.colegio_trabajo"
+            :disable="editable"
+            label="Donde Estudia o Trabaja?"
+            stack-label
+          />
+          <q-input
+            v-model="alumno.direccion_colegio_trabajo"
+            :disable="editable"
+            label="Direccion de la Institucion"
+            stack-label
+          />
+          <q-input
+            v-model="alumno.horario_colegio_trabajo"
+            :disable="editable"
+            label="Horario de Clases o Trabajo"
+            stack-label
+          />
+        </div>
+        <q-checkbox
+          v-model="alumno.Termino_Aporte_Mensual"
+          val="teal"
+          label="Acepta el Termino del Aporte Mensual"
+          color="teal"
+        />
+        <q-checkbox
+          v-model="alumno.Termino_Redes_Sociales"
+          val="teal"
+          label="Acepta el Termino hacer publica cualquier foto o video en las redes sociales de nuestra institucion "
+          color="teal"
         />
       </div>
     </q-list>
+    <q-separator />
+    <span>Padres</span>
+    <q-list bordered separator style="width: 100%">
+      <div class="row flex q-ma-lg">
+        <div class="col-5">
+          <q-input
+            v-model="alumno.madre"
+            :disable="editable"
+            label="Nombre de la Madre"
+            stack-label
+          />
+          <q-input
+            v-model="alumno.cedula_madre"
+            :disable="editable"
+            label="Cedula de la Madre"
+            stack-label
+          />
+          <q-input
+            v-model="alumno.tlf_madre"
+            :disable="editable"
+            label="Tlf de la Madre"
+            stack-label
+          />
+        </div>
+
+        <div class="col-5 offset-md-1">
+          <q-input
+            v-model="alumno.padre"
+            :disable="editable"
+            label="Nombre del Padre"
+            stack-label
+          />
+          <q-input
+            v-model="alumno.cedula_padre"
+            :disable="editable"
+            label="Cedula del Padre"
+            stack-label
+          />
+          <q-input
+            v-model="alumno.tlf_padre"
+            :disable="editable"
+            label="Telefono del Padre"
+            stack-label
+          />
+        </div>
+      </div>
+    </q-list>
+    <span>Datos Adicionales</span>
+    <q-list bordered separator style="width: 100%">
+      <div class="row q-col-gutter-x-md">
+        <div class="col-4">
+          <q-select
+            v-model="alumno.grupo"
+            :options="options"
+            label="Grupo"
+            :disable="editable"
+            clearable
+            filled
+            color="purple-12"
+            class="q-mx-sm"
+          />
+        </div>
+
+        <div class="col-8 row">
+          <q-input
+            color="purple-12"
+            class="q-mx-sm"
+            filled
+            v-model="alumno.instrumento"
+            :disable="editable"
+            label="Instrumento / Interesado en:"
+            stack-label
+          />
+          <q-btn round dense flat icon="send" @click="guardar(alumno)" />
+        </div>
+        <div class="col-12 q-my-sm">
+          <q-file
+            :disable="editable"
+            filled
+            bottom-slots
+            v-model="model"
+            label="Label"
+            counter
+            max-files="12"
+          >
+            <template v-slot:before>
+              <q-avatar>
+                <img src="https://cdn.quasar.dev/img/avatar5.jpg" />
+              </q-avatar>
+            </template>
+
+            <template v-slot:append>
+              <q-icon
+                v-if="model !== null"
+                name="close"
+                @click.stop.prevent="model = null"
+                class="cursor-pointer"
+              />
+              <q-icon name="create_new_folder" @click.stop.prevent />
+            </template>
+
+            <template v-slot:hint> Field hint </template>
+
+            <template v-slot:after>
+              <q-btn round dense flat icon="send" />
+            </template>
+          </q-file>
+        </div>
+      </div>
+    </q-list>
+    <q-separator />
+    <q-timeline color="secondary">
+      <q-timeline-entry heading body="Linea de Tiempo" />
+
+      <q-timeline-entry
+        title="Primer Registro del Alumno"
+        :subtitle="alumno.registro"
+        avatar="https://cdn.quasar.dev/img/avatar5.jpg"
+        :body="body"
+      />
+
+      <q-timeline-entry
+        title="Event Title"
+        subtitle="February 21, 1986"
+        icon="delete"
+        :body="body"
+      />
+      <q-timeline-entry
+        title="Event Title"
+        subtitle="February 22, 1986"
+        color="orange"
+        icon="done_all"
+        :body="body"
+      />
+    </q-timeline>
   </div>
 </template>
 
 <script setup>
-
-import { ref } from "vue";
-import { useQuasar } from "quasar";
-import { Crear_Alumnos } from "../firebase";
+import { ref, reactive, onMounted } from "vue";
+import { Buscar_Alumno, Actualizar_Alumno } from "../firebase";
 import { useRouter } from "vue-router";
+import { useQuasar } from "quasar";
+const $q = reactive(useQuasar());
 const url = ref("https://placeimg.com/500/300/nature?t=" + Math.random());
 const id = useRouter().currentRoute._rawValue.params.id;
-Buscar_Alumno(id).then((elem) => console.log(elem));
+const alumno = reactive({});
+let editable = ref(true);
+let model = ref(null);
+let options = ref(["Orquesta", "Coro", "Iniciacion 2", "Iniciacion 1"]);
+onMounted(() => {
+  Buscar_Alumno(id).then((elem) => {
+    alumno.id = elem.id;
+    alumno.nombre = elem.nombre;
+    alumno.apellido = elem.apellido;
+    alumno.cedula = "N/A" ?? elem.cedula;
+    alumno.nac = elem.nac;
+    alumno.edad = elem.edad;
+    alumno.email = "N/A" ?? elem.email;
+    alumno.tlf = "N/A" ?? elem.tlf;
+    alumno.emergencia = "N/A" ?? elem.emergencia;
+    alumno.colegio_trabajo = "Sin Completar" ?? elem.colegio_trabajo;
+    alumno.direccion_colegio_trabajo =
+      "Sin Completar" ?? elem.direccion_colegio_trabajo;
+    alumno.horario_colegio_trabajo =
+      "Sin Completar" ?? elem.horario_colegio_trabajo;
+    alumno.registro = elem.registro;
+    alumno.direccion = "Sin Completar" ?? elem.direccion;
+    alumno.Termino_Aporte_Mensual = elem.Termino_Aporte_Mensual;
+    alumno.Termino_Redes_Sociales = elem.Termino_Redes_Sociales;
 
-const columns = ref([
-  {
-    name: "index",
-    label: "#",
-    field: "index",
-  },
-  {
-    name: "name",
-    required: true,
-    label: "Dessert (100g serving)",
-    align: "left",
-    field: (row) => row.name,
-    format: (val) => `${val}`,
-    sortable: true,
-  },
-]);
+    alumno.madre = "Sin Completar" ?? elem.madre;
+    alumno.cedula_madre = "Sin Completar" ?? elem.cedula_madre;
+    alumno.tlf_madre = "Sin Completar" ?? elem.tlf_madre;
 
-const seed = ref([
-  {
-    name: "Frozen Yogurt",
-    calories: 159,
-    fat: 6.0,
-    carbs: 24,
-    protein: 4.0,
-    sodium: 87,
-    calcium: "14%",
-    iron: "1%",
-  },
-  {
-    name: "Ice cream sandwich",
-    calories: 237,
-    fat: 9.0,
-    carbs: 37,
-    protein: 4.3,
-    sodium: 129,
-    calcium: "8%",
-    iron: "1%",
-  },
-  {
-    name: "Eclair",
-    calories: 262,
-    fat: 16.0,
-    carbs: 23,
-    protein: 6.0,
-    sodium: 337,
-    calcium: "6%",
-    iron: "7%",
-  },
-  {
-    name: "Cupcake",
-    calories: 305,
-    fat: 3.7,
-    carbs: 67,
-    protein: 4.3,
-    sodium: 413,
-    calcium: "3%",
-    iron: "8%",
-  },
-]);
-
-// we generate lots of rows here
-let rows = ref([]);
-for (let i = 0; i < 1000; i++) {
-  rows = seed.value.slice(0).map((r) => ({ ...r }));
-}
-// rows.value.forEach((row, index) => {
-//   row.index = index;
-// });
-
-const pagination = ref({
-  rowsPerPage: 0,
+    alumno.padre = "Sin Completar" ?? elem.padre;
+    alumno.cedula_padre = "Sin Completar" ?? elem.cedula_padre;
+    alumno.tlf_padre = "Sin Completar" ?? elem.tlf_padre;
+    alumno.grupo = null ?? elem.grupo;
+    alumno.instrumento = "N/A" ?? elem.instrumento;
+  });
 });
+const body = `Aqui va una breve descripcion del progreso del alumno, aun esta deshabilitada y esta en etapa de desarrollo`;
+
+const guardar = async (alumno) => {
+  await Actualizar_Alumno(alumno)
+    .then(() => {
+      $q.notify({
+        message: "Cambios Realizados con exito",
+        color: "green-4",
+        textColor: "white",
+        icon: "cloud_done",
+      });
+      editable.value = true;
+    })
+    .catch((error) => {
+      $q.notify({
+        message: "Hubo un error, Comprueba que los campos",
+        color: "red-4",
+        textColor: "white",
+        icon: "cloud_done",
+      });
+    });
+};
+//Input tipo grupo: Iniciacion 1, Teoria y Solfeo, Coro, Orquesta
+//Input de instrumento:
+//Boton para Crear Entradas al Historico
+//input para subir imagen de perfil
 </script>

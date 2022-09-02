@@ -1,81 +1,60 @@
 <template>
   <div class="q-mx-lg flex justify-center">
-    <q-list bordered separator style="">
+    <q-list bordered separator style="max-width: 350px">
       <q-item-label header>Listado de Alumnos</q-item-label>
       <q-separator />
-      <!-- Card del alumno -->
-      <div v-for="(card, i) in cards" :key="i">
-        <q-item
-          clickable
-          class="q-pa-sm flex justify-between col-auto"
-          style="height: 90px; width: 80vw"
+
+      <q-intersection
+        v-for="(card, i) in cards"
+        :key="i"
+        transition="flip-right"
+        class="example-item"
+      >
+        <q-slide-item
+          :right-color="rightColor"
+          @right="$router.push('/Detalles_Alumnos/' + card.id)"
+          @slide="onSlide"
         >
-          <q-item-section class="col-2 row items-center q-py-xs">
-            <q-avatar>
-              <q-img :src="card.avatar" style="height: 240px; max-width: 240px">
+          <template v-slot:right> Perfil </template>
+
+          <q-item>
+            <q-item-section avatar>
+              <q-avatar>
+                <img
+                  :src="card.avatar"
+                  style="height: 240px; width: 240px"
+                  draggable="false"
+                />
                 <template v-slot:loading>
                   <q-spinner-gears color="white" />
                 </template>
-              </q-img>
-            </q-avatar>
-          </q-item-section>
-
-          <div class="col-3 col-sx-1">
-            <q-item-section class="row items-center">
-              <q-item-label class="">{{ card.grupo }}</q-item-label>
-              <q-item-label caption class="row">
+              </q-avatar>
+            </q-item-section>
+            <q-item-section>
+              <span>{{ card.nombreCompleto }}</span>
+              <q-item-label class="text-weight-medium">
                 {{ card.instrumento }}
               </q-item-label>
+              <q-item-label class="text-small">{{ card.grupo }}</q-item-label>
             </q-item-section>
-          </div>
-          <div class="col-5 col-xs-3">
-            <q-item-section class="row flex justify-center q-pa-md">
-              <q-item-label class="text-weight-medium"
-                >{{ card.nombreCompleto }}
-              </q-item-label>
-            </q-item-section>
-          </div>
-
-          <div class="text-grey-8 col-1 col-xs-none">
-            <q-item-section side>
-              <q-btn
-                :to="{
-                  name: 'Detalles_Alumnos',
-                  paths: '/Alumno:' + card.id,
-                  params: { id: card.id },
-                }"
-                size="11px"
-                flat
-                round
-                icon="edit"
-              />
-            </q-item-section>
-          </div>
-          <div class="text-grey-8 col-1">
-            <q-item-section side>
-              <q-btn
-                @click="Eliminar(card.id)"
-                size="11px"
-                flat
-                round
-                icon="delete"
-              />
-            </q-item-section>
-          </div>
-        </q-item>
-      </div>
+          </q-item>
+        </q-slide-item>
+      </q-intersection>
+      <!-- Card del alumno -->
     </q-list>
   </div>
 </template>
 
 <script setup>
-import { ref, onMounted } from "vue";
+import { ref, onMounted, onBeforeUnmount, computed } from "vue";
 import { Mostrar_Listado } from "../firebase";
-
-const Eliminar = (id) => console.log("Eliminando Perfil...", id);
-let url = ref("https://placeimg.com/500/300/nature?t=" + Math.random());
+import { useQuasar } from "quasar";
+const $q = useQuasar();
 
 const cards = ref([]);
+let timer;
+let url = ref("https://placeimg.com/500/300/nature?t=" + Math.random());
+
 onMounted(() => {
   Mostrar_Listado().then((elem) => {
     elem.map((e) =>
@@ -90,6 +69,49 @@ onMounted(() => {
       })
     );
   });
-  console.log(cards.value);
 });
+
+onBeforeUnmount(() => {
+  clearTimeout(timer);
+});
+
+const slideRatio = ref({
+  left: 0,
+  right: 0,
+});
+
+const rightColor = computed(() =>
+  slideRatio.value.right >= 2
+    ? "green-10"
+    : "green-" + (3 + Math.round(Math.min(3, slideRatio.value.right * 3)))
+);
+
+// function onLeft({ reset }) {
+//   $q.notify("Eliminando Alumno");
+//   $q.dialog({
+//     title: "Confirm",
+//     message: "Would you like to turn on the wifi?",
+//     cancel: true,
+//     persistent: true,
+//   })
+//     .onOk(() => {
+//       // console.log('OK')
+//     })
+//     .onCancel(() => {
+//       // console.log('Cancel')
+//     })
+//     .onDismiss(() => {
+//       // console.log('I am triggered on both OK and Cancel')
+//     });
+// }
+
+const onSlide = ({ side, ratio, isReset }) => {
+  clearTimeout(timer);
+  timer = setTimeout(
+    () => {
+      slideRatio.value[side] = ratio;
+    },
+    isReset === true ? 200 : void 0
+  );
+};
 </script>
