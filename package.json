@@ -3,7 +3,7 @@
   "version": "0.0.1",
   "author": "omedsunriv <omareduardo74@gmail.com>",
   "private": true,
-  "homepage": "https://omarsuniaga.github.io/Orquesta/",
+  "homepage": "https://omarsuniaga.github.io/Orquesta-Sinfonica-Punta-Cana/",
   "scripts": {
     "dev": "quasar dev",
     "build": "quasar build",
