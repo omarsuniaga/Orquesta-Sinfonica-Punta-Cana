@@ -1,6 +1,7 @@
 {
   "compilerOptions": {
-    "baseUrl": "/Orquesta-Sinfonica-Punta-Cana",
+    // "baseUrl": "/Orquesta-Sinfonica-Punta-Cana",
+    "baseUrl": ".",
     "paths": {
       "src/*": ["src/*"],
       "app/*": ["*"],

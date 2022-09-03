@@ -1,26 +1,23 @@
 <template>
   <q-layout view="hHh lpR fFf" class="bg-grey-1">
     <q-header elevated class="bg-white text-grey-8 q-py-xs" height-hint="58">
-      <q-toolbar>
-        <q-btn
-          flat
-          no-caps
-          no-wrap
-          class="q-ml-xs"
-          v-if="$q.screen.gt.xs"
-          @click="$router.push('/')"
-        >
-          <img src="~assets/logo.png" style="width: 40px; height: 40px" />
-          <q-toolbar-title shrink class="text-weight-bold">
-            La Sinfónica de Punta Cana
-          </q-toolbar-title>
-        </q-btn>
-
+      <q-toolbar class="">
         <q-space />
 
-        <!-- <div class="no-wrap">
-          <h5>a</h5>
-        </div> -->
+        <div class="no-wrap">
+          <q-btn
+            flat
+            no-wrap
+            class="flex justify-center"
+            @click="$router.push('/')"
+          >
+            <img src="~assets/logo.png" style="width: 40px; height: 40px" />
+            <q-toolbar-title shrink class="text-weight-bold row">
+              SINFONICA JUVENIL
+            </q-toolbar-title>
+            <span class="text-overline self-end">PC</span>
+          </q-btn>
+        </div>
 
         <q-space />
 
@@ -113,18 +110,19 @@
       </q-scroll-area>
     </q-drawer>
 
-    <q-footer reveal elevated class="bg-orange-8 text-white">
-      <q-toolbar>
-        <q-toolbar-title />
-        <q-btn
+    <q-footer reveal elevated class="bg-white flex justify-around">
+      <!-- <q-btn
           flat
           round
           dense
           icon="menu"
           aria-label="Menu"
           @click="toggleLeftDrawer"
-        />
-      </q-toolbar>
+        /> -->
+      <q-item v-for="link in links1" :key="link.text" :to="link.to">
+        <q-btn flat :icon="link.icon" color="purple" :aria-label="link.text">
+        </q-btn>
+      </q-item>
     </q-footer>
     <q-page-container>
       <router-view />

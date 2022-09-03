@@ -1,6 +1,6 @@
 <template>
-  <div class="q-mx-lg flex justify-center">
-    <q-list bordered separator style="max-width: 350px">
+  <div class="q-m-sm flex justify-center">
+    <q-list bordered separator style="max-width: 550px; width: 100%">
       <q-item-label header>Listado de Alumnos</q-item-label>
       <q-separator />
 
@@ -8,7 +8,7 @@
         v-for="(card, i) in cards"
         :key="i"
         transition="flip-right"
-        class="example-item"
+        class="items"
       >
         <q-slide-item
           :right-color="rightColor"
@@ -17,7 +17,7 @@
         >
           <template v-slot:right> Perfil </template>
 
-          <q-item>
+          <q-item class="flex justify-center">
             <q-item-section avatar>
               <q-avatar>
                 <img
@@ -31,12 +31,15 @@
               </q-avatar>
             </q-item-section>
             <q-item-section>
-              <span>{{ card.nombreCompleto }}</span>
               <q-item-label class="text-weight-medium">
+                <span>{{ card.nombreCompleto }}</span>
+              </q-item-label>
+              <q-item-label class="text-small">
                 {{ card.instrumento }}
               </q-item-label>
-              <q-item-label class="text-small">{{ card.grupo }}</q-item-label>
+              <q-item-label class="text-[10px]">{{ card.grupo }}</q-item-label>
             </q-item-section>
+            <q-item-section side>Swiper -></q-item-section>
           </q-item>
         </q-slide-item>
       </q-intersection>

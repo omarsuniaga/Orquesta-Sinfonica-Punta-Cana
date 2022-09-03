@@ -2,9 +2,39 @@
   <q-layout>
     <q-page-container>
       <div class="q-pa-md">
-        <div class="row justify-end flex">
-          <!-- <h4>{{ store.$state.sesion }}</h4> -->
-          <q-btn-group rounded col-12 justify-end flex>
+        <div>
+          <q-input
+            outlined
+            bottom-slots
+            v-model="text"
+            label="Label"
+            counter
+            maxlength="12"
+            :dense="dense"
+          >
+            <template v-slot:before>
+              <q-icon name="search" />
+            </template>
+
+            <template v-slot:append>
+              <q-icon
+                v-if="text !== ''"
+                name="close"
+                @click="text = ''"
+                class="cursor-pointer"
+              />
+              <q-icon name="send" />
+            </template>
+
+            <template v-slot:hint> Field hint </template>
+          </q-input>
+        </div>
+        <div
+          class="justify-center flex row"
+          style="max-width: 500px; width: 100%"
+        >
+          <!-- <q-virtual-scroll :items="heavyList" virtual-scroll-horizontal> -->
+          <q-btn-group row rounded>
             <q-btn
               flat
               style="color: #ff0080"
@@ -19,30 +49,39 @@
             />
             <q-btn
               flat
+              no-wrap
               style="color: #ff0080"
-              label="Iniciacion II"
+              label="Inicio II"
               @click="Filtrar('Ini2')"
             />
             <q-btn
               flat
+              no-wrap
               style="color: #ff0080"
-              label="Iniciacion I"
+              label="Inicio I"
               @click="Filtrar('Ini1')"
             />
+          </q-btn-group>
+          <q-btn-group class="q-ma-md row flex justify-center">
             <q-btn
               color="purple"
               rounded
               icon="today"
               @click="visible = !visible"
             />
-            <q-btn
-              color="purple"
-              rounded
-              icon-right="save"
-              label="Guardar"
-              @click="guardar"
-            />
+            <q-btn color="purple" rounded icon-right="save" @click="guardar" />
           </q-btn-group>
+          <!-- <div class="row items-center">
+              <q-item dense clickable>
+                <q-btn-group >
+                  <q-btn :color="item.Color">
+                    {{ item.Label }}
+                  </q-btn>
+                </q-btn-group>
+              </q-item>
+            </div> -->
+          <!-- </q-virtual-scroll> -->
+          <!-- <h4>{{ store.$state.sesion }}</h4> -->
         </div>
       </div>
 
@@ -74,7 +113,7 @@
               class="q-pa-md row flex justify-center scrollList"
               ref="chatRef"
             >
-              <div style="width: 100%; max-width: 700px; min-width: 100px">
+              <div style="width: 100%; max-width: 700px; min-width: 150px">
                 <q-card
                   class="q-ma-sm bg-red-3"
                   v-for="(item, index) in Listado"
@@ -82,7 +121,7 @@
                   @click="agregar(item)"
                 >
                   <q-item v-if="!item.asistencia">
-                    <!-- <q-item-section avatar>
+                    <q-item-section avatar v-if="$q.screen.gt.xs">
                       <q-avatar>
                         <q-img
                           :src="url"
@@ -93,10 +132,11 @@
                           </template>
                         </q-img>
                       </q-avatar>
-                    </q-item-section> -->
-                    <q-item-section class="col-6">
+                    </q-item-section>
+                    <q-item-section class="col-6" no-wrap>
                       <q-item-label class="text-weight-regular"
-                        >{{ item.nombre }} {{ item.apellido }}</q-item-label
+                        >{{ item.nombre }}
+                        {{ $q.screen.gt.sm ? item.apellido : "" }}</q-item-label
                       >
                       <q-item-label caption
                         >{{
@@ -119,7 +159,7 @@
               class="q-pa-md row flex justify-center scrollList"
               ref="chatRef"
             >
-              <div style="width: 100%; max-width: 700px; min-width: 100px">
+              <div style="width: 100%; max-width: 700px; min-width: 140px">
                 <q-card
                   class="q-ma-xs bg-green-3"
                   v-for="(item, index) in Presentes"
@@ -132,9 +172,10 @@
                         <img src="https://cdn.quasar.dev/img/avatar2.jpg" />
                       </q-avatar>
                     </q-item-section> -->
-                    <q-item-section>
-                      <q-item-label class="text-weight-regular"
-                        >{{ item.nombre }} {{ item.apellido }}</q-item-label
+                    <q-item-section class="text-weight-regular" no-wrap>
+                      <q-item-label>
+                        {{ item.nombre }}
+                        {{ $q.screen.gt.sm ? item.apellido : "" }}</q-item-label
                       >
                       <q-item-label caption
                         >{{
@@ -179,6 +220,9 @@ const $q = useQuasar();
 const store = useCounterStore();
 let visible = ref(false);
 let Listado = reactive([]);
+let text = ref("");
+let ph = ref("");
+let dense = ref(false);
 let Presentes = reactive([]);
 let Loading = ref(false);
 let Alumnos = reactive([]);
@@ -267,6 +311,7 @@ watchEffect(() => {
     .catch((error) => {
       console.log(error);
     });
+  console.log(text.value);
 });
 
 const Filtrar = async (res) => {
@@ -296,6 +341,29 @@ const Filtrar = async (res) => {
       Nuevo_Listado();
   }
 };
+
+const heavyList = ref([
+  {
+    Label: "Orquesta",
+    Link: "orq",
+    Color: "purple-4",
+  },
+  {
+    Label: "Coro",
+    Link: Filtrar("coro"),
+    Color: "purple-4",
+  },
+  {
+    Label: "Iniciacion 2",
+    Link: Filtrar("inic2"),
+    Color: "purple-4",
+  },
+  {
+    Label: "Iniciacion 1",
+    Link: Filtrar("inic1"),
+    Color: "purple-4",
+  },
+]);
 </script>
 
 <style>
