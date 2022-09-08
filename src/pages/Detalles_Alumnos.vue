@@ -1,24 +1,33 @@
 <template>
   <div class="q-pa-lg flex justify-center">
     <q-list bordered separator style="width: 100%">
-      <q-item-label header class="flex justify-evenly row items-center">
-        <span class="text-h5 col-7"
+      <q-item-label header class="flex justify-around items-center">
+        <span class="text-h5" style="width: 65%"
           >{{ alumno.nombre }} {{ alumno.apellido }}</span
         >
-
-        <q-btn
-          class="col-2"
-          color="primary"
-          icon="save"
-          size="md"
-          @click="guardar(alumno)"
-        /><q-btn
-          class="col-2"
-          color="orange"
-          icon="edit"
-          size="md"
-          @click="editable = !editable"
-        />
+        <q-btn-group>
+          <q-btn
+            class=""
+            color="primary"
+            icon="save"
+            size="md"
+            @click="guardar(alumno)"
+          />
+          <q-btn
+            class=""
+            color="orange"
+            icon="edit"
+            size="md"
+            @click="editable = !editable"
+          />
+          <q-btn
+            class=""
+            color="red"
+            icon="delete"
+            size="md"
+            @click="eliminar()"
+          />
+        </q-btn-group>
       </q-item-label>
 
       <q-separator />
@@ -251,9 +260,15 @@
 
 <script setup>
 import { ref, reactive, onMounted } from "vue";
-import { Buscar_Alumno, Actualizar_Alumno } from "../firebase";
+import {
+  Buscar_Alumno,
+  Actualizar_Alumno,
+  Eliminar_Alumno,
+  Mover_Alumnos,
+} from "../firebase";
 import { useRouter } from "vue-router";
-import { useQuasar } from "quasar";
+import { Dialog, useQuasar } from "quasar";
+import router from "src/router";
 const $q = reactive(useQuasar());
 const url = ref("https://placeimg.com/500/300/nature?t=" + Math.random());
 const id = useRouter().currentRoute._rawValue.params.id;
@@ -261,35 +276,33 @@ const alumno = reactive({});
 let editable = ref(true);
 let model = ref(null);
 let options = ref(["Orquesta", "Coro", "Iniciacion 2", "Iniciacion 1"]);
-let modelMultiple = ref([]);
 onMounted(() => {
   Buscar_Alumno(id).then((elem) => {
-    console.log("grupo:", elem.grupo);
     alumno.id = elem.id;
     alumno.nombre = elem.nombre;
     alumno.apellido = elem.apellido;
-    alumno.cedula = null ?? elem.cedula;
-    alumno.nac = null ?? elem.nac;
-    alumno.edad = null ?? elem.edad;
-    alumno.email = null ?? elem.email;
-    alumno.tlf = null ?? elem.tlf;
-    alumno.emergencia = null ?? elem.emergencia;
-    alumno.colegio_trabajo = null ?? elem.colegio_trabajo;
-    alumno.direccion_colegio_trabajo = null ?? elem.direccion_colegio_trabajo;
-    alumno.horario_colegio_trabajo = null ?? elem.horario_colegio_trabajo;
+    alumno.cedula = elem.cedula || "Vacio";
+    alumno.nac = elem.nac || "Vacio";
+    alumno.edad = elem.edad || "Vacio";
+    alumno.email = elem.email || "Vacio";
+    alumno.tlf = elem.tlf || "Vacio";
+    alumno.emergencia = elem.emergencia || "Vacio";
+    alumno.colegio_trabajo = elem.colegio_trabajo || "Vacio";
+    alumno.direccion_colegio_trabajo =
+      elem.direccion_colegio_trabajo || "Vacio";
+    alumno.horario_colegio_trabajo = elem.horario_colegio_trabajo || "Vacio";
     alumno.registro = elem.registro;
-    alumno.direccion = null ?? elem.direccion;
-    alumno.Termino_Aporte_Mensual = null ?? elem.Termino_Aporte_Mensual;
-    alumno.Termino_Redes_Sociales = null ?? elem.Termino_Redes_Sociales;
-    alumno.madre = null ?? elem.madre;
-    alumno.cedula_madre = null ?? elem.cedula_madre;
-    alumno.tlf_madre = null ?? elem.tlf_madre;
-
-    alumno.padre = null ?? elem.padre;
-    alumno.cedula_padre = null ?? elem.cedula_padre;
-    alumno.tlf_padre = null ?? elem.tlf_padre;
-    alumno.grupo = [elem.grupo];
-    alumno.instrumento = null ?? elem.instrumento;
+    alumno.direccion = elem.direccion || "Vacio";
+    alumno.Termino_Aporte_Mensual = elem.Termino_Aporte_Mensual || "Vacio";
+    alumno.Termino_Redes_Sociales = elem.Termino_Redes_Sociales || "Vacio";
+    alumno.madre = elem.madre || "Vacio";
+    alumno.cedula_madre = elem.cedula_madre || "Vacio";
+    alumno.tlf_madre = elem.tlf_madre || "Vacio";
+    alumno.padre = elem.padre || "Vacio";
+    alumno.cedula_padre = elem.cedula_padre || "Vacio";
+    alumno.tlf_padre = elem.tlf_padre || "Vacio";
+    alumno.grupo = elem.grupo;
+    alumno.instrumento = elem.instrumento || "Vacio";
   });
 });
 const body = `Aqui va una breve descripcion del progreso del alumno, aun esta deshabilitada y esta en etapa de desarrollo`;
@@ -312,6 +325,26 @@ const guardar = async (alumno) => {
         textColor: "white",
         icon: "cloud_done",
       });
+    });
+};
+const eliminar = async () => {
+  $q.dialog({
+    title: "Confirmar",
+    message: "Estas seguro que quieres eliminar este alumno?",
+    cancel: true,
+    persistent: true,
+  })
+    .onOk(() =>
+      Mover_Alumnos(alumno).then(() =>
+        Eliminar_Alumno(id).then(() =>
+          router.replace({ path: "/" }))
+      )
+    )
+    .onCancel(() => {
+      console.log(">>>> Cancel");
+    })
+    .onDismiss(() => {
+      // console.log("I am triggered on both OK and Cancel");
     });
 };
 //Input tipo grupo: Iniciacion 1, Teoria y Solfeo, Coro, Orquesta

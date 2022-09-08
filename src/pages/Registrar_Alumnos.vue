@@ -251,6 +251,7 @@ const alumno = ref({
   edad: "",
   cedula: "",
   tlf_alumno: "",
+  grupo: ["Teoria y Solfeo"],
   colegio_trabajo: "",
   tlf_colegio_trabajo: "",
   direccion_colegio_trabajo: "",

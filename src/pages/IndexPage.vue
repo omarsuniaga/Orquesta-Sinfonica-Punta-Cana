@@ -2,6 +2,7 @@
   <q-layout>
     <q-page-container>
       <div class="q-py-sm" style="min-width: 360px; width: 100%">
+
         <div class="col-12 flex justify-around no-wrap">
           <div class="col-auto" style="width: 65%">
             <q-input
@@ -249,6 +250,7 @@ import {
 import moment from "moment";
 import { ref, reactive, onMounted, watchEffect } from "vue";
 import { compileScript } from "@vue/compiler-sfc";
+
 
 const $q = useQuasar();
 const store = useCounterStore();

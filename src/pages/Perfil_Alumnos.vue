@@ -2,8 +2,12 @@
   <div class="q-m-sm flex justify-center">
     <q-list bordered separator style="max-width: 550px; width: 100%">
       <q-item-label header>Listado de Alumnos</q-item-label>
+      <BuscarAlumnos
+        :text="text"
+        class="flex justify-center"
+        style="min-width: 360px; width: 100%"
+      ></BuscarAlumnos>
       <q-separator />
-
       <div v-for="(card, i) in cards" :key="i" class="items">
         <q-slide-item
           :right-color="rightColor"
@@ -58,6 +62,7 @@
 import { ref, onMounted, onBeforeUnmount, computed } from "vue";
 import { Mostrar_Listado } from "../firebase";
 import { useQuasar } from "quasar";
+import BuscarAlumnos from "../components/Buscar-Alumnos.vue";
 const $q = useQuasar();
 
 const cards = ref([]);

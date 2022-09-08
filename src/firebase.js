@@ -13,10 +13,9 @@ import {
   doc,
   setDoc,
   getDocs,
-  arrayUnion,
-  arrayRemove,
   updateDoc,
   query,
+  deleteDoc,
   onSnapshot,
   orderBy,
   limit,
@@ -72,6 +71,7 @@ export const Crear_Alumnos = async (alumno) => {
     console.log(error);
   }
 };
+
 export const Leer_Alumnos = async () => {
   try {
     let alumnosRef = collection(db, "ALUMNOS");
@@ -82,20 +82,29 @@ export const Leer_Alumnos = async () => {
 };
 export const Actualizar_Alumno = async (alumno) => {
   try {
-    const docRef = await setDoc(doc(db, "ALUMNOS", alumno.id), alumno);
+    const Ref = doc(db, "ALUMNOS", alumno.id);
+    await setDoc(Ref, alumno);
   } catch (error) {
-    alert("No se pudo completar esta operacion");
+    console.log(error);
   }
 };
-export const Eliminar_Alumno = async (alumno) => {
+export const Eliminar_Alumno = async (id) => {
   try {
-    let alumnoRef = collection(db, "ALUMNOS");
-    await addDoc(alumnoRef, alumno).then(() => {
+    await deleteDoc(doc(db, "ALUMNOS", id)).then(() => {
       alert("Alumno Eliminado");
     });
   } catch (error) {
     console.log(error);
   }
+};
+export const Mover_Alumnos = async (alumno) => {
+  try {
+    const Ref = doc(db, "INACTIVOS", alumno.id);
+    await setDoc(Ref, alumno).then();
+  } catch (error) {
+    console.log(error);
+  }
+  console.log(alumno);
 };
 /*
  ****** BUSCAR ALUMNO POR ID ******
