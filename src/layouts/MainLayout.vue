@@ -110,7 +110,12 @@
       </q-scroll-area>
     </q-drawer>
 
-    <q-footer reveal elevated class="bg-white flex justify-around">
+    <q-footer
+      reveal
+      elevated
+      class="bg-white flex justify-around"
+      style="min-width: 360px; width: 100%"
+    >
       <!-- <q-btn
           flat
           round
@@ -142,9 +147,9 @@ const sesion = true;
 
 // const sesion = inject("SESION");
 const links1 = ref([
-  { icon: "watch_later", text: "Asistencia", to: "/" },
+  { icon: "restore", text: "Asistencia", to: "/" },
   { icon: "add", text: "Registrar Alumnos", to: "/Registrar_Alumnos" },
-  { icon: "chat", text: "Perfil de Alumnos", to: "/Perfil_Alumnos" },
+  { icon: "folder", text: "Perfil de Alumnos", to: "/Perfil_Alumnos" },
 ]);
 
 const links2 = ref([

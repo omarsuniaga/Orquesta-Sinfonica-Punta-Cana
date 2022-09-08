@@ -4,12 +4,7 @@
       <q-item-label header>Listado de Alumnos</q-item-label>
       <q-separator />
 
-      <q-intersection
-        v-for="(card, i) in cards"
-        :key="i"
-        transition="flip-right"
-        class="items"
-      >
+      <div v-for="(card, i) in cards" :key="i" class="items">
         <q-slide-item
           :right-color="rightColor"
           @right="$router.push('/Detalles_Alumnos/' + card.id)"
@@ -17,7 +12,7 @@
         >
           <template v-slot:right> Perfil </template>
 
-          <q-item class="flex justify-center">
+          <q-item class="flex justify-between row">
             <q-item-section avatar>
               <q-avatar>
                 <img
@@ -37,12 +32,23 @@
               <q-item-label class="text-small">
                 {{ card.instrumento }}
               </q-item-label>
-              <q-item-label class="text-[10px]">{{ card.grupo }}</q-item-label>
+
+              <q-item-label>
+                <q-virtual-scroll
+                  :items="card.grupo"
+                  virtual-scroll-horizontal
+                  v-slot="{ item, index }"
+                >
+                  <div :key="index" :class="item.class" class="q-pa-xs">
+                    <q-badge top outline color="secondary" :label="item" />
+                  </div>
+                </q-virtual-scroll>
+              </q-item-label>
             </q-item-section>
             <q-item-section side>Swiper -></q-item-section>
           </q-item>
         </q-slide-item>
-      </q-intersection>
+      </div>
       <!-- Card del alumno -->
     </q-list>
   </div>

@@ -112,6 +112,36 @@ export const Buscar_Alumno = async (id) => {
   return null;
 };
 
+export const Buscar_Alumno_Nombre = async (text) => {
+  if (text !== "") {
+    try {
+      let RefColeccion = collection(db, "ALUMNOS");
+      let alumnos = await getDocs(RefColeccion);
+      let Li = alumnos.docs;
+      let resultado = [];
+      Li.filter((elem) =>
+        elem.data().nombre.search(text) != -1
+          ? resultado.push(elem.data())
+          : null
+      );
+      return resultado;
+    } catch (error) {
+      console.log(error);
+    }
+  }
+  return;
+};
+
+export const Buscar_Por_Fecha = async (Fecha) => {
+  let listadoRef = collection(db, "ASISTENCIAS");
+  let q = query(listadoRef, where("Fecha", "==", Fecha)); //"2022-08-03"
+  let querySnapshot = await getDocs(q);
+  if (querySnapshot.empty) {
+    return null;
+  } else {
+    return querySnapshot.docs[0].data();
+  }
+};
 /*
  ****** CRUD USER SESION ******
  */
@@ -198,18 +228,6 @@ export const Asistencia_de_Hoy = async (presentes, ausentes, Fecha_de_Hoy) => {
     return alert("Asistencia Guardada");
   } catch (error) {
     return alert(error);
-  }
-};
-
-export const Busqueda_Por_Fecha = async (Fecha) => {
-  let listadoRef = collection(db, "ASISTENCIAS");
-  let q = query(listadoRef, where("Fecha", "==", Fecha)); //"2022-08-03"
-  let querySnapshot = await getDocs(q);
-  if (querySnapshot.empty) {
-    return null;
-  } else {
-    console.log(querySnapshot.docs[0].data());
-    return querySnapshot.docs[0].data();
   }
 };
 

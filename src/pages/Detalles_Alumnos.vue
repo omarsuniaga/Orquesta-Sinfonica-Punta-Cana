@@ -89,12 +89,14 @@
           />
         </div>
         <q-checkbox
+          :disable="editable"
           v-model="alumno.Termino_Aporte_Mensual"
           val="teal"
           label="Acepta el Termino del Aporte Mensual"
           color="teal"
         />
         <q-checkbox
+          :disable="editable"
           v-model="alumno.Termino_Redes_Sociales"
           val="teal"
           label="Acepta el Termino hacer publica cualquier foto o video en las redes sociales de nuestra institucion "
@@ -151,21 +153,21 @@
     </q-list>
     <span>Datos Adicionales</span>
     <q-list bordered separator style="width: 100%">
-      <div class="row q-col-gutter-x-md">
-        <div class="col-4">
+      <div class="row q-col-gutter-x-md flex justify-between q-pa-sm no-wrap">
+        <div style="min-width: 10%" class="col-5 row">
           <q-select
-            v-model="alumno.grupo"
-            :options="options"
-            label="Grupo"
-            :disable="editable"
-            clearable
             filled
-            color="purple-12"
-            class="q-mx-sm"
+            v-model="alumno.grupo"
+            multiple
+            :options="options"
+            use-chips
+            stack-label
+            label="Grupos"
+            :disable="editable"
           />
         </div>
 
-        <div class="col-8 row">
+        <div class="col-5 row" style="min-width: 10%">
           <q-input
             color="purple-12"
             class="q-mx-sm"
@@ -175,41 +177,48 @@
             label="Instrumento / Interesado en:"
             stack-label
           />
-          <q-btn round dense flat icon="send" @click="guardar(alumno)" />
         </div>
-        <div class="col-12 q-my-sm">
-          <q-file
+
+        <div class="col-2" style="min-width: 10%">
+          <q-btn
+            round
+            dense
+            flat
+            icon="send"
+            @click="guardar(alumno)"
             :disable="editable"
-            filled
-            bottom-slots
-            v-model="model"
-            label="Label"
-            counter
-            max-files="12"
-          >
-            <template v-slot:before>
-              <q-avatar>
-                <img src="https://cdn.quasar.dev/img/avatar5.jpg" />
-              </q-avatar>
-            </template>
-
-            <template v-slot:append>
-              <q-icon
-                v-if="model !== null"
-                name="close"
-                @click.stop.prevent="model = null"
-                class="cursor-pointer"
-              />
-              <q-icon name="create_new_folder" @click.stop.prevent />
-            </template>
-
-            <template v-slot:hint> Field hint </template>
-
-            <template v-slot:after>
-              <q-btn round dense flat icon="send" />
-            </template>
-          </q-file>
+          />
         </div>
+      </div>
+      <div class="col-12 q-m-sm">
+        <q-file
+          :disable="editable"
+          filled
+          bottom-slots
+          v-model="model"
+          label="Label"
+          counter
+          max-files="12"
+        >
+          <template v-slot:before>
+            <q-avatar>
+              <img src="https://cdn.quasar.dev/img/avatar5.jpg" />
+            </q-avatar>
+          </template>
+
+          <template v-slot:append>
+            <q-icon
+              v-if="model !== null"
+              name="close"
+              @click.stop.prevent="model = null"
+              class="cursor-pointer"
+            />
+            <q-icon name="create_new_folder" @click.stop.prevent />
+          </template>
+          <template v-slot:after>
+            <q-btn round dense flat icon="send" />
+          </template>
+        </q-file>
       </div>
     </q-list>
     <q-separator />
@@ -252,36 +261,35 @@ const alumno = reactive({});
 let editable = ref(true);
 let model = ref(null);
 let options = ref(["Orquesta", "Coro", "Iniciacion 2", "Iniciacion 1"]);
+let modelMultiple = ref([]);
 onMounted(() => {
   Buscar_Alumno(id).then((elem) => {
+    console.log("grupo:", elem.grupo);
     alumno.id = elem.id;
     alumno.nombre = elem.nombre;
     alumno.apellido = elem.apellido;
-    alumno.cedula = "N/A" ?? elem.cedula;
-    alumno.nac = elem.nac;
-    alumno.edad = elem.edad;
-    alumno.email = "N/A" ?? elem.email;
-    alumno.tlf = "N/A" ?? elem.tlf;
-    alumno.emergencia = "N/A" ?? elem.emergencia;
-    alumno.colegio_trabajo = "Sin Completar" ?? elem.colegio_trabajo;
-    alumno.direccion_colegio_trabajo =
-      "Sin Completar" ?? elem.direccion_colegio_trabajo;
-    alumno.horario_colegio_trabajo =
-      "Sin Completar" ?? elem.horario_colegio_trabajo;
+    alumno.cedula = null ?? elem.cedula;
+    alumno.nac = null ?? elem.nac;
+    alumno.edad = null ?? elem.edad;
+    alumno.email = null ?? elem.email;
+    alumno.tlf = null ?? elem.tlf;
+    alumno.emergencia = null ?? elem.emergencia;
+    alumno.colegio_trabajo = null ?? elem.colegio_trabajo;
+    alumno.direccion_colegio_trabajo = null ?? elem.direccion_colegio_trabajo;
+    alumno.horario_colegio_trabajo = null ?? elem.horario_colegio_trabajo;
     alumno.registro = elem.registro;
-    alumno.direccion = "Sin Completar" ?? elem.direccion;
-    alumno.Termino_Aporte_Mensual = elem.Termino_Aporte_Mensual;
-    alumno.Termino_Redes_Sociales = elem.Termino_Redes_Sociales;
+    alumno.direccion = null ?? elem.direccion;
+    alumno.Termino_Aporte_Mensual = null ?? elem.Termino_Aporte_Mensual;
+    alumno.Termino_Redes_Sociales = null ?? elem.Termino_Redes_Sociales;
+    alumno.madre = null ?? elem.madre;
+    alumno.cedula_madre = null ?? elem.cedula_madre;
+    alumno.tlf_madre = null ?? elem.tlf_madre;
 
-    alumno.madre = "Sin Completar" ?? elem.madre;
-    alumno.cedula_madre = "Sin Completar" ?? elem.cedula_madre;
-    alumno.tlf_madre = "Sin Completar" ?? elem.tlf_madre;
-
-    alumno.padre = "Sin Completar" ?? elem.padre;
-    alumno.cedula_padre = "Sin Completar" ?? elem.cedula_padre;
-    alumno.tlf_padre = "Sin Completar" ?? elem.tlf_padre;
-    alumno.grupo = null ?? elem.grupo;
-    alumno.instrumento = "N/A" ?? elem.instrumento;
+    alumno.padre = null ?? elem.padre;
+    alumno.cedula_padre = null ?? elem.cedula_padre;
+    alumno.tlf_padre = null ?? elem.tlf_padre;
+    alumno.grupo = [elem.grupo];
+    alumno.instrumento = null ?? elem.instrumento;
   });
 });
 const body = `Aqui va una breve descripcion del progreso del alumno, aun esta deshabilitada y esta en etapa de desarrollo`;

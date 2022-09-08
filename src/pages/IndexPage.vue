@@ -1,76 +1,64 @@
 <template>
   <q-layout>
     <q-page-container>
-      <div class="q-pa-md">
-        <div>
-          <q-input
-            outlined
-            bottom-slots
-            v-model="text"
-            label="Label"
-            counter
-            maxlength="12"
-            :dense="dense"
-          >
-            <template v-slot:before>
-              <q-icon name="search" />
-            </template>
-
-            <template v-slot:append>
-              <q-icon
-                v-if="text !== ''"
-                name="close"
-                @click="text = ''"
-                class="cursor-pointer"
-              />
-              <q-icon name="send" />
-            </template>
-
-            <template v-slot:hint> Field hint </template>
-          </q-input>
+      <div class="q-py-sm" style="min-width: 360px; width: 100%">
+        <div class="col-12 flex justify-around no-wrap">
+          <div class="col-auto" style="width: 65%">
+            <q-input
+              outlined
+              bottom-slots
+              v-model.trim="text"
+              label="Buscar Alumnos"
+              dense
+              @keyup.enter="Buscar_Alumno_Nombre"
+            >
+              <template v-slot:append>
+                <q-icon
+                  v-if="text !== ''"
+                  name="close"
+                  @click="text = ''"
+                  class="cursor-pointer"
+                />
+                <q-icon name="search" @click="Buscar_Alumno_Nombre" />
+              </template>
+            </q-input>
+          </div>
+          <div class="col-auto">
+            <q-btn-group>
+              <q-btn color="blue-6" icon="today" @click="visible = !visible" />
+              <q-btn color="blue-6" icon-right="save" @click="guardar" />
+            </q-btn-group>
+          </div>
         </div>
         <div
           class="justify-center flex row"
-          style="max-width: 500px; width: 100%"
+          style="min-width: 360px; width: 100%"
         >
           <!-- <q-virtual-scroll :items="heavyList" virtual-scroll-horizontal> -->
-          <q-btn-group row rounded>
+          <q-btn-group class="col-auto flex justify-around" rounded>
             <q-btn
               flat
-              style="color: #ff0080"
+              color="primary"
               label="Orquesta"
               @click="Filtrar('Orq')"
             />
-            <q-btn
-              flat
-              style="color: #ff0080"
-              label="Coro"
-              @click="Filtrar('Coro')"
-            />
+            <q-btn flat color="primary" label="Coro" @click="Filtrar('Coro')" />
             <q-btn
               flat
               no-wrap
-              style="color: #ff0080"
+              color="primary"
               label="Inicio II"
               @click="Filtrar('Ini2')"
             />
             <q-btn
               flat
               no-wrap
-              style="color: #ff0080"
+              color="primary"
               label="Inicio I"
               @click="Filtrar('Ini1')"
             />
           </q-btn-group>
-          <q-btn-group class="q-ma-md row flex justify-center">
-            <q-btn
-              color="purple"
-              rounded
-              icon="today"
-              @click="visible = !visible"
-            />
-            <q-btn color="purple" rounded icon-right="save" @click="guardar" />
-          </q-btn-group>
+
           <!-- <div class="row items-center">
               <q-item dense clickable>
                 <q-btn-group >
@@ -85,23 +73,27 @@
         </div>
       </div>
 
-      <div class="col" v-if="visible">
-        <h6>Calendario</h6>
-        <div class="q-pa-sm row justify-center scrollList">
-          <div style="width: 100%; max-width: 300px; min-width: 100px">
+      <div class="col-12" v-if="visible">
+        <span>Selecciona una fecha</span>
+        <div class="q-pa-sm flex justify-center scrollList">
+          <div style="width: 100%; max-width: 400px; min-width: 100px">
             <div class="q-pa-md">
-              <div class="q-gutter-md row items-start">
-                <q-date v-model="date" minimal />
+              <div class="q-gutter-md row items-center">
+                <q-date v-model="date" minimal today-btn mask="YYYY-MM-DD" />
               </div>
             </div>
           </div>
         </div>
       </div>
-      <div class="q-px-md flex justify-center text-md text-h6" v-else>
+      <div
+        class="q-px-md flex justify-center text-md text-h6"
+        v-else
+        style="min-width: 360px; width: 100%"
+      >
         {{ date }}
       </div>
 
-      <div class="q-pa-lg doc-container">
+      <div class="q-pa-lg doc-container" style="min-width: 360px; width: 100%">
         <div class="row">
           <div class="col-6">
             <span class="text-body1">Ausentes</span>
@@ -113,15 +105,18 @@
               class="q-pa-md row flex justify-center scrollList"
               ref="chatRef"
             >
-              <div style="width: 100%; max-width: 700px; min-width: 150px">
+              <div
+                v-if="Resultado_Busqueda.length > 0"
+                style="width: 100%; max-width: 700px; min-width: 150px"
+              >
                 <q-card
                   class="q-ma-sm bg-red-3"
-                  v-for="(item, index) in Listado"
-                  :key="index"
+                  v-for="item in Resultado_Busqueda"
+                  :key="item.id"
                   @click="agregar(item)"
                 >
                   <q-item v-if="!item.asistencia">
-                    <q-item-section avatar v-if="$q.screen.gt.xs">
+                    <!-- <q-item-section avatar v-if="$q.screen.gt.xs">
                       <q-avatar>
                         <q-img
                           :src="url"
@@ -132,7 +127,48 @@
                           </template>
                         </q-img>
                       </q-avatar>
+                    </q-item-section> -->
+                    <q-item-section class="col-6" no-wrap>
+                      <q-item-label class="text-weight-regular"
+                        >{{ item.nombre }}
+                        {{ $q.screen.gt.sm ? item.apellido : "" }}</q-item-label
+                      >
+                      <q-item-label caption
+                        >{{
+                          item.instrumento === "N/A"
+                            ? item.grupo + " - "
+                            : item.instrumento + " - "
+                        }}
+
+                        {{ item.edad }}
+                      </q-item-label>
                     </q-item-section>
+                  </q-item>
+                </q-card>
+              </div>
+              <div
+                v-else
+                style="width: 100%; max-width: 700px; min-width: 150px"
+              >
+                <q-card
+                  class="q-ma-sm bg-red-3"
+                  v-for="(item, index) in Listado"
+                  :key="index"
+                  @click="agregar(item)"
+                >
+                  <q-item v-if="!item.asistencia">
+                    <!-- <q-item-section avatar v-if="$q.screen.gt.xs">
+                      <q-avatar>
+                        <q-img
+                          :src="url"
+                          style="height: 140px; max-width: 150px"
+                        >
+                          <template v-slot:loading>
+                            <q-spinner-gears color="white" />
+                          </template>
+                        </q-img>
+                      </q-avatar>
+                    </q-item-section> -->
                     <q-item-section class="col-6" no-wrap>
                       <q-item-label class="text-weight-regular"
                         >{{ item.nombre }}
@@ -203,36 +239,36 @@
 import { useCounterStore } from "src/stores/example-store";
 import { useQuasar } from "quasar";
 import {
-  Leer_Alumnos,
   Asistencia_de_Hoy,
-  db,
-  Busqueda_Por_Fecha,
+  Buscar_Por_Fecha,
   Buscar_Alumno,
   Mostrar_Listado,
+  Buscar_Alumno_Nombre,
   // Contar_Presentes,
 } from "../firebase";
 import moment from "moment";
-// import { date as dateFilter } from "quasar";
 import { ref, reactive, onMounted, watchEffect } from "vue";
+import { compileScript } from "@vue/compiler-sfc";
 
 const $q = useQuasar();
-
 const store = useCounterStore();
+
 let visible = ref(false);
 let Listado = reactive([]);
-let text = ref("");
-let ph = ref("");
-let dense = ref(false);
 let Presentes = reactive([]);
-let Loading = ref(false);
 let Alumnos = reactive([]);
-let date = ref(moment().format("YYYY/MM/DD"));
-const url = ref("https://placeimg.com/500/300/nature?t=" + Math.random());
+let Resultado_Busqueda = ref([]);
+let text = ref("");
+let Loading = ref(false);
+let date = ref(moment().format("YYYY-MM-DD"));
+let hoy = ref(moment().format("YYYY-MM-DD"));
+let url = ref("https://placeimg.com/500/300/nature?t=" + Math.random());
 
-onMounted(() => {
-  Alumnos = Mostrar_Listado().then((elem) => elem.map((e) => e.data()));
+onMounted(async () => {
+  // Alumnos = await Mostrar_Listado().then((elem) => elem.map((e) => e.data()));
+  Nuevo_Listado();
+  // console.log(date.value.split("/").join("-"));
 });
-
 const agregar = async (item) => {
   Listado.filter((e) =>
     e.id === item.id
@@ -264,7 +300,7 @@ const guardar = async () => {
 const Nuevo_Listado = async () => {
   //extraer de firebase todos los alumnos inscritos
   Alumnos = await Mostrar_Listado();
-  Alumnos.forEach((e) => {
+  Alumnos.map((e) => {
     Listado.push({ ...e.data(), asistencia: false });
   });
 };
@@ -292,78 +328,65 @@ const Procesar_Listado = async (Data) => {
 };
 //Limpia el Lienzo de la pantalla
 const resetear = () => {
-  Listado.length = 0;
   Presentes.length = 0;
+  Listado.length = 0;
 };
-watchEffect(() => {
-  //Observa cada cambio en la fecha y busca los alumnos que asistieron a la fecha
-  Busqueda_Por_Fecha(date.value.split("/").join("-"))
-    .then((Data) => {
-      if (Data) {
-        resetear();
-        Procesar_Listado(Data.Data).then();
-      } else {
-        resetear();
-        Nuevo_Listado().then((Loading.value = false));
-      }
-    })
-    .then(() => (visible.value = false))
-    .catch((error) => {
-      console.log(error);
-    });
-  console.log(text.value);
+
+watchEffect(async () => {
+  console.log(date.value !== hoy.value);
+  if (date.value !== hoy.value) {
+    Buscar_Por_Fecha(date.value).then((Data) =>
+      Data !== null
+        ? Procesar_Listado(Data.Data).then(() => {
+            resetear();
+            visible.value = false;
+            return;
+          })
+        : null
+    );
+  }
+  if (text.value.length > 0) {
+    Resultado_Busqueda.value = await Buscar_Alumno_Nombre(
+      text.value.charAt(0).toLocaleUpperCase()
+    ).then();
+  } else {
+    return (Resultado_Busqueda.value.length = 0);
+  }
 });
 
 const Filtrar = async (res) => {
   Alumnos = await Mostrar_Listado().then((elem) => elem.map((e) => e.data()));
   switch (res) {
     case "Orq":
-      let Orq = Alumnos.filter((e) => e.grupo === "Orquesta");
-      resetear();
+      let Orq = Alumnos.filter((elem) =>
+        elem.grupo.find((e) => e === "Orquesta")
+      );
+      Listado.length = 0;
       Listado.push(...Orq);
       break;
     case "Coro":
-      let Coro = Alumnos.filter((e) => e.grupo === "Coro");
-      resetear();
+      let Coro = Alumnos.filter((elem) => elem.grupo.find((e) => e === "Coro"));
+      Listado.length = 0;
       Listado.push(...Coro);
       break;
     case "Ini2":
-      let Ini2 = Alumnos.filter((e) => e.grupo === "Iniciacion 2");
-      resetear();
+      let Ini2 = Alumnos.filter((elem) =>
+        elem.grupo.find((e) => e === "Iniciacion 2")
+      );
+      Listado.length = 0;
       Listado.push(...Ini2);
       break;
     case "Ini1":
-      let Ini1 = Alumnos.filter((e) => e.grupo === "Iniciacion 1");
-      resetear();
+      let Ini1 = Alumnos.filter((elem) =>
+        elem.grupo.find((e) => e === "Iniciacion 1")
+      );
+      Listado.length = 0;
       Listado.push(...Ini1);
       break;
     default:
-      Nuevo_Listado();
+    // Nuevo_Listado();
   }
 };
-
-const heavyList = ref([
-  {
-    Label: "Orquesta",
-    Link: "orq",
-    Color: "purple-4",
-  },
-  {
-    Label: "Coro",
-    Link: Filtrar("coro"),
-    Color: "purple-4",
-  },
-  {
-    Label: "Iniciacion 2",
-    Link: Filtrar("inic2"),
-    Color: "purple-4",
-  },
-  {
-    Label: "Iniciacion 1",
-    Link: Filtrar("inic1"),
-    Color: "purple-4",
-  },
-]);
 </script>
 
 <style>
