@@ -12,7 +12,7 @@
         <q-icon
           v-if="text !== ''"
           name="close"
-          @click="text = ''"
+          @click="Resetear"
           class="cursor-pointer"
         />
         <q-icon name="search" @click="$emit('onFire', res)" />
@@ -21,7 +21,7 @@
   </div>
 </template>
 <script setup>
-import { ref, reactive, onMounted, watchEffect, inject } from "vue";
+import { ref, watchEffect } from "vue";
 import { Buscar_Alumno_Nombre } from "../firebase";
 const props = defineProps({
   text: String,
@@ -30,7 +30,10 @@ let text = ref("");
 let res = ref([]);
 const emit = defineEmits(["onFire"]);
 emit("onFire", res.value);
-
+const Resetear = () => {
+  text.value = "";
+  emit("onFire", (res.value.length = []));
+};
 const Buscar = async () => {
   res.value = await Buscar_Alumno_Nombre(text.value.toLowerCase()).then();
   emit("onFire", res.value);
@@ -38,8 +41,6 @@ const Buscar = async () => {
 watchEffect(() => {
   if (text.value.length > 0) {
     Buscar();
-  } else {
-    return;
   }
 });
 </script>

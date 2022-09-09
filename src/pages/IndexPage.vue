@@ -1,39 +1,24 @@
 <template>
   <q-layout>
     <q-page-container>
-      <div class="q-py-sm" style="min-width: 360px; width: 80%">
-        <div class="col-8 flex justify-around no-wrap">
-          <BuscarAlumnos
-            :text="text"
-            class="flex justify-center"
-            style="min-width: 360px; width: 100%"
-            @onFire="eventEmittedFromChild"
-          ></BuscarAlumnos>
-          <!-- <div class="col-auto" style="width: 65%">
-            <q-input
-              outlined
-              bottom-slots
-              v-model.trim="text"
-              label="Buscar Alumnos"
-              dense
-              @keyup.enter="Buscar_Alumno_Nombre"
-            >
-              <template v-slot:append>
-                <q-icon
-                  v-if="text !== ''"
-                  name="close"
-                  @click="text = ''"
-                  class="cursor-pointer"
-                />
-                <q-icon name="search" @click="Buscar_Alumno_Nombre" />
-              </template>
-            </q-input>
-          </div> -->
-          <div class="col-auto">
+      <div
+        class="q-py-sm col-12"
+        style="min-width: 365px; width: 100%"
+      >
+        <div class="justify-center flex">
+          <div class="col-auto q-px-sm">
             <q-btn-group>
               <q-btn color="blue-6" icon="today" @click="visible = !visible" />
               <q-btn color="blue-6" icon-right="save" @click="guardar" />
             </q-btn-group>
+          </div>
+          <div class="row">
+            <BuscarAlumnos
+              :text="text"
+              class="q-px-xs"
+              style="width: 90%"
+              @onFire="eventEmittedFromChild"
+            ></BuscarAlumnos>
           </div>
         </div>
         <div
@@ -271,9 +256,7 @@ let hoy = ref(moment().format("YYYY-MM-DD"));
 let url = ref("https://placeimg.com/500/300/nature?t=" + Math.random());
 
 onMounted(async () => {
-  // Alumnos = await Mostrar_Listado().then((elem) => elem.map((e) => e.data()));
   Nuevo_Listado();
-  // console.log(date.value.split("/").join("-"));
 });
 
 const eventEmittedFromChild = (res) => {
@@ -281,6 +264,8 @@ const eventEmittedFromChild = (res) => {
   if (res.length != 0) {
     Resultado_Busqueda.value = res.map((e) => ({ ...e, avatar: url.value }));
     return Resultado_Busqueda.value;
+  } else {
+    Resultado_Busqueda.value.length = 0;
   }
 };
 
