@@ -1,9 +1,15 @@
 <template>
   <q-layout>
     <q-page-container>
-      <div class="q-py-sm" style="min-width: 360px; width: 100%">
-        <div class="col-12 flex justify-around no-wrap">
-          <div class="col-auto" style="width: 65%">
+      <div class="q-py-sm" style="min-width: 360px; width: 80%">
+        <div class="col-8 flex justify-around no-wrap">
+          <BuscarAlumnos
+            :text="text"
+            class="flex justify-center"
+            style="min-width: 360px; width: 100%"
+            @onFire="eventEmittedFromChild"
+          ></BuscarAlumnos>
+          <!-- <div class="col-auto" style="width: 65%">
             <q-input
               outlined
               bottom-slots
@@ -22,7 +28,7 @@
                 <q-icon name="search" @click="Buscar_Alumno_Nombre" />
               </template>
             </q-input>
-          </div>
+          </div> -->
           <div class="col-auto">
             <q-btn-group>
               <q-btn color="blue-6" icon="today" @click="visible = !visible" />
@@ -248,7 +254,7 @@ import {
 } from "../firebase";
 import moment from "moment";
 import { ref, reactive, onMounted, watchEffect } from "vue";
-import { compileScript } from "@vue/compiler-sfc";
+import BuscarAlumnos from "src/components/Buscar-Alumnos.vue";
 
 const $q = useQuasar();
 const store = useCounterStore();
@@ -269,6 +275,15 @@ onMounted(async () => {
   Nuevo_Listado();
   // console.log(date.value.split("/").join("-"));
 });
+
+const eventEmittedFromChild = (res) => {
+  console.log(res);
+  if (res.length != 0) {
+    Resultado_Busqueda.value = res.map((e) => ({ ...e, avatar: url.value }));
+    return Resultado_Busqueda.value;
+  }
+};
+
 const agregar = async (item) => {
   Listado.filter((e) =>
     e.id === item.id
@@ -344,13 +359,13 @@ watchEffect(async () => {
         : null
     );
   }
-  if (text.value.length > 0) {
-    Resultado_Busqueda.value = await Buscar_Alumno_Nombre(
-      text.value.toLowerCase()
-    ).then();
-  } else {
-    return (Resultado_Busqueda.value.length = 0);
-  }
+  // if (text.value.length > 0) {
+  //   Resultado_Busqueda.value = await Buscar_Alumno_Nombre(
+  //     text.value.toLowerCase()
+  //   ).then();
+  // } else {
+  //   return (Resultado_Busqueda.value.length = 0);
+  // }
 });
 
 const Filtrar = async (res) => {
