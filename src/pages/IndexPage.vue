@@ -2,7 +2,6 @@
   <q-layout>
     <q-page-container>
       <div class="q-py-sm" style="min-width: 360px; width: 100%">
-
         <div class="col-12 flex justify-around no-wrap">
           <div class="col-auto" style="width: 65%">
             <q-input
@@ -251,7 +250,6 @@ import moment from "moment";
 import { ref, reactive, onMounted, watchEffect } from "vue";
 import { compileScript } from "@vue/compiler-sfc";
 
-
 const $q = useQuasar();
 const store = useCounterStore();
 
@@ -335,7 +333,6 @@ const resetear = () => {
 };
 
 watchEffect(async () => {
-  console.log(date.value !== hoy.value);
   if (date.value !== hoy.value) {
     Buscar_Por_Fecha(date.value).then((Data) =>
       Data !== null
@@ -349,7 +346,7 @@ watchEffect(async () => {
   }
   if (text.value.length > 0) {
     Resultado_Busqueda.value = await Buscar_Alumno_Nombre(
-      text.value.charAt(0).toLocaleUpperCase()
+      text.value.toLowerCase()
     ).then();
   } else {
     return (Resultado_Busqueda.value.length = 0);

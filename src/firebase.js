@@ -129,7 +129,7 @@ export const Buscar_Alumno_Nombre = async (text) => {
       let Li = alumnos.docs;
       let resultado = [];
       Li.filter((elem) =>
-        elem.data().nombre.search(text) != -1
+        elem.data().nombre.toLowerCase().search(text) != -1
           ? resultado.push(elem.data())
           : null
       );

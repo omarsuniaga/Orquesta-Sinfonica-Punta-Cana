@@ -6,7 +6,7 @@
       v-model.trim="text"
       label="Buscar Alumnos"
       dense
-      @keyup.enter="Buscar_Alumno_Nombre"
+      @keyup.enter="$emit('onFire', res)"
     >
       <template v-slot:append>
         <q-icon
@@ -15,27 +15,31 @@
           @click="text = ''"
           class="cursor-pointer"
         />
-        <q-icon name="search" @click="Buscar_Alumno_Nombre" />
+        <q-icon name="search" @click="$emit('onFire', res)" />
       </template>
     </q-input>
   </div>
 </template>
 <script setup>
-import { ref, reactive, onMounted, watchEffect } from "vue";
+import { ref, reactive, onMounted, watchEffect, inject } from "vue";
 import { Buscar_Alumno_Nombre } from "../firebase";
-
-let Resultado_Busqueda = ref([]);
-const props = defineProps(["text"]);
+const props = defineProps({
+  text: String,
+});
 let text = ref("");
+let res = ref([]);
+const emit = defineEmits(["onFire"]);
+emit("onFire", res.value);
 
-watchEffect(async () => {
+const Buscar = async () => {
+  res.value = await Buscar_Alumno_Nombre(text.value.toLowerCase()).then();
+  emit("onFire", res.value);
+};
+watchEffect(() => {
   if (text.value.length > 0) {
-    Resultado_Busqueda.value = await Buscar_Alumno_Nombre(
-      text.value.charAt(0).toLocaleUpperCase()
-    ).then();
+    Buscar();
   } else {
-    return (Resultado_Busqueda.value.length = 0);
+    return;
   }
-  console.log("Resultado_Busqueda.value", Resultado_Busqueda.value);
 });
 </script>

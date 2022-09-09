@@ -6,6 +6,7 @@
         :text="text"
         class="flex justify-center"
         style="min-width: 360px; width: 100%"
+        @onFire="eventEmittedFromChild"
       ></BuscarAlumnos>
       <q-separator />
       <div v-for="(card, i) in cards" :key="i" class="items">
@@ -31,7 +32,7 @@
             </q-item-section>
             <q-item-section>
               <q-item-label class="text-weight-medium">
-                <span>{{ card.nombreCompleto }}</span>
+                <span>{{ card.nombre }} {{ card.apellido }}</span>
               </q-item-label>
               <q-item-label class="text-small">
                 {{ card.instrumento }}
@@ -59,21 +60,37 @@
 </template>
 
 <script setup>
-import { ref, onMounted, onBeforeUnmount, computed } from "vue";
+import {
+  ref,
+  onMounted,
+  onBeforeUnmount,
+  computed,
+  watchEffect,
+  inject,
+} from "vue";
 import { Mostrar_Listado } from "../firebase";
 import { useQuasar } from "quasar";
 import BuscarAlumnos from "../components/Buscar-Alumnos.vue";
 const $q = useQuasar();
-
-const cards = ref([]);
+let Resultado_Busqueda = inject("Resultado_Busqueda");
+let cards = ref([]);
+let text = ref("");
 let timer;
 let url = ref("https://placeimg.com/500/300/nature?t=" + Math.random());
+
+const eventEmittedFromChild = (res) => {
+  if (res.length != 0) {
+    cards.value = res.map((e) => ({ ...e, avatar: url.value }));
+    return cards.value;
+  }
+};
 
 onMounted(() => {
   Mostrar_Listado().then((elem) => {
     elem.map((e) =>
       cards.value.push({
-        nombreCompleto: e.data().nombre + " " + e.data().apellido,
+        nombre: e.data().nombre,
+        apellido: e.data().apellido,
         id: e.data().id,
         avatar: e.data().img
           ? e.data().img
@@ -99,25 +116,6 @@ const rightColor = computed(() =>
     ? "green-10"
     : "green-" + (3 + Math.round(Math.min(3, slideRatio.value.right * 3)))
 );
-
-// function onLeft({ reset }) {
-//   $q.notify("Eliminando Alumno");
-//   $q.dialog({
-//     title: "Confirm",
-//     message: "Would you like to turn on the wifi?",
-//     cancel: true,
-//     persistent: true,
-//   })
-//     .onOk(() => {
-//       // console.log('OK')
-//     })
-//     .onCancel(() => {
-//       // console.log('Cancel')
-//     })
-//     .onDismiss(() => {
-//       // console.log('I am triggered on both OK and Cancel')
-//     });
-// }
 
 const onSlide = ({ side, ratio, isReset }) => {
   clearTimeout(timer);
