@@ -11,7 +11,10 @@
             class="flex justify-center"
             @click="$router.push('/')"
           >
-            <img src="~assets/logo.png" style="width: 40px; height: 40px" />
+            <img
+              src="~assets/favicon-96x96-orquesta.jpg"
+              style="width: 60px; height: 60px"
+            />
             <q-toolbar-title shrink class="text-weight-bold row">
               SINFONICA JUVENIL
             </q-toolbar-title>
@@ -58,7 +61,7 @@
       <q-scroll-area class="fit">
         <q-list padding>
           <q-item
-            v-for="link in links1"
+            v-for="link in links2"
             :key="link.text"
             v-ripple
             :to="link.to"
@@ -125,7 +128,7 @@
           @click="toggleLeftDrawer"
         /> -->
       <q-item v-for="link in links1" :key="link.text" :to="link.to">
-        <q-btn flat :icon="link.icon" color="purple" :aria-label="link.text">
+        <q-btn flat :icon="link.icon" color="primary" :aria-label="link.text">
         </q-btn>
       </q-item>
     </q-footer>
@@ -147,20 +150,27 @@ const sesion = true;
 
 // const sesion = inject("SESION");
 const links1 = ref([
-  { icon: "restore", text: "Asistencia", to: "/" },
-  { icon: "add", text: "Registrar Alumnos", to: "/Registrar_Alumnos" },
-  { icon: "folder", text: "Perfil de Alumnos", to: "/Perfil_Alumnos" },
+  { icon: "fact_check", text: "Ver Lista de Inactivos", to: "/" },
+  { icon: "person_add", text: "Registrar Alumnos", to: "/Registrar_Alumnos" },
+  { icon: "view_list", text: "Perfil de Alumnos", to: "/Perfil_Alumnos" },
 ]);
 
 const links2 = ref([
-  { icon: "folder", text: "Library" },
-  { icon: "restore", text: "History" },
-  { icon: "watch_later", text: "Watch later" },
-  { icon: "thumb_up_alt", text: "Liked videos" },
+  {
+    icon: "no_accounts",
+    text: "Ver Lista de Inactivos",
+    to: "/Lista_Inactivos",
+  },
+  {
+    icon: "insights",
+    text: "Gráficas de Asistencias",
+    to: "/Registrar_Alumnos",
+  },
+  { icon: "speed", text: "Progreso del Alumno", to: "/Perfil_Alumnos" },
 ]);
 
 const links3 = ref([
-  { icon: fabYoutube, text: "YouTube Premium" },
+  { icon: "chart_simple", text: "YouTube Premium" },
   { icon: "local_movies", text: "Movies & Shows" },
   { icon: "videogame_asset", text: "Gaming" },
   { icon: "live_tv", text: "Live" },

@@ -1,7 +1,10 @@
 <template>
   <div class="q-m-sm flex justify-center">
     <q-list bordered separator style="max-width: 550px; width: 100%">
-      <q-item-label header>Listado de Alumnos</q-item-label>
+      <q-item-label header
+        >Listado de Alumnos
+        <q-icon name="format_list_numbered" />
+      </q-item-label>
       <BuscarAlumnos
         :text="text"
         class="flex justify-center"
@@ -50,7 +53,9 @@
                 </q-virtual-scroll>
               </q-item-label>
             </q-item-section>
-            <q-item-section side>Swiper -></q-item-section>
+            <q-item-section side>
+              <q-icon name="swipe_left" />
+            </q-item-section>
           </q-item>
         </q-slide-item>
       </div>
@@ -82,41 +87,30 @@ const eventEmittedFromChild = (res) => {
   if (res.length != 0) {
     cards.value = res.map((e) => ({ ...e, avatar: url.value }));
     return cards.value;
+  } else {
+    return cargar_alumnos();
   }
 };
-
-onMounted(() => {
-  Mostrar_Listado().then((elem) => {
-    elem.map((e) =>
-      cards.value.push({
-        nombre: e.data().nombre,
-        apellido: e.data().apellido,
-        id: e.data().id,
-        avatar: e.data().img
-          ? e.data().img
-          : "https://placeimg.com/500/300/nature?t=" + Math.random(),
-        grupo: e.data().grupo ? e.data().grupo : "Inicial",
-        instrumento: e.data().instrumento ? e.data().instrumento : "Teoria",
-      })
-    );
-  });
+const cargar_alumnos = async () => {
+  cards.value = await Mostrar_Listado().then((elem) =>
+    elem.map((e) => ({ ...e.data(), avatar: url.value }))
+  );
+};
+onMounted(async () => {
+  await cargar_alumnos();
 });
-
 onBeforeUnmount(() => {
   clearTimeout(timer);
 });
-
 const slideRatio = ref({
   left: 0,
   right: 0,
 });
-
 const rightColor = computed(() =>
   slideRatio.value.right >= 2
     ? "green-10"
     : "green-" + (3 + Math.round(Math.min(3, slideRatio.value.right * 3)))
 );
-
 const onSlide = ({ side, ratio, isReset }) => {
   clearTimeout(timer);
   timer = setTimeout(

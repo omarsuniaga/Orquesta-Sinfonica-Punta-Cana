@@ -1,11 +1,11 @@
 <template>
-  <div class="q-pa-lg flex justify-center">
-    <q-list bordered separator style="width: 100%">
-      <q-item-label header class="flex justify-around items-center">
-        <span class="text-h5" style="width: 65%"
+  <div class="q-ma-sm flex justify-center" style="min-width: 375px">
+    <q-list bordered separator>
+      <q-item-label header class="">
+        <span class="text-h5 col-auto" style="width: 100%"
           >{{ alumno.nombre }} {{ alumno.apellido }}</span
         >
-        <q-btn-group>
+        <div class="flex justify-around">
           <q-btn
             class=""
             color="primary"
@@ -15,19 +15,19 @@
           />
           <q-btn
             class=""
-            color="orange"
-            icon="edit"
+            color="orange-4"
+            icon="edit_note"
             size="md"
             @click="editable = !editable"
           />
           <q-btn
             class=""
-            color="red"
-            icon="delete"
+            color="red-4"
+            icon="remove_circle"
             size="md"
             @click="eliminar()"
           />
-        </q-btn-group>
+        </div>
       </q-item-label>
 
       <q-separator />
@@ -162,8 +162,8 @@
     </q-list>
     <span>Datos Adicionales</span>
     <q-list bordered separator style="width: 100%">
-      <div class="row q-col-gutter-x-md flex justify-between q-pa-sm no-wrap">
-        <div style="min-width: 10%" class="col-5 row">
+      <div class="row q-col-gutter-x-md flex justify-between q-ma-sm">
+        <div class="col-auto q-ma-sm row no-wrap">
           <q-select
             filled
             v-model="alumno.grupo"
@@ -173,10 +173,8 @@
             stack-label
             label="Grupos"
             :disable="editable"
+            color="purple-6"
           />
-        </div>
-
-        <div class="col-5 row" style="min-width: 10%">
           <q-input
             color="purple-12"
             class="q-mx-sm"
@@ -186,9 +184,6 @@
             label="Instrumento / Interesado en:"
             stack-label
           />
-        </div>
-
-        <div class="col-2" style="min-width: 10%">
           <q-btn
             round
             dense
@@ -244,7 +239,7 @@
       <q-timeline-entry
         title="Event Title"
         subtitle="February 21, 1986"
-        icon="delete"
+        icon="remove_circle"
         :body="body"
       />
       <q-timeline-entry
@@ -336,8 +331,7 @@ const eliminar = async () => {
   })
     .onOk(() =>
       Mover_Alumnos(alumno).then(() =>
-        Eliminar_Alumno(id).then(() =>
-          router.replace({ path: "/" }))
+        Eliminar_Alumno(id).then(() => router.replace({ path: "/" }))
       )
     )
     .onCancel(() => {

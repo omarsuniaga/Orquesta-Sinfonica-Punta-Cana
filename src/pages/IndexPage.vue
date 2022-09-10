@@ -1,12 +1,9 @@
 <template>
   <q-layout>
     <q-page-container>
-      <div
-        class="q-py-sm col-12"
-        style="min-width: 365px; width: 100%"
-      >
+      <div class="q-my-sm col-12" style="min-width: 375px; width: 100%">
         <div class="justify-center flex">
-          <div class="col-auto q-px-sm">
+          <div class="col-auto q-mx-sm">
             <q-btn-group>
               <q-btn color="blue-6" icon="today" @click="visible = !visible" />
               <q-btn color="blue-6" icon-right="save" @click="guardar" />
@@ -15,17 +12,16 @@
           <div class="row">
             <BuscarAlumnos
               :text="text"
-              class="q-px-xs"
-              style="width: 90%"
+              class=""
+              style="width: 100%"
               @onFire="eventEmittedFromChild"
             ></BuscarAlumnos>
           </div>
         </div>
         <div
           class="justify-center flex row"
-          style="min-width: 360px; width: 100%"
+          style="min-width: 375px; width: 100%"
         >
-          <!-- <q-virtual-scroll :items="heavyList" virtual-scroll-horizontal> -->
           <q-btn-group class="col-auto flex justify-around" rounded>
             <q-btn
               flat
@@ -49,18 +45,6 @@
               @click="Filtrar('Ini1')"
             />
           </q-btn-group>
-
-          <!-- <div class="row items-center">
-              <q-item dense clickable>
-                <q-btn-group >
-                  <q-btn :color="item.Color">
-                    {{ item.Label }}
-                  </q-btn>
-                </q-btn-group>
-              </q-item>
-            </div> -->
-          <!-- </q-virtual-scroll> -->
-          <!-- <h4>{{ store.$state.sesion }}</h4> -->
         </div>
       </div>
 
@@ -79,13 +63,13 @@
       <div
         class="q-px-md flex justify-center text-md text-h6"
         v-else
-        style="min-width: 360px; width: 100%"
+        style="min-width: 375px; width: 100%"
       >
         {{ date }}
       </div>
 
-      <div class="q-pa-lg doc-container" style="min-width: 360px; width: 100%">
-        <div class="row">
+      <div class="q-pa-xs doc-container" style="min-width: 375px; width: 100%">
+        <div class="row col-12">
           <div class="col-6">
             <span class="text-body1">Ausentes</span>
             <div v-if="Loading">
@@ -93,45 +77,35 @@
             </div>
             <div
               v-else
-              class="q-pa-md row flex justify-center scrollList"
+              class="row flex justify-center scrollList"
               ref="chatRef"
             >
               <div
                 v-if="Resultado_Busqueda.length > 0"
-                style="width: 100%; max-width: 700px; min-width: 150px"
+                style="width: 100%; max-width: 700px; min-width: 140px"
               >
                 <q-card
-                  class="q-ma-sm bg-red-3"
-                  v-for="item in Resultado_Busqueda"
-                  :key="item.id"
+                  class="q-ma-xs bg-red-3"
+                  v-for="(item, index) in Resultado_Busqueda"
+                  :key="index"
                   @click="agregar(item)"
                 >
                   <q-item v-if="!item.asistencia">
-                    <!-- <q-item-section avatar v-if="$q.screen.gt.xs">
-                      <q-avatar>
-                        <q-img
-                          :src="url"
-                          style="height: 140px; max-width: 150px"
-                        >
-                          <template v-slot:loading>
-                            <q-spinner-gears color="white" />
-                          </template>
-                        </q-img>
-                      </q-avatar>
-                    </q-item-section> -->
-                    <q-item-section class="col-6" no-wrap>
+                    <q-item-section>
                       <q-item-label class="text-weight-regular"
                         >{{ item.nombre }}
                         {{ $q.screen.gt.sm ? item.apellido : "" }}</q-item-label
                       >
-                      <q-item-label caption
-                        >{{
-                          item.instrumento === "N/A"
-                            ? item.grupo + " - "
-                            : item.instrumento + " - "
-                        }}
-
-                        {{ item.edad }}
+                      <q-item-label>
+                        <q-virtual-scroll
+                          :items="item.grupo"
+                          virtual-scroll-horizontal
+                          v-slot="{ item, index }"
+                        >
+                          <div :key="index" :class="item.class" class="q-px-xs">
+                            <q-badge top color="red" :label="item" />
+                          </div>
+                        </q-virtual-scroll>
                       </q-item-label>
                     </q-item-section>
                   </q-item>
@@ -139,40 +113,30 @@
               </div>
               <div
                 v-else
-                style="width: 100%; max-width: 700px; min-width: 150px"
+                style="width: 100%; max-width: 700px; min-width: 140px"
               >
                 <q-card
-                  class="q-ma-sm bg-red-3"
+                  class="q-ma-xs bg-red-3"
                   v-for="(item, index) in Listado"
                   :key="index"
                   @click="agregar(item)"
                 >
                   <q-item v-if="!item.asistencia">
-                    <!-- <q-item-section avatar v-if="$q.screen.gt.xs">
-                      <q-avatar>
-                        <q-img
-                          :src="url"
-                          style="height: 140px; max-width: 150px"
-                        >
-                          <template v-slot:loading>
-                            <q-spinner-gears color="white" />
-                          </template>
-                        </q-img>
-                      </q-avatar>
-                    </q-item-section> -->
-                    <q-item-section class="col-6" no-wrap>
+                    <q-item-section>
                       <q-item-label class="text-weight-regular"
                         >{{ item.nombre }}
                         {{ $q.screen.gt.sm ? item.apellido : "" }}</q-item-label
                       >
-                      <q-item-label caption
-                        >{{
-                          item.instrumento === "N/A"
-                            ? item.grupo + " - "
-                            : item.instrumento + " - "
-                        }}
-
-                        {{ item.edad }}
+                      <q-item-label>
+                        <q-virtual-scroll
+                          :items="item.grupo"
+                          virtual-scroll-horizontal
+                          v-slot="{ item, index }"
+                        >
+                          <div :key="index" :class="item.class" class="q-ma-xs">
+                            <q-badge top color="red-6" :label="item" />
+                          </div>
+                        </q-virtual-scroll>
                       </q-item-label>
                     </q-item-section>
                   </q-item>
@@ -182,10 +146,7 @@
           </div>
           <div class="col-6">
             <span class="text-body1">Presentes</span>
-            <div
-              class="q-pa-md row flex justify-center scrollList"
-              ref="chatRef"
-            >
+            <div class="row flex justify-center scrollList" ref="chatRef">
               <div style="width: 100%; max-width: 700px; min-width: 140px">
                 <q-card
                   class="q-ma-xs bg-green-3"
@@ -199,19 +160,21 @@
                         <img src="https://cdn.quasar.dev/img/avatar2.jpg" />
                       </q-avatar>
                     </q-item-section> -->
-                    <q-item-section class="text-weight-regular" no-wrap>
+                    <q-item-section class="text-weight-regular">
                       <q-item-label>
                         {{ item.nombre }}
                         {{ $q.screen.gt.sm ? item.apellido : "" }}</q-item-label
                       >
-                      <q-item-label caption
-                        >{{
-                          item.instrumento === "N/A"
-                            ? item.grupo + " - "
-                            : item.instrumento + " - "
-                        }}
-
-                        {{ item.edad }}
+                      <q-item-label caption>
+                        <q-virtual-scroll
+                          :items="item.grupo"
+                          virtual-scroll-horizontal
+                          v-slot="{ item, index }"
+                        >
+                          <div :key="index" :class="item.class" class="q-ma-xs">
+                            <q-badge top color="green-6" :label="item" />
+                          </div>
+                        </q-virtual-scroll>
                       </q-item-label>
                     </q-item-section>
                   </q-item>
@@ -260,7 +223,6 @@ onMounted(async () => {
 });
 
 const eventEmittedFromChild = (res) => {
-  console.log(res);
   if (res.length != 0) {
     Resultado_Busqueda.value = res.map((e) => ({ ...e, avatar: url.value }));
     return Resultado_Busqueda.value;
@@ -344,13 +306,6 @@ watchEffect(async () => {
         : null
     );
   }
-  // if (text.value.length > 0) {
-  //   Resultado_Busqueda.value = await Buscar_Alumno_Nombre(
-  //     text.value.toLowerCase()
-  //   ).then();
-  // } else {
-  //   return (Resultado_Busqueda.value.length = 0);
-  // }
 });
 
 const Filtrar = async (res) => {
