@@ -5,8 +5,8 @@
         <div class="justify-center flex">
           <div class="col-auto q-mx-sm">
             <q-btn-group>
-              <q-btn color="blue-6" icon="today" @click="visible = !visible" />
-              <q-btn color="blue-6" icon-right="save" @click="guardar" />
+              <q-btn color="red-6" icon="today" @click="visible = !visible" />
+              <q-btn color="red-6" icon-right="save" @click="guardar" />
             </q-btn-group>
           </div>
           <div class="row">
