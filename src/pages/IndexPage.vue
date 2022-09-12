@@ -22,29 +22,44 @@
           class="justify-center flex row"
           style="min-width: 375px; width: 100%"
         >
-          <q-btn-group class="col-auto flex justify-around" rounded>
-            <q-btn
-              flat
-              color="primary"
-              label="Orquesta"
-              @click="Filtrar('Orq')"
-            />
-            <q-btn flat color="primary" label="Coro" @click="Filtrar('Coro')" />
-            <q-btn
-              flat
-              no-wrap
-              color="primary"
-              label="Inicio II"
-              @click="Filtrar('Ini2')"
-            />
-            <q-btn
-              flat
-              no-wrap
-              color="primary"
-              label="Inicio I"
-              @click="Filtrar('Ini1')"
-            />
-          </q-btn-group>
+          <q-btn-toggle
+            class="col-auto flex justify-around"
+            rounded
+            v-model="grupo"
+            spread
+            no-caps
+            toggle-color="primary"
+            color="while"
+            text-color="primary"
+            :options="[
+              { label: 'Orquesta', value: 'Orq' },
+              { label: 'Coro', value: 'Coro' },
+              { label: 'Inicio 2', value: 'Ini2' },
+              { label: 'Inicio 1', value: 'Ini1' },
+            ]"
+          >
+          </q-btn-toggle>
+          <!-- <q-btn
+            flat
+            color="primary"
+            label="Orquesta"
+            @click="Filtrar('Orq')"
+          />
+          <q-btn flat color="primary" label="Coro" @click="Filtrar('Coro')" />
+          <q-btn
+            flat
+            no-wrap
+            color="primary"
+            label="Inicio II"
+            @click="Filtrar('Ini2')"
+          />
+          <q-btn
+            flat
+            no-wrap
+            color="primary"
+            label="Inicio I"
+            @click="Filtrar('Ini1')"
+          /> -->
         </div>
       </div>
 
@@ -54,18 +69,30 @@
           <div style="width: 100%; max-width: 400px; min-width: 100px">
             <div class="q-pa-md">
               <div class="q-gutter-md row items-center">
-                <q-date v-model="date" minimal today-btn mask="YYYY-MM-DD" />
+                <q-date
+                  v-model="date"
+                  :events="events"
+                  minimal
+                  today-btn
+                  mask="YYYY-MM-DD"
+                />
               </div>
             </div>
           </div>
         </div>
       </div>
       <div
-        class="q-px-md flex justify-center text-md text-h6"
+        class="q-px-md flex justify-center"
         v-else
         style="min-width: 375px; width: 100%"
       >
-        {{ date }}
+        <q-btn
+          @click="visible = !visible"
+          flat
+          color="primary"
+          :label="date"
+          size="16px"
+        />
       </div>
 
       <div class="q-pa-xs doc-container" style="min-width: 375px; width: 100%">
@@ -148,7 +175,11 @@
             <span class="text-body1">Presentes</span>
             <div class="row flex justify-center scrollList" ref="chatRef">
               <div style="width: 100%; max-width: 700px; min-width: 140px">
+                <q-card v-if="Presentes.length === 0">
+                  <q-item> No hay registros </q-item>
+                </q-card>
                 <q-card
+                  v-else
                   class="q-ma-xs bg-green-3"
                   v-for="(item, index) in Presentes"
                   :key="index"
@@ -198,12 +229,13 @@ import {
   Buscar_Alumno,
   Mostrar_Listado,
   Buscar_Alumno_Nombre,
-  // Contar_Presentes,
+  Eventos_Calendario,
+  // Contar_Ausentes,
 } from "../firebase";
 import moment from "moment";
 import { ref, reactive, onMounted, watchEffect } from "vue";
 import BuscarAlumnos from "src/components/Buscar-Alumnos.vue";
-
+// import { alumnos, dias, contar } from "../data";
 const $q = useQuasar();
 const store = useCounterStore();
 
@@ -213,13 +245,14 @@ let Presentes = reactive([]);
 let Alumnos = reactive([]);
 let Resultado_Busqueda = ref([]);
 let text = ref("");
+let grupo = ref("");
 let Loading = ref(false);
 let date = ref(moment().format("YYYY-MM-DD"));
 let hoy = ref(moment().format("YYYY-MM-DD"));
 let url = ref("https://placeimg.com/500/300/nature?t=" + Math.random());
-
+let events = ref([]);
 onMounted(async () => {
-  Nuevo_Listado();
+  events.value = await Eventos_Calendario();
 });
 
 const eventEmittedFromChild = (res) => {
@@ -230,7 +263,6 @@ const eventEmittedFromChild = (res) => {
     Resultado_Busqueda.value.length = 0;
   }
 };
-
 const agregar = async (item) => {
   Listado.filter((e) =>
     e.id === item.id
@@ -293,21 +325,6 @@ const resetear = () => {
   Presentes.length = 0;
   Listado.length = 0;
 };
-
-watchEffect(async () => {
-  if (date.value !== hoy.value) {
-    Buscar_Por_Fecha(date.value).then((Data) =>
-      Data !== null
-        ? Procesar_Listado(Data.Data).then(() => {
-            resetear();
-            visible.value = false;
-            return;
-          })
-        : null
-    );
-  }
-});
-
 const Filtrar = async (res) => {
   Alumnos = await Mostrar_Listado().then((elem) => elem.map((e) => e.data()));
   switch (res) {
@@ -317,6 +334,7 @@ const Filtrar = async (res) => {
       );
       Listado.length = 0;
       Listado.push(...Orq);
+      // Presentes.map((j) => Listado.splice(j.id, 1));
       break;
     case "Coro":
       let Coro = Alumnos.filter((elem) => elem.grupo.find((e) => e === "Coro"));
@@ -341,6 +359,20 @@ const Filtrar = async (res) => {
     // Nuevo_Listado();
   }
 };
+watchEffect(async () => {
+  Buscar_Por_Fecha(date.value).then((Data) =>
+    Data !== null
+      ? Procesar_Listado(Data.Data).then(() => {
+          resetear();
+          visible.value = false;
+          return;
+        })
+      : date.value === hoy.value
+      ? Nuevo_Listado() && (visible.value = false)
+      : console.log("No")
+  );
+  Filtrar(grupo.value);
+});
 </script>
 
 <style>

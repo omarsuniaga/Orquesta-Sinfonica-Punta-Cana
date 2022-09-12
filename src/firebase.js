@@ -71,7 +71,6 @@ export const Crear_Alumnos = async (alumno) => {
     console.log(error);
   }
 };
-
 export const Leer_Alumnos = async () => {
   try {
     let alumnosRef = collection(db, "ALUMNOS");
@@ -120,7 +119,6 @@ export const Buscar_Alumno = async (id) => {
   }
   return null;
 };
-
 export const Buscar_Alumno_Nombre = async (text) => {
   if (text !== "") {
     try {
@@ -139,6 +137,13 @@ export const Buscar_Alumno_Nombre = async (text) => {
     }
   }
   return;
+};
+
+export const Eventos_Calendario = async () => {
+  let listadoRef = collection(db, "ASISTENCIAS");
+  let fechas = await getDocs(listadoRef);
+  let eventos = fechas.docs.map((e) => e.data().Fecha.split("-").join("/"));
+  return eventos;
 };
 
 export const Buscar_Por_Fecha = async (Fecha) => {
@@ -252,40 +257,127 @@ export const Mostrar_Listado = async () => {
   }
 };
 
+/**
+ * Que mes buscaremos? //08
+ * Obtener Lista de alumnos
+ * Obtener Lista de Fechas donde el mes sea igual a 08
+ * El [alumno 1] esta en [2022-08-01]? 'SI' esta en [Presentes]? 'SI' Contador.Presentes +1 //1
+ * El [alumno 1] esta en [2022-08-02]? 'SI' esta en [Presentes]? 'NO' Esta en [Ausentes]? 'SI' Contador.Ausentes +1 //1
+ * El [alumno 1] esta en [2022-08-03]? 'SI' esta en [Presentes]? 'SI' Contador.Presentes +1 //2
+ * El [alumno 1] esta en [2022-08-04]? 'SI' esta en [Presentes]? 'NO' Esta en [Ausentes]? 'SI' Contador.Ausentes +1 //2
+ *
+ *
+ *
+ */
 export const Contar_Ausentes = async (mes = "08") => {
   let Ref = collection(db, "ASISTENCIAS");
-  let querySnapshot = await getDocs(Ref);
-  let Listado_Alumnos = [];
-  let Array_Acumulador = [];
+  let Listado_Fechas = await getDocs(Ref);
+
+  // let ausentes = Listado_Fechas.docs.map((elem) => elem.data().Data.ausentes);
+  // let presentes = Listado_Fechas.docs.map((elem) => elem.data().Data.presentes);
+
+  let Listado_Alumnos =
+    (await Mostrar_Listado().then((list_alumno) =>
+      list_alumno.map((alumno) => alumno.id)
+    )) || [];
+
+  //Aqui se almacenan el listado de todos los ausentes y presentes con sus dias e ids
+  let Listado = [];
+
+  let Contador_Ausentes = 0;
+  let Fechas = Listado_Fechas.docs.filter((elem) => {
+    if (elem.data().Fecha.split("-")[1] === mes) {
+      let { ausentes, presentes } = elem.data().Data;
+      console.log(ausentes);
+
+      ausentes.filter((e) => {
+        if (e === Listado_Alumnos[0]) {
+          return Listado.push({
+            ID: Listado_Alumnos[0],
+            ausencias: Contador_Ausentes++,
+          });
+        }
+      });
+      // ausentes.map((e) =>
+      //   e === Listado_Alumnos[0]
+      //     ? Listado.push({
+      //         ID: Listado_Alumnos[0],
+      //         ausencias: Contador_Ausentes++,
+      //       })
+      //     : null
+      // );
+      return;
+    }
+  });
+
+  // Fechas = Fechas.map((e) => console.log(e.data()));
+
+  let Contador_Presentes = 0;
+
+  // Bucles
+  // let Listado_ausentes = Listado_Alumnos.map((elem) =>
+  //   Fechas.map((e) =>
+  //     e === null ? null : console.log(e.Data.ausentes === Listado_Alumnos[0])
+  //   )
+  // );
+
+  // let Listado_ausentes = ausentes.filter((elem) =>
+  //   elem.map((e) =>
+  //     e === Listado_Alumnos[0]
+  //       ? Listado.push({
+  //           ID: Listado_Alumnos[0],
+  //           ausencias: Contador_Ausentes++,
+  //         })
+  //       : null
+  //   )
+  // );
+
+  // let Listado_ausentes = ausentes.filter(
+  //   (
+  //     elem //Arrays x dia
+  //   ) =>
+  //     elem.map(
+  //       (
+  //         e //Listados de los ID de todos los Arrays
+  //       ) =>
+  //         e === Listado_Alumnos[0]
+  //           ? Listado.push({
+  //               ID: Listado_Alumnos[0],
+  //               ausencias: Contador_Ausentes++,
+  //             })
+  //           : null
+  //     )
+  // );
+
   let acum = 0;
   let contador = 0;
   let ref = "";
-  Listado_Alumnos = Mostrar_Listado().then((list_alumno) =>
-    list_alumno.map((alumno) => {
-      return alumno.id;
-    })
-  );
-  let maximo = (await Mostrar_Listado().then()).length;
 
-  let id = await Listado_Alumnos; //Array de id de alumnos
+  // console.log("Lista de Alumnos", Listado_Alumnos[1]);
+  // console.log("Listado_ausentes ", Listado_ausentes);
+  console.log("Fechas", Fechas);
+  console.log("Listado ", Listado);
 
-  while (contador < maximo) {
-    querySnapshot.docs.map((e) => {
-      let Array_Fechas = e.data().Fecha.split("-");
-      if (Array_Fechas[1] === mes) {
-        e.data().Data.ausentes.map((el) =>
-          id[contador] === el
-            ? acum++ && (ref = id[contador])
-            : (ref = id[contador])
-        );
-      }
-    });
-    Array_Acumulador.push({ id: ref, coincidencias: acum });
-    acum = 0;
-    ref = "";
-    contador++;
-  }
-  console.log("Array", Array_Acumulador);
+  // let maximo = (await Mostrar_Listado().then()).length;
+
+  // let id = await Listado_Alumnos; //Array de id de alumnos
+
+  // while (contador < maximo) {
+  //   querySnapshot.docs.map((e) => {
+  //     let Array_Fechas = e.data().Fecha.split("-");
+  //     if (Array_Fechas[1] === mes) {
+  //       e.data().Data.ausentes.map((el) =>
+  //         id[contador] === el
+  //           ? acum++ && (ref = id[contador])
+  //           : (ref = id[contador])
+  //       );
+  //     }
+  //   });
+  //   Array_Acumulador.push({ id: ref, coincidencias: acum });
+  //   acum = 0;
+  //   ref = "";
+  //   contador++;
+  // }
 };
 
 export const Contar_Presentes = async (mes = "08") => {
