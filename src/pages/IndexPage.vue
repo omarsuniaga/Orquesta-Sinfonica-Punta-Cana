@@ -32,10 +32,11 @@
             color="while"
             text-color="primary"
             :options="[
-              { label: 'Orquesta', value: 'Orq' },
-              { label: 'Coro', value: 'Coro' },
-              { label: 'Inicio 2', value: 'Ini2' },
               { label: 'Inicio 1', value: 'Ini1' },
+              { label: 'Inicio 2', value: 'Ini2' },
+              { label: 'Coro', value: 'Coro' },
+              { label: 'Orquesta', value: 'Orq' },
+              { label: 'Todos', value: 'All' },
             ]"
           >
           </q-btn-toggle>
@@ -231,6 +232,9 @@ import {
   Buscar_Alumno_Nombre,
   Eventos_Calendario,
   // Contar_Ausentes,
+  Lista_Ausentes,
+  Lista_Presentes,
+  db,
 } from "../firebase";
 import moment from "moment";
 import { ref, reactive, onMounted, watchEffect } from "vue";
@@ -238,11 +242,10 @@ import BuscarAlumnos from "src/components/Buscar-Alumnos.vue";
 // import { alumnos, dias, contar } from "../data";
 const $q = useQuasar();
 const store = useCounterStore();
-
 let visible = ref(false);
 let Listado = reactive([]);
 let Presentes = reactive([]);
-let Alumnos = reactive([]);
+let Alumnos = Mostrar_Listado().then((elem) => elem.map((e) => e.data()));
 let Resultado_Busqueda = ref([]);
 let text = ref("");
 let grupo = ref("");
@@ -264,6 +267,9 @@ const eventEmittedFromChild = (res) => {
   }
 };
 const agregar = async (item) => {
+  Presentes.find((e) =>
+    e.id === item.id ? Presentes.splice(Presentes.indexOf(e), 1) : null
+  );
   Listado.filter((e) =>
     e.id === item.id
       ? Presentes.push({ ...e, asistencia: true }) &&
@@ -329,34 +335,41 @@ const Filtrar = async (res) => {
   Alumnos = await Mostrar_Listado().then((elem) => elem.map((e) => e.data()));
   switch (res) {
     case "Orq":
+      let res = [];
+
+      //Alumnos de la Orquesta
       let Orq = Alumnos.filter((elem) =>
         elem.grupo.find((e) => e === "Orquesta")
       );
       Listado.length = 0;
-      Listado.push(...Orq);
-      // Presentes.map((j) => Listado.splice(j.id, 1));
+      Listado.push(...Orq.sort((a, b) => a.nombre.localeCompare(b.nombre)));
+
       break;
     case "Coro":
       let Coro = Alumnos.filter((elem) => elem.grupo.find((e) => e === "Coro"));
       Listado.length = 0;
-      Listado.push(...Coro);
+      Listado.push(...Coro.sort((a, b) => a.nombre.localeCompare(b.nombre)));
       break;
     case "Ini2":
       let Ini2 = Alumnos.filter((elem) =>
         elem.grupo.find((e) => e === "Iniciacion 2")
       );
       Listado.length = 0;
-      Listado.push(...Ini2);
+      Listado.push(...Ini2.sort((a, b) => a.nombre.localeCompare(b.nombre)));
       break;
     case "Ini1":
       let Ini1 = Alumnos.filter((elem) =>
         elem.grupo.find((e) => e === "Iniciacion 1")
       );
       Listado.length = 0;
-      Listado.push(...Ini1);
+      Listado.push(...Ini1.sort((a, b) => a.nombre.localeCompare(b.nombre)));
       break;
     default:
-    // Nuevo_Listado();
+    case "All":
+      let Al = await Alumnos;
+      Listado.length = 0;
+      Listado.push(...Al.sort((a, b) => a.nombre.localeCompare(b.nombre)));
+      break;
   }
 };
 watchEffect(async () => {
@@ -368,10 +381,10 @@ watchEffect(async () => {
           return;
         })
       : date.value === hoy.value
-      ? Nuevo_Listado() && (visible.value = false)
+      ? (visible.value = false)
       : console.log("No")
   );
-  Filtrar(grupo.value);
+  await Filtrar(grupo.value);
 });
 </script>
 

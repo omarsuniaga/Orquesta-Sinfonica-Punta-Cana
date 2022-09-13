@@ -36,8 +36,10 @@ const app = initializeApp(firebaseConfig);
 const auth = getAuth(app);
 const db = getFirestore(app);
 const Fecha = moment().format("YYYY/MM/DD");
+let Lista_Ausentes = [];
+let Lista_Presentes = [];
 
-export { auth, db, Fecha };
+export { auth, db, Fecha, Lista_Presentes, Lista_Ausentes };
 
 export const useAuthState = () => {
   const user = ref(null);
@@ -153,6 +155,9 @@ export const Buscar_Por_Fecha = async (Fecha) => {
   if (querySnapshot.empty) {
     return null;
   } else {
+    let { ausentes, presentes } = querySnapshot.docs[0].data().Data;
+    Lista_Presentes = presentes;
+    Lista_Ausentes = ausentes;
     return querySnapshot.docs[0].data();
   }
 };

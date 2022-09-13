@@ -63,7 +63,6 @@
     </q-list>
   </div>
 </template>
-
 <script setup>
 import {
   ref,
