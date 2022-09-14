@@ -243,8 +243,8 @@ import BuscarAlumnos from "src/components/Buscar-Alumnos.vue";
 const $q = useQuasar();
 const store = useCounterStore();
 let visible = ref(false);
-let Listado = reactive([]);
-let Presentes = reactive([]);
+let Listado = ref([]);
+let Presentes = ref([]);
 let Alumnos = Mostrar_Listado().then((elem) => elem.map((e) => e.data()));
 let Resultado_Busqueda = ref([]);
 let text = ref("");
@@ -267,32 +267,38 @@ const eventEmittedFromChild = (res) => {
   }
 };
 const agregar = async (item) => {
-  Presentes.find((e) =>
-    e.id === item.id ? Presentes.splice(Presentes.indexOf(e), 1) : null
-  );
-  Listado.filter((e) =>
+  Presentes.value.find((e) =>
     e.id === item.id
-      ? Presentes.push({ ...e, asistencia: true }) &&
-        Presentes.reverse() &&
-        Listado.splice(Listado.indexOf(e), 1)
+      ? Presentes.value.splice(Presentes.value.indexOf(e), 1)
+      : null
+  );
+  Listado.value.filter((e) =>
+    e.id === item.id
+      ? Presentes.value.push({ ...e, asistencia: true }) &&
+        Presentes.value.reverse() &&
+        Listado.value.splice(Listado.value.indexOf(e), 1)
       : null
   );
 };
 const quitar = (item) => {
-  Presentes.filter((e) =>
+  Presentes.value.filter((e) =>
     e.id === item.id
-      ? Listado.push({ ...e, asistencia: false }) &&
-        Listado.reverse().sort((a, b) => a.nombre.localeCompare(b.nombre)) &&
-        Presentes.splice(Presentes.indexOf(e), 1)
+      ? Listado.value.push({ ...e, asistencia: false }) &&
+        Listado.value
+          .reverse()
+          .sort((a, b) => a.nombre.localeCompare(b.nombre)) &&
+        Presentes.value.splice(Presentes.value.indexOf(e), 1)
       : null
   );
-  Listado = Listado.reverse().sort((a, b) => a.nombre.localeCompare(b.nombre));
+  Listado.value = Listado.value
+    .reverse()
+    .sort((a, b) => a.nombre.localeCompare(b.nombre));
 };
 const guardar = async () => {
   //Se almacena la fecha actual
-  //El listado pasa a ser los ausentes
-  const Array_Ausentes = Listado.map((e) => e.id);
-  const Array_Presentes = Presentes.map((e) => e.id);
+  //El Listado.value pasa a ser los ausentes
+  const Array_Ausentes = Listado.value.map((e) => e.id);
+  const Array_Presentes = Presentes.value.map((e) => e.id);
   const Fecha = date.value.split("/").join("-");
   //Guardar en firebase
   await Asistencia_de_Hoy(Array_Presentes, Array_Ausentes, Fecha);
@@ -301,7 +307,7 @@ const Nuevo_Listado = async () => {
   //extraer de firebase todos los alumnos inscritos
   Alumnos = await Mostrar_Listado();
   Alumnos.map((e) => {
-    Listado.push({ ...e.data(), asistencia: false });
+    Listado.value.push({ ...e.data(), asistencia: false });
   });
 };
 //Recibe la data, y busca el alumno segun su id y lo muestra en el listado
@@ -310,15 +316,19 @@ const Procesar_Listado = async (Data) => {
   try {
     presentes.map((e) => {
       Buscar_Alumno(e).then((doc) => {
-        Presentes.push({ ...doc, id: doc.id, asistencia: true });
-        Presentes.reverse().sort((a, b) => a.nombre.localeCompare(b.nombre));
+        Presentes.value.push({ ...doc, id: doc.id, asistencia: true });
+        Presentes.value
+          .reverse()
+          .sort((a, b) => a.nombre.localeCompare(b.nombre));
         return;
       });
     });
     ausentes.map((e) => {
       Buscar_Alumno(e).then((doc) => {
-        Listado.push({ ...doc, id: doc.id, asistencia: false });
-        Listado.reverse().sort((a, b) => a.nombre.localeCompare(b.nombre));
+        Listado.value.push({ ...doc, id: doc.id, asistencia: false });
+        Listado.value
+          .reverse()
+          .sort((a, b) => a.nombre.localeCompare(b.nombre));
         return;
       });
     });
@@ -328,47 +338,58 @@ const Procesar_Listado = async (Data) => {
 };
 //Limpia el Lienzo de la pantalla
 const resetear = () => {
-  Presentes.length = 0;
-  Listado.length = 0;
+  Presentes.value.length = 0;
+  Listado.value.length = 0;
+};
+const clasificacion = (opcion) => {
+  Listado.value.length = 0;
+  if (Presentes.value.length > 0) {
+    Presentes.value.map((el) =>
+      opcion.filter((e, j) => (el.id === e.id ? opcion.splice(j, 1) : null))
+    );
+    Listado.value.length = 0;
+    Listado.value.push(
+      ...opcion.sort((a, b) => a.nombre.localeCompare(b.nombre))
+    );
+  } else {
+    Listado.value.length = 0;
+    Listado.value = opcion.sort((a, b) => a.nombre.localeCompare(b.nombre));
+  }
 };
 const Filtrar = async (res) => {
   Alumnos = await Mostrar_Listado().then((elem) => elem.map((e) => e.data()));
   switch (res) {
     case "Orq":
-      let res = [];
-
       //Alumnos de la Orquesta
-      let Orq = Alumnos.filter((elem) =>
+      let Orq = await Alumnos.filter((elem) =>
         elem.grupo.find((e) => e === "Orquesta")
       );
-      Listado.length = 0;
-      Listado.push(...Orq.sort((a, b) => a.nombre.localeCompare(b.nombre)));
-
+      clasificacion(Orq);
       break;
     case "Coro":
-      let Coro = Alumnos.filter((elem) => elem.grupo.find((e) => e === "Coro"));
-      Listado.length = 0;
-      Listado.push(...Coro.sort((a, b) => a.nombre.localeCompare(b.nombre)));
+      Listado.value.length = 0;
+      let Coro = await Alumnos.filter((elem) =>
+        elem.grupo.find((e) => e === "Coro")
+      );
+      clasificacion(Coro);
       break;
     case "Ini2":
-      let Ini2 = Alumnos.filter((elem) =>
+      Listado.value.length = 0;
+      let Ini2 = await Alumnos.filter((elem) =>
         elem.grupo.find((e) => e === "Iniciacion 2")
       );
-      Listado.length = 0;
-      Listado.push(...Ini2.sort((a, b) => a.nombre.localeCompare(b.nombre)));
+      clasificacion(Ini2);
       break;
     case "Ini1":
-      let Ini1 = Alumnos.filter((elem) =>
+      Listado.value.length = 0;
+      let Ini1 = await Alumnos.filter((elem) =>
         elem.grupo.find((e) => e === "Iniciacion 1")
       );
-      Listado.length = 0;
-      Listado.push(...Ini1.sort((a, b) => a.nombre.localeCompare(b.nombre)));
+      clasificacion(Ini1);
       break;
     default:
     case "All":
-      let Al = await Alumnos;
-      Listado.length = 0;
-      Listado.push(...Al.sort((a, b) => a.nombre.localeCompare(b.nombre)));
+      date.value === hoy.value ? clasificacion(Alumnos) : null;
       break;
   }
 };
@@ -382,7 +403,7 @@ watchEffect(async () => {
         })
       : date.value === hoy.value
       ? (visible.value = false)
-      : console.log("No")
+      : null
   );
   await Filtrar(grupo.value);
 });
