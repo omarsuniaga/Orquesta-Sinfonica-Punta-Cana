@@ -40,27 +40,6 @@
             ]"
           >
           </q-btn-toggle>
-          <!-- <q-btn
-            flat
-            color="primary"
-            label="Orquesta"
-            @click="Filtrar('Orq')"
-          />
-          <q-btn flat color="primary" label="Coro" @click="Filtrar('Coro')" />
-          <q-btn
-            flat
-            no-wrap
-            color="primary"
-            label="Inicio II"
-            @click="Filtrar('Ini2')"
-          />
-          <q-btn
-            flat
-            no-wrap
-            color="primary"
-            label="Inicio I"
-            @click="Filtrar('Ini1')"
-          /> -->
         </div>
       </div>
 
@@ -94,6 +73,16 @@
           :label="date"
           size="16px"
         />
+        <q-btn
+          size="12px"
+          color="primary"
+          rounded
+          @click="Nuevo_Listado()"
+          v-if="date !== hoy"
+          flat
+        >
+          Hoy
+        </q-btn>
       </div>
 
       <div class="q-pa-xs doc-container" style="min-width: 375px; width: 100%">
@@ -229,17 +218,12 @@ import {
   Buscar_Por_Fecha,
   Buscar_Alumno,
   Mostrar_Listado,
-  Buscar_Alumno_Nombre,
   Eventos_Calendario,
   // Contar_Ausentes,
-  Lista_Ausentes,
-  Lista_Presentes,
-  db,
 } from "../firebase";
 import moment from "moment";
 import { ref, reactive, onMounted, watchEffect } from "vue";
 import BuscarAlumnos from "src/components/Buscar-Alumnos.vue";
-// import { alumnos, dias, contar } from "../data";
 const $q = useQuasar();
 const store = useCounterStore();
 let visible = ref(false);
@@ -257,7 +241,6 @@ let events = ref([]);
 onMounted(async () => {
   events.value = await Eventos_Calendario();
 });
-
 const eventEmittedFromChild = (res) => {
   if (res.length != 0) {
     Resultado_Busqueda.value = res.map((e) => ({ ...e, avatar: url.value }));
@@ -304,13 +287,10 @@ const guardar = async () => {
   await Asistencia_de_Hoy(Array_Presentes, Array_Ausentes, Fecha);
 };
 const Nuevo_Listado = async () => {
-  //extraer de firebase todos los alumnos inscritos
-  Alumnos = await Mostrar_Listado();
-  Alumnos.map((e) => {
-    Listado.value.push({ ...e.data(), asistencia: false });
-  });
+  resetear();
+  date.value = hoy.value;
+  Buscar();
 };
-//Recibe la data, y busca el alumno segun su id y lo muestra en el listado
 const Procesar_Listado = async (Data) => {
   let { presentes, ausentes } = Data;
   try {
@@ -336,7 +316,6 @@ const Procesar_Listado = async (Data) => {
     console.log(error);
   }
 };
-//Limpia el Lienzo de la pantalla
 const resetear = () => {
   Presentes.value.length = 0;
   Listado.value.length = 0;
@@ -358,42 +337,44 @@ const clasificacion = (opcion) => {
 };
 const Filtrar = async (res) => {
   Alumnos = await Mostrar_Listado().then((elem) => elem.map((e) => e.data()));
-  switch (res) {
-    case "Orq":
-      //Alumnos de la Orquesta
-      let Orq = await Alumnos.filter((elem) =>
-        elem.grupo.find((e) => e === "Orquesta")
-      );
-      clasificacion(Orq);
-      break;
-    case "Coro":
-      Listado.value.length = 0;
-      let Coro = await Alumnos.filter((elem) =>
-        elem.grupo.find((e) => e === "Coro")
-      );
-      clasificacion(Coro);
-      break;
-    case "Ini2":
-      Listado.value.length = 0;
-      let Ini2 = await Alumnos.filter((elem) =>
-        elem.grupo.find((e) => e === "Iniciacion 2")
-      );
-      clasificacion(Ini2);
-      break;
-    case "Ini1":
-      Listado.value.length = 0;
-      let Ini1 = await Alumnos.filter((elem) =>
-        elem.grupo.find((e) => e === "Iniciacion 1")
-      );
-      clasificacion(Ini1);
-      break;
-    default:
-    case "All":
-      date.value === hoy.value ? clasificacion(Alumnos) : null;
-      break;
+  if (date.value === hoy.value) {
+    switch (res) {
+      case "Orq":
+        //Alumnos de la Orquesta
+        let Orq = await Alumnos.filter((elem) =>
+          elem.grupo.find((e) => e === "Orquesta")
+        );
+        clasificacion(Orq);
+        break;
+      case "Coro":
+        Listado.value.length = 0;
+        let Coro = await Alumnos.filter((elem) =>
+          elem.grupo.find((e) => e === "Coro")
+        );
+        clasificacion(Coro);
+        break;
+      case "Ini2":
+        Listado.value.length = 0;
+        let Ini2 = await Alumnos.filter((elem) =>
+          elem.grupo.find((e) => e === "Iniciacion 2")
+        );
+        clasificacion(Ini2);
+        break;
+      case "Ini1":
+        Listado.value.length = 0;
+        let Ini1 = await Alumnos.filter((elem) =>
+          elem.grupo.find((e) => e === "Iniciacion 1")
+        );
+        clasificacion(Ini1);
+        break;
+      default:
+      case "All":
+        clasificacion(Alumnos);
+        break;
+    }
   }
 };
-watchEffect(async () => {
+const Buscar = async () => {
   Buscar_Por_Fecha(date.value).then((Data) =>
     Data !== null
       ? Procesar_Listado(Data.Data).then(() => {
@@ -405,6 +386,9 @@ watchEffect(async () => {
       ? (visible.value = false)
       : null
   );
+};
+watchEffect(async () => {
+  date.value ? Buscar() : null;
   await Filtrar(grupo.value);
 });
 </script>
