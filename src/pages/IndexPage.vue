@@ -122,7 +122,7 @@
                     <q-item-section>
                       <q-item-label class="text-weight-regular"
                         >{{ item.nombre }}
-                        {{ $q.screen.gt.sm ? item.apellido : "" }}</q-item-label
+                        {{ $q.screen.gt.xs ? item.apellido : "" }}</q-item-label
                       >
                       <q-item-label>
                         <q-virtual-scroll
@@ -153,7 +153,7 @@
                     <q-item-section>
                       <q-item-label class="text-weight-regular"
                         >{{ item.nombre }}
-                        {{ $q.screen.gt.sm ? item.apellido : "" }}</q-item-label
+                        {{ $q.screen.gt.xs ? item.apellido : "" }}</q-item-label
                       >
                       <q-item-label>
                         <q-virtual-scroll
@@ -195,7 +195,7 @@
                     <q-item-section class="text-weight-regular">
                       <q-item-label>
                         {{ item.nombre }}
-                        {{ $q.screen.gt.sm ? item.apellido : "" }}</q-item-label
+                        {{ $q.screen.gt.xs ? item.apellido : "" }}</q-item-label
                       >
                       <q-item-label caption>
                         <q-virtual-scroll
