@@ -11,8 +11,33 @@
         style="min-width: 360px; width: 100%"
         @onFire="eventEmittedFromChild"
       ></BuscarAlumnos>
+      <!-- Filtro -->
+      <div
+        class="justify-center q-my-sm flex row"
+        style="min-width: 375px; width: 100%"
+      >
+        <q-btn-toggle
+          class="col-auto flex justify-around"
+          rounded
+          v-model="grupo"
+          spread
+          no-caps
+          toggle-color="primary"
+          color="while"
+          text-color="primary"
+          :options="[
+            { label: 'Inicio 1', value: 'Ini1' },
+            { label: 'Inicio 2', value: 'Ini2' },
+            { label: 'Coro', value: 'Coro' },
+            { label: 'Orquesta', value: 'Orq' },
+            { label: 'Todos', value: 'All' },
+          ]"
+        >
+        </q-btn-toggle>
+      </div>
       <q-separator />
-      <div v-for="(card, i) in cards" :key="i" class="items">
+
+      <div v-for="(card, i) in Listado" :key="i" class="items">
         <q-slide-item
           :right-color="rightColor"
           @right="$router.push('/Detalles_Alumnos/' + card.id)"
@@ -21,18 +46,6 @@
           <template v-slot:right> Perfil </template>
 
           <q-item class="flex justify-between row">
-            <q-item-section avatar>
-              <q-avatar>
-                <img
-                  :src="card.avatar"
-                  style="height: 240px; width: 240px"
-                  draggable="false"
-                />
-                <template v-slot:loading>
-                  <q-spinner-gears color="white" />
-                </template>
-              </q-avatar>
-            </q-item-section>
             <q-item-section>
               <q-item-label class="text-weight-medium">
                 <span>{{ card.nombre }} {{ card.apellido }}</span>
@@ -58,43 +71,83 @@
             </q-item-section>
           </q-item>
         </q-slide-item>
+        <q-separator />
       </div>
       <!-- Card del alumno -->
     </q-list>
   </div>
 </template>
 <script setup>
-import {
-  ref,
-  onMounted,
-  onBeforeUnmount,
-  computed,
-  watchEffect,
-  inject,
-} from "vue";
+import { ref, onMounted, onBeforeUnmount, computed, watchEffect } from "vue";
 import { Mostrar_Listado } from "../firebase";
 import { useQuasar } from "quasar";
 import BuscarAlumnos from "../components/Buscar-Alumnos.vue";
 const $q = useQuasar();
-let Resultado_Busqueda = inject("Resultado_Busqueda");
-let cards = ref([]);
+let Listado = ref([]);
 let text = ref("");
 let timer;
 let url = ref("https://placeimg.com/500/300/nature?t=" + Math.random());
+let grupo = ref("");
+let Alumnos = ref("");
 
 const eventEmittedFromChild = (res) => {
   if (res.length != 0) {
-    cards.value = res.map((e) => ({ ...e, avatar: url.value }));
-    return cards.value;
+    Listado.value = res.map((e) => ({ ...e, avatar: url.value }));
+    return Listado.value;
   } else {
     return cargar_alumnos();
   }
 };
 const cargar_alumnos = async () => {
-  cards.value = await Mostrar_Listado().then((elem) =>
+  Listado.value = await Mostrar_Listado().then((elem) =>
     elem.map((e) => ({ ...e.data(), avatar: url.value }))
   );
 };
+
+const Filtrar = async (res) => {
+  Alumnos.value = await Mostrar_Listado().then((elem) =>
+    elem.map((e) => e.data()).sort((a, b) => a.nombre.localeCompare(b.nombre))
+  );
+  switch (res) {
+    case "Orq":
+      //Alumnos de la Orquesta
+      Listado.value.length = 0;
+      Listado.value = await Alumnos.value
+        .filter((elem) => elem.grupo.find((e) => e === "Orquesta"))
+        .sort((a, b) => a.nombre.localeCompare(b.nombre));
+
+      break;
+    case "Coro":
+      Listado.value.length = 0;
+      Listado.value = await Alumnos.value
+        .filter((elem) => elem.grupo.find((e) => e === "Coro"))
+        .sort((a, b) => a.nombre.localeCompare(b.nombre));
+      break;
+    case "Ini2":
+      Listado.value.length = 0;
+      Listado.value = await Alumnos.value
+        .filter((elem) => elem.grupo.find((e) => e === "Iniciacion 2"))
+        .sort((a, b) => a.nombre.localeCompare(b.nombre));
+      break;
+    case "Ini1":
+      Listado.value.length = 0;
+      Listado.value = await Alumnos.value
+        .filter((elem) => elem.grupo.find((e) => e === "Iniciacion 1"))
+        .sort((a, b) => a.nombre.localeCompare(b.nombre));
+      break;
+    default:
+    case "All":
+      Listado.value.length = 0;
+      Listado.value = await Mostrar_Listado().then((elem) =>
+        elem
+          .map((e) => e.data())
+          .sort((a, b) => a.nombre.localeCompare(b.nombre))
+      );
+
+      break;
+  }
+};
+
 onMounted(async () => {
   await cargar_alumnos();
 });
@@ -119,4 +172,7 @@ const onSlide = ({ side, ratio, isReset }) => {
     isReset === true ? 200 : void 0
   );
 };
+watchEffect(async () => {
+  await Filtrar(grupo.value);
+});
 </script>

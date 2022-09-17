@@ -189,7 +189,7 @@
             dense
             flat
             icon="send"
-            @click="guardar(alumno)"
+            @click="guardar(alumno) && $router.push('/Perfil_Alumnos')"
             :disable="editable"
           />
         </div>
@@ -226,35 +226,15 @@
       </div>
     </q-list>
     <q-separator />
-    <q-timeline color="secondary">
-      <q-timeline-entry heading body="Linea de Tiempo" />
-
-      <q-timeline-entry
-        title="Primer Registro del Alumno"
-        :subtitle="alumno.registro"
-        avatar="https://cdn.quasar.dev/img/avatar5.jpg"
-        :body="body"
-      />
-
-      <q-timeline-entry
-        title="Event Title"
-        subtitle="February 21, 1986"
-        icon="remove_circle"
-        :body="body"
-      />
-      <q-timeline-entry
-        title="Event Title"
-        subtitle="February 22, 1986"
-        color="orange"
-        icon="done_all"
-        :body="body"
-      />
-    </q-timeline>
+    <ArbolHabilidades />
+    <LineaTiempo />
   </div>
 </template>
 
 <script setup>
 import { ref, reactive, onMounted } from "vue";
+import ArbolHabilidadesVue from "src/components/Arbol-Habilidades.vue";
+import LineaTiempo from "src/components/Linea-Tiempo.vue";
 import {
   Buscar_Alumno,
   Actualizar_Alumno,
@@ -264,11 +244,12 @@ import {
 import { useRouter } from "vue-router";
 import { Dialog, useQuasar } from "quasar";
 import router from "src/router";
+import ArbolHabilidades from "src/components/Arbol-Habilidades.vue";
 const $q = reactive(useQuasar());
 const url = ref("https://placeimg.com/500/300/nature?t=" + Math.random());
 const id = useRouter().currentRoute._rawValue.params.id;
 const alumno = reactive({});
-let editable = ref(true);
+let editable = ref(false);
 let model = ref(null);
 let options = ref(["Orquesta", "Coro", "Iniciacion 2", "Iniciacion 1"]);
 onMounted(() => {

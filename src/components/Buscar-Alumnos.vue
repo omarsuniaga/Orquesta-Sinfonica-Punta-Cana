@@ -26,8 +26,10 @@ import { Buscar_Alumno_Nombre } from "../firebase";
 const props = defineProps({
   text: String,
 });
+
 let text = ref("");
 let res = ref([]);
+
 const emit = defineEmits(["onFire"]);
 emit("onFire", res.value);
 const Resetear = () => {
@@ -38,7 +40,8 @@ const Buscar = async () => {
   res.value = await Buscar_Alumno_Nombre(text.value.toLowerCase()).then();
   emit("onFire", res.value);
 };
-watchEffect(() => {
+
+watchEffect(async () => {
   if (text.value.length > 0) {
     Buscar();
   }

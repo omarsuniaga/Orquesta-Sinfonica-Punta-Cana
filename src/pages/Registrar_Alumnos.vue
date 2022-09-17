@@ -16,22 +16,27 @@
           :done="step > 1"
         >
           <q-input
-            class="col-5"
+            class="col-5 q-mb-md"
             filled
             lazy-rules
             v-model="alumno.nombre"
             label="Nombre"
             placeholder="Nombre Completo"
-            :rules="[(val) => (val && val.length > 0) || 'Campo Obligatorio']"
+            autofocus
           />
           <q-input
-            class="col-5"
+            class="col-5 q-mb-md"
             filled
             lazy-rules
             v-model="alumno.apellido"
             label="Apellido"
             placeholder="Apellidos Completos"
-            :rules="[(val) => (val && val.length > 0) || 'Campo Obligatorio']"
+          />
+          <q-btn
+            class="col-5 q-mb-md"
+            @click="registrarAlumno() && $router.push('/Perfil_Alumnos')"
+            color="secondary"
+            label="Registrar"
           />
           <q-input
             filled
@@ -251,7 +256,7 @@ const alumno = ref({
   edad: "",
   cedula: "",
   tlf_alumno: "",
-  grupo: ["Teoria y Solfeo"],
+  grupo: ["Iniciacion 1"],
   colegio_trabajo: "",
   tlf_colegio_trabajo: "",
   direccion_colegio_trabajo: "",
@@ -271,32 +276,36 @@ const alumno = ref({
   id: Date.now().toString(),
 });
 const $q = useQuasar();
-const onSubmit = () => {
-  if (alumno.value.termino1.value !== true) {
-    $q.notify({
-      color: "red-5",
-      textColor: "white",
-      icon: "warning",
-      message: "You need to accept the license and terms first",
-    });
-  } else {
-    $q.notify({
-      color: "green-4",
-      textColor: "white",
-      icon: "cloud_done",
-      message: "Submitted",
-    });
-  }
-};
-
-const onReset = () => {};
-//Registrar alumnos en firebase
-
 const registrarAlumno = async () => {
   try {
-    return await Crear_Alumnos(alumno.value);
+    return await Crear_Alumnos(alumno.value)
+      .then(() => {
+        $q.notify({
+          message: "Alumno Guardado",
+          color: "green-4",
+          textColor: "white",
+          icon: "cloud_done",
+        });
+      })
+      .then(onReset())
+      .catch((error) => {
+        $q.notify({
+          message: "Hubo un error, Comprueba que los campos",
+          color: "red-4",
+          textColor: "white",
+          icon: "cloud_done",
+        });
+      });
   } catch (error) {
     console.log(error);
   }
 };
+const onSubmit = () => {
+  registrarAlumno();
+};
+const onReset = () => {
+  alumno.value.nombre = null;
+  alumno.value.apellido = null;
+};
+//Registrar alumnos en firebase
 </script>

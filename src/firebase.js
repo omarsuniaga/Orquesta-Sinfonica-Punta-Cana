@@ -68,7 +68,7 @@ export const Crear_Alumnos = async (alumno) => {
     const docRef = await setDoc(
       doc(db, "ALUMNOS", alumno.id.toString()),
       alumno
-    ).then(() => alert("Registrado con Exito"));
+    ).then();
   } catch (error) {
     console.log(error);
   }
@@ -262,6 +262,16 @@ export const Mostrar_Listado = async () => {
   }
 };
 
+export const Mostrar_todo = async () => {
+  try {
+    let asistenciasRef = collection(db, "ASISTENCIAS");
+    let q = query(asistenciasRef);
+    let asistencia = await getDocs(q);
+    return asistencia.docs;
+  } catch (error) {
+    console.log(error);
+  }
+};
 /**
  * Que mes buscaremos? //08
  * Obtener Lista de alumnos
@@ -421,3 +431,6 @@ export const Contar_Presentes = async (mes = "08") => {
     console.log("Agrupar_Presentes", Agrupar_Presentes);
   });
 };
+
+// DATOS AL LOCALSTORAGE
+//swiche para alternar entre el localstorage y firebase
