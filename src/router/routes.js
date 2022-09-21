@@ -33,6 +33,16 @@ const routes = [
     ],
     // meta: { requiresAuth: true },
   },
+  {
+    path: "/Registrar-Progresos/:id",
+    name: "Registrar-Progresos",
+    props: true,
+    component: () => import("layouts/MainLayout.vue"),
+    children: [
+      { path: "", component: () => import("pages/Registrar-progresos.vue") },
+    ],
+    // meta: { requiresAuth: true },
+  },
 
   {
     path: "/Login",

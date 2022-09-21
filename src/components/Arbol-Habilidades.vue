@@ -1,57 +1,70 @@
 <template>
-  <div class="q-pa-md q-gutter-sm">
-    <q-tree
-      :nodes="simple"
-      dense
-      node-key="label"
-      v-model:expanded="expanded"
-    />
+  <div class="container">
+    <div class="q-pa-md">
+      <q-tree
+        :nodes="simple"
+        dense
+        node-key="label"
+        v-model:expanded="expanded"
+      />
+    </div>
   </div>
 </template>
 
 <script>
 import { ref } from "vue";
+import {
+  Buscar_Por_Fecha,
+  Buscar_Alumno,
+  Mostrar_Listado,
+  Eventos_Calendario,
+  Mostrar_todo,
+  Lista_Ausentes,
+  Lista_Presentes,
+} from "../firebase";
 
 export default {
   setup() {
     return {
-      expanded: ref([
-        "Satisfied customers (with avatar)",
-        "Good food (with icon)",
-      ]),
+      expanded: ref(["Evolucion del Alumno", "Repertorio"]),
 
       simple: [
         {
-          label: "Satisfied customers (with avatar)",
-          avatar: "https://cdn.quasar.dev/img/boy-avatar.png",
+          label: "Evolucion del Alumno",
           children: [
             {
-              label: "Good food (with icon)",
-              icon: "restaurant_menu",
+              label: "Repertorio",
+              icon: "description",
               children: [
-                { label: "Quality ingredients" },
-                { label: "Good recipe" },
+                { label: "El Merengue del Primero" },
+                { label: "Happy Blues" },
+                { label: "Chorale" },
+                { label: "Minuett" },
+                { label: "Himno de la Alegria" },
               ],
             },
             {
-              label: "Good service (disabled node with icon)",
-              icon: "room_service",
-              disabled: true,
+              label: "Escalas",
+              icon: "soap",
               children: [
-                { label: "Prompt attention" },
-                { label: "Professional waiter" },
+                { label: "Do Mayor - Dos 8vas" },
+                { label: "Re Mayor - Dos 8vas" },
+                { label: "Sol Mayor - Dos 8vas" },
+                { label: "La Mayor - Dos 8vas" },
               ],
             },
             {
-              label: "Pleasant surroundings (with icon)",
-              icon: "photo",
+              label: "Teoria y  Solfeo",
+              icon: "ballot",
               children: [
-                {
-                  label: "Happy atmosphere (with image)",
-                  img: "https://cdn.quasar.dev/img/logo_calendar_128px.png",
-                },
-                { label: "Good table presentation" },
-                { label: "Pleasing decor" },
+                { label: "Lectura en Clave de Fa - Iniciado" },
+                { label: "Lectura a primera vista - En proceso" },
+              ],
+            },
+            {
+              label: "Metodos / Estudios / Conciertos",
+              children: [
+                { label: "Aun sin repertorio de estudios individuales" },
               ],
             },
           ],

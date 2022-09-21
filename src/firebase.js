@@ -242,15 +242,15 @@ export const Iniciar_Automaticamente = () => {
   new Promise((resolve, reject) => onAuthStateChanged(auth, resolve, reject));
 };
 
-//Extraer_Data_Alumno
-//Extraer_data_asistencias
-//Buscar_asistencias_por_fechas
-/**
- * GUARDAR ASISTENCIAS
- * ORDENAR ASISTENCIAS
- * GRAFICAR ASISTENCIAS
- */
-//GUARDA LA ASISTENCIA DEL DIA
+export const Crear_Progresos = async (alumno) => {
+  try {
+    const Ref = doc(db, "ORQUESTA", alumno.id);
+    await setDoc(Ref, alumno);
+  } catch (error) {
+    console.log(error);
+  }
+};
+
 export const Asistencia_de_Hoy = async (presentes, ausentes, Fecha_de_Hoy) => {
   try {
     await setDoc(doc(db, "ASISTENCIAS", Fecha_de_Hoy), {
@@ -265,7 +265,6 @@ export const Asistencia_de_Hoy = async (presentes, ausentes, Fecha_de_Hoy) => {
 
 export const Mostrar_Listado = async () => {
   try {
-    //Mostrar listado de Alumnos.
     let listadoRef = collection(db, "ALUMNOS");
     let q = query(listadoRef);
     let querySnapshot = await getDocs(q);
@@ -298,74 +297,8 @@ export const Mostrar_todo = async () => {
  *
  */
 
-let reporte1 = [];
-
-const Apariciones2 = (array, alumno) => {
-  let count = array.filter((el) => el === alumno ?? count++);
-  return count.length;
-};
-
 export const Contar_Ausentes = async (mes = "08") => {
   let Ref = collection(db, "ASISTENCIAS");
   let Listado_Fechas = await getDocs(Ref);
-  let Listado = [];
-  let Contador_Ausentes = 0;
-
-  let Fechas = Listado_Fechas.docs.filter((elem) => {
-    if (elem.data().Fecha.split("-")[1] === mes) {
-      let { ausentes, presentes } = elem.data().Data;
-      ausentes.map((el) => reporte1.push(el));
-      let n = reporte1.sort((a, b) => a - b);
-      return n;
-    }
-  });
-  for (let i = 0; i <= reporte1.length; i++) {
-    console.log(
-      "Para: ",
-      reporte1[i],
-      " hay: ",
-      Apariciones2(reporte1, reporte1[i]),
-      "Apariciones"
-    );
-  }
+  return Listado_Fechas;
 };
-
-export const Contar_Presentes = async (mes = "08") => {
-  //Pedir listado de Alumnos INSCRITOS
-  let lista_alumnos = await Mostrar_Listado().then((elem) =>
-    elem.map((el) => el.id)
-  );
-  let Agrupar_Presentes = [];
-  let fechas = [];
-  let contador = 0;
-  let acum = 0;
-  let identificador = "";
-  let ref = await collection(db, "ASISTENCIAS");
-  let querySnapshot = await getDocs(ref);
-  let id = lista_alumnos;
-
-  //Empezar Bucle
-  querySnapshot.docs.map((e) => {
-    let Array_Fechas = e.data().Fecha.split("-");
-    if (Array_Fechas[1] === mes) {
-      e.data().Data.presentes.filter((el) => {
-        console.log(el);
-        // id.map((elem) => elem === el)
-        //   ? (identificador = el) && acum++ && console.log(el)
-        //   : console.log("Nada...", el);
-        return;
-      });
-      contador++;
-    }
-    Agrupar_Presentes.push({
-      id: identificador,
-      coincidencias: acum,
-    });
-    acum = 0;
-    identificador = "";
-    console.log("Agrupar_Presentes", Agrupar_Presentes);
-  });
-};
-
-// DATOS AL LOCALSTORAGE
-//swiche para alternar entre el localstorage y firebase

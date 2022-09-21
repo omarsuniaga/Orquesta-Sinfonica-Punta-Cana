@@ -207,16 +207,7 @@
           </div>
         </div>
       </div>
-      <q-table
-        style="height: 400px"
-        title="Asistencias"
-        :rows="rows"
-        :columns="columns"
-        row-key="index"
-        virtual-scroll
-        v-model:pagination="pagination"
-        :rows-per-page-options="[0]"
-      />
+      <HistorialAsistencias />
       <router-view />
     </q-page-container>
   </q-layout>
@@ -231,17 +222,14 @@ import {
   Buscar_Alumno,
   Mostrar_Listado,
   Eventos_Calendario,
-  Mostrar_todo,
-  Contar_Ausentes,
   Lista_Ausentes,
   Lista_Presentes,
 } from "../firebase";
 import moment from "moment";
 import { ref, onMounted, watchEffect } from "vue";
-import BuscarAlumnos from "src/components/Buscar-Alumnos.vue";
+import HistorialAsistencias from "src/components/Historial-Asistencias.vue";
 const $q = useQuasar();
 const store = useCounterStore();
-let TODO = Mostrar_todo().then((elem) => elem.map((e) => e.data()));
 let Alumnos = Mostrar_Listado().then((elem) => elem.map((e) => e.data()));
 let date = ref(moment().format("YYYY-MM-DD"));
 let hoy = ref(moment().format("YYYY-MM-DD"));
@@ -254,69 +242,8 @@ let text = ref("");
 let Loading = ref(false);
 let visible = ref(false);
 let url = ref("https://placeimg.com/500/300/nature?t=" + Math.random());
-let pagination = ref({
-  rowsPerPage: 0,
-});
-const columns = [
-  {
-    name: "name",
-    required: true,
-    label: "Grupo",
-    align: "left",
-    field: (row) => row.name,
-    format: (val) => `${val}`,
-    sortable: true,
-  },
-  {
-    name: "Asistencias",
-    align: "center",
-    label: "Asistencias",
-    field: "Asistencias",
-    sortable: true,
-  },
-  {
-    name: "Ausentes",
-    label: "Ausentes",
-    field: "Ausentes",
-    sortable: true,
-  },
-  {
-    name: "Inscritos",
-    label: "Inscritos",
-    sortable: true,
-    field: (row) => row.Asistencias + row.Ausentes,
-    format: (val) => `${val}`,
-  },
-];
-const seed = [
-  {
-    name: "Orquesta",
-    Asistencias: 19,
-    Ausentes: 60,
-  },
-  {
-    name: "Coro",
-    Asistencias: 36,
-    Ausentes: 90,
-  },
-  {
-    name: "Inicacion 2",
-    Asistencias: 26,
-    Ausentes: 10,
-  },
-  {
-    name: "Inicacion 1",
-    Asistencias: 22,
-    Ausentes: 16,
-  },
-];
-let rows = [];
-rows = rows.concat(seed.slice(0).map((r) => ({ ...r })));
 
 onMounted(async () => {
-  // Contar_Ausentes();
-  // console.log(await TODO);
-  console.log(await Buscar_Por_Fecha(date.value).then((e) => e));
   events.value = await Eventos_Calendario();
 });
 const eventEmittedFromChild = (res) => {
@@ -363,23 +290,7 @@ const Nuevo_Listado = async () => {
   Buscar();
 };
 const Procesar_Listado = async (Data) => {
-  let { presentes, ausentes } = Data;
-  try {
-    // presentes.map((e) => {
-    //   Buscar_Alumno(e).then((doc) => {
-    //     Presentes.value.push({ ...doc, asistencia: true });
-    //     return;
-    //   });
-    // });
-    // ausentes.map((e) => {
-    //   Buscar_Alumno(e).then((doc) => {
-    //     Listado.value.push({ ...doc, asistencia: false });
-    //     return;
-    //   });
-    // });
-  } catch (error) {
-    console.log(error);
-  }
+  return console.log(Data);
 };
 const resetear = () => {
   Presentes.value.length = 0;
