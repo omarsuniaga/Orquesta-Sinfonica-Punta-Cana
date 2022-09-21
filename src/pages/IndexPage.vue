@@ -27,10 +27,12 @@
             rounded
             v-model="grupo"
             spread
+            stack
             no-caps
             toggle-color="primary"
             color="while"
             text-color="primary"
+            no-wrap
             :options="[
               { label: 'Inicio 1', value: 'Ini1' },
               { label: 'Inicio 2', value: 'Ini2' },
@@ -205,6 +207,16 @@
           </div>
         </div>
       </div>
+      <q-table
+        style="height: 400px"
+        title="Asistencias"
+        :rows="rows"
+        :columns="columns"
+        row-key="index"
+        virtual-scroll
+        v-model:pagination="pagination"
+        :rows-per-page-options="[0]"
+      />
       <router-view />
     </q-page-container>
   </q-layout>
@@ -220,29 +232,91 @@ import {
   Mostrar_Listado,
   Eventos_Calendario,
   Mostrar_todo,
-  // Contar_Ausentes,
+  Contar_Ausentes,
+  Lista_Ausentes,
+  Lista_Presentes,
 } from "../firebase";
 import moment from "moment";
-import { ref, reactive, onMounted, watchEffect } from "vue";
+import { ref, onMounted, watchEffect } from "vue";
 import BuscarAlumnos from "src/components/Buscar-Alumnos.vue";
 const $q = useQuasar();
 const store = useCounterStore();
-let visible = ref(false);
-let Listado = ref([]);
-let Presentes = ref([]);
-let Alumnos = Mostrar_Listado().then((elem) => elem.map((e) => e.data()));
 let TODO = Mostrar_todo().then((elem) => elem.map((e) => e.data()));
-let Resultado_Busqueda = ref([]);
-let text = ref("");
-let grupo = ref("");
-let Loading = ref(false);
+let Alumnos = Mostrar_Listado().then((elem) => elem.map((e) => e.data()));
 let date = ref(moment().format("YYYY-MM-DD"));
 let hoy = ref(moment().format("YYYY-MM-DD"));
-let url = ref("https://placeimg.com/500/300/nature?t=" + Math.random());
+let Resultado_Busqueda = ref([]);
+let Presentes = ref([]);
+let Listado = ref([]);
 let events = ref([]);
+let grupo = ref("");
+let text = ref("");
+let Loading = ref(false);
+let visible = ref(false);
+let url = ref("https://placeimg.com/500/300/nature?t=" + Math.random());
+let pagination = ref({
+  rowsPerPage: 0,
+});
+const columns = [
+  {
+    name: "name",
+    required: true,
+    label: "Grupo",
+    align: "left",
+    field: (row) => row.name,
+    format: (val) => `${val}`,
+    sortable: true,
+  },
+  {
+    name: "Asistencias",
+    align: "center",
+    label: "Asistencias",
+    field: "Asistencias",
+    sortable: true,
+  },
+  {
+    name: "Ausentes",
+    label: "Ausentes",
+    field: "Ausentes",
+    sortable: true,
+  },
+  {
+    name: "Inscritos",
+    label: "Inscritos",
+    sortable: true,
+    field: (row) => row.Asistencias + row.Ausentes,
+    format: (val) => `${val}`,
+  },
+];
+const seed = [
+  {
+    name: "Orquesta",
+    Asistencias: 19,
+    Ausentes: 60,
+  },
+  {
+    name: "Coro",
+    Asistencias: 36,
+    Ausentes: 90,
+  },
+  {
+    name: "Inicacion 2",
+    Asistencias: 26,
+    Ausentes: 10,
+  },
+  {
+    name: "Inicacion 1",
+    Asistencias: 22,
+    Ausentes: 16,
+  },
+];
+let rows = [];
+rows = rows.concat(seed.slice(0).map((r) => ({ ...r })));
+
 onMounted(async () => {
+  // Contar_Ausentes();
   // console.log(await TODO);
-  // console.log(await Alumnos);
+  console.log(await Buscar_Por_Fecha(date.value).then((e) => e));
   events.value = await Eventos_Calendario();
 });
 const eventEmittedFromChild = (res) => {
@@ -254,32 +328,11 @@ const eventEmittedFromChild = (res) => {
   }
 };
 const agregar = async (item) => {
-  const agregar_desde_busqueda = (item) => {
-    Resultado_Busqueda.value.find((e) =>
-      e.id === item.id
-        ? Presentes.value.push({ ...e, asistencia: true }) &&
-          Presentes.value.reverse()
-        : null
-    );
-  };
-  const agregar_desde_listado = () => {
-    Listado.value.filter((e) =>
-      e.id === item.id
-        ? Presentes.value.push({ ...e, asistencia: true }) &&
-          Presentes.value.reverse() &&
-          Listado.value.splice(Listado.value.indexOf(e), 1)
-        : null
-    );
-  };
-  Presentes.value.filter(
-    (e, i) =>
-      e.id === item.id
-        ? Presentes.value.splice(Presentes.value.indexOf(e), 1, item)
-        : i === Presentes.value.length
-    // ? Presentes.value.push({ ...e, asistencia: true }) &&
-    //   Presentes.value.reverse()
-    // : null
+  Presentes.value.filter((e, i) =>
+    e.id === item.id ? Presentes.value.splice(i, 1) : null
   );
+  Presentes.value.push({ ...item, asistencia: true });
+  Listado.value.splice(Listado.value.indexOf(item), 1);
 };
 const quitar = (item) => {
   Presentes.value.filter((e) =>
@@ -312,24 +365,18 @@ const Nuevo_Listado = async () => {
 const Procesar_Listado = async (Data) => {
   let { presentes, ausentes } = Data;
   try {
-    presentes.map((e) => {
-      Buscar_Alumno(e).then((doc) => {
-        Presentes.value.push({ ...doc, id: doc.id, asistencia: true });
-        Presentes.value
-          .reverse()
-          .sort((a, b) => a.nombre.localeCompare(b.nombre));
-        return;
-      });
-    });
-    ausentes.map((e) => {
-      Buscar_Alumno(e).then((doc) => {
-        Listado.value.push({ ...doc, id: doc.id, asistencia: false });
-        Listado.value
-          .reverse()
-          .sort((a, b) => a.nombre.localeCompare(b.nombre));
-        return;
-      });
-    });
+    // presentes.map((e) => {
+    //   Buscar_Alumno(e).then((doc) => {
+    //     Presentes.value.push({ ...doc, asistencia: true });
+    //     return;
+    //   });
+    // });
+    // ausentes.map((e) => {
+    //   Buscar_Alumno(e).then((doc) => {
+    //     Listado.value.push({ ...doc, asistencia: false });
+    //     return;
+    //   });
+    // });
   } catch (error) {
     console.log(error);
   }
@@ -358,7 +405,6 @@ const Filtrar = async (res) => {
   if (date.value === hoy.value) {
     switch (res) {
       case "Orq":
-        //Alumnos de la Orquesta
         let Orq = await Alumnos.filter((elem) =>
           elem.grupo.find((e) => e === "Orquesta")
         );
@@ -390,16 +436,110 @@ const Filtrar = async (res) => {
         clasificacion(Alumnos);
         break;
     }
+  } else {
+    visible.value = false;
+    Presentes.value.length = 0;
+    resetear();
+    switch (res) {
+      case "Orq":
+        Lista_Presentes.map((e) =>
+          Buscar_Alumno(e).then((doc) =>
+            doc.grupo.filter((el) =>
+              el === "Orquesta"
+                ? Presentes.value.push({ ...doc, asistencia: true })
+                : null
+            )
+          )
+        );
+        Lista_Ausentes.map((e) => {
+          Buscar_Alumno(e).then((doc) =>
+            doc.grupo.filter((el) =>
+              el === "Orquesta"
+                ? Listado.value.push({ ...doc, asistencia: false })
+                : null
+            )
+          );
+        });
+        break;
+      case "Coro":
+        Lista_Presentes.map((e) =>
+          Buscar_Alumno(e).then((doc) =>
+            doc.grupo.filter((el) =>
+              el === "Coro"
+                ? Presentes.value.push({ ...doc, asistencia: true })
+                : null
+            )
+          )
+        );
+        Lista_Ausentes.map((e) => {
+          Buscar_Alumno(e).then((doc) =>
+            doc.grupo.filter((el) =>
+              el === "Coro"
+                ? Listado.value.push({ ...doc, asistencia: false })
+                : null
+            )
+          );
+        });
+        break;
+      case "Ini2":
+        Lista_Presentes.map((e) =>
+          Buscar_Alumno(e).then((doc) =>
+            doc.grupo.filter((el) =>
+              el === "Iniciacion 2"
+                ? Presentes.value.push({ ...doc, asistencia: true })
+                : null
+            )
+          )
+        );
+        Lista_Ausentes.map((e) => {
+          Buscar_Alumno(e).then((doc) =>
+            doc.grupo.filter((el) =>
+              el === "Iniciacion 2"
+                ? Listado.value.push({ ...doc, asistencia: false })
+                : null
+            )
+          );
+        });
+        break;
+      case "ini1":
+        Lista_Presentes.map((e) =>
+          Buscar_Alumno(e).then((doc) =>
+            doc.grupo.filter((el) =>
+              el === "Iniciacion 1"
+                ? Presentes.value.push({ ...doc, asistencia: true })
+                : null
+            )
+          )
+        );
+        Lista_Ausentes.map((e) => {
+          Buscar_Alumno(e).then((doc) =>
+            doc.grupo.filter((el) =>
+              el === "Iniciacion 1"
+                ? Listado.value.push({ ...doc, asistencia: false })
+                : null
+            )
+          );
+        });
+        break;
+      default:
+        Lista_Presentes.map((e) =>
+          Buscar_Alumno(e).then((doc) =>
+            Presentes.value.push({ ...doc, asistencia: true })
+          )
+        );
+        Lista_Ausentes.map((e) => {
+          Buscar_Alumno(e).then((doc) =>
+            Listado.value.push({ ...doc, asistencia: false })
+          );
+        });
+        break;
+    }
   }
 };
 const Buscar = async () => {
   Buscar_Por_Fecha(date.value).then((Data) =>
     Data !== null
-      ? Procesar_Listado(Data.Data).then(() => {
-          resetear();
-          visible.value = false;
-          return;
-        })
+      ? resetear() && (visible.value = false)
       : date.value === hoy.value
       ? (visible.value = false)
       : null
