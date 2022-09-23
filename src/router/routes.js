@@ -34,7 +34,7 @@ const routes = [
     // meta: { requiresAuth: true },
   },
   {
-    path: "/Registrar-Progresos/:id",
+    path: "/Registrar-Progresos/",
     name: "Registrar-Progresos",
     props: true,
     component: () => import("layouts/MainLayout.vue"),

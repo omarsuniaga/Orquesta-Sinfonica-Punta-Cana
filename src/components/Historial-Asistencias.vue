@@ -1,98 +1,135 @@
 <script setup>
+import moment from "moment";
 import { ref, onMounted } from "vue";
 import { Mostrar_todo, Mostrar_Listado, Contar_Ausentes } from "../firebase";
+import VueApexCharts from "vue3-apexcharts";
+console.log(VueApexCharts);
+
 let _l = ref([]);
 let Alumnos = ref([]);
-let PRESENTES = ref([]);
-let AUSENTES = ref([]);
-let array3 = ref([]);
-let pagination = ref({
-  rowsPerPage: 0,
-});
+let PRESENTES = [];
+let AUSENTES = [];
+let diasRegistrados = ref("");
+
+let rows = ref([]);
+
 const columns = [
   {
-    name: "id",
+    name: "index",
     label: "#",
+    field: "index",
   },
   {
-    name: "name",
+    name: "Nombre",
     required: true,
-    label: "Grupo",
+    label: "Nombre",
     align: "left",
-    field: (row) => row.Asistencias,
+    field: (row) => row.Nombre,
     format: (val) => `${val}`,
     sortable: true,
   },
   {
-    name: "Total",
+    name: "Asistencia",
     align: "center",
-    label: "Total",
-    field: "Total",
+    label: "Asistencia (P)",
+    field: "Asistencia",
+    sortable: true,
+  },
+  {
+    name: "Inasistencia",
+    label: "Inasistencia (A)",
+    field: "Inasistencia",
+    sortable: true,
+    sort: (a, b) => parseInt(a, 10) - parseInt(b, 10),
+  },
+  {
+    name: "Rendimiento",
+    label: "Rendimiento (%)",
+    field: "Rendimiento",
+    sortable: true,
+    sort: (a, b) => parseInt(a, 10) - parseInt(b, 10),
+  },
+  {
+    name: "Serial",
+    label: "Serial",
+    field: "Serial",
     sortable: true,
   },
 ];
-
-let _a = (mes) => {
-  // ? Buscar todas las fechas del mes seleccionado
-  _l.value.filter((elem) => {
-    if (elem.Fecha.split("-")[1] === mes) {
-      let { ausentes, presentes } = elem.Data;
-
-      presentes.map((el) => PRESENTES.value.push(el));
-      ausentes.map((el) => AUSENTES.value.push(el));
-      return;
-    }
+const ObtenerDia = (dia) => {
+  let f = moment(dia).day();
+  let Semana = [
+    "Domingo",
+    "Lunes",
+    "Martes",
+    "Miercoles",
+    "Jueves",
+    " Viernes",
+    "Sabado",
+  ];
+  f = Semana.filter((e, i) => (i === f ? e : null));
+  return f;
+};
+let BuscarAlumno = (id) => {
+  let nom = "";
+  Alumnos.value.filter((elem) =>
+    elem.id === id ? (nom = elem.nombre + " " + elem.apellido) : null
+  );
+  return nom;
+};
+const clasificacion = (grupo) => {
+  rows.value = grupo.map((el, i) => {
+    return {
+      index: i + 1,
+      Nombre: "",
+      Asistencia: 0,
+      Inasistencia: 0,
+      Rendimiento: 0,
+      Serial: el,
+    };
   });
-
-  function BuscarAlumno(id) {
-    let nom = "";
-    Alumnos.value.filter((elem) =>
-      elem.id === id ? (nom = elem.nombre + " " + elem.apellido) : null
-    );
-    return nom;
+  rows.value.map((item) => {
+    const p = PRESENTES.filter((id) => id === item.Serial).length;
+    const a = AUSENTES.filter((id) => id === item.Serial).length;
+    item.Asistencia = p;
+    item.Inasistencia = a;
+    item.Nombre = BuscarAlumno(item.Serial);
+    item.Rendimiento = p + a / diasRegistrados.value;
+    return item;
+  });
+  return rows.value;
+};
+let _a = (mes, grupo) => {
+  let Listado = [];
+  if (_l.value) {
+    _l.value.filter((elem) => {
+      if (elem.Fecha.split("-")[1] === mes) {
+        let { ausentes, presentes } = elem.Data;
+        diasRegistrados.value++;
+        presentes.map((el) => PRESENTES.push(el));
+        ausentes.map((el) => AUSENTES.push(el));
+        return PRESENTES, AUSENTES;
+      }
+    });
+  } else {
+    return;
   }
-
-  const Presencias = PRESENTES.value.filter((id, i) =>
-    i == 0 ? true : PRESENTES.value[i - 1] != id
+  Alumnos.value.filter((el) =>
+    el.grupo.map((e) => (e === grupo ? Listado.push(el.id) : null))
   );
-  const Ausencias = AUSENTES.value.filter((id, i) =>
-    i == 0 ? true : AUSENTES.value[i - 1] != id
-  );
-  const contadorPresencias = Presencias.map((el) => {
-    return { id: el, Presencias: 0 };
-  });
-  const contadorAusencias = Ausencias.map((el) => {
-    return { id: el, Ausencias: 0 };
-  });
-
-  contadorPresencias.map((item, i) => {
-    const id_unico = PRESENTES.value.filter((id) => id === item.id).length;
-    item.Presencias = id_unico;
-  });
-  contadorAusencias.map((item, i) => {
-    const id_unico = AUSENTES.value.filter((id) => id === item.id).length;
-    item.Ausencias = id_unico;
-  });
-
-  return array3.value;
+  return clasificacion(Listado);
 };
 
-const titulo = [
-  {
-    label: "Orquesta",
-    total: 2,
-  },
-];
-
-let rows = [];
-rows = rows.concat(titulo.slice(0).map((r) => ({ ...r })));
+let pagination = ref({
+  rowsPerPage: 0,
+});
 
 onMounted(async () => {
-  _l.value = await Mostrar_todo().then((elem) => elem.map((e) => e.data()));
+  _l.value = await Mostrar_todo().then((elem) => elem.map((e) => e.data())); //Jalando asistencias
   Alumnos.value = await Mostrar_Listado().then((elem) =>
     elem.map((e) => e.data())
   );
-  console.log(_a("08"));
+  _a("08", "Orquesta");
 });
 </script>
 <template>

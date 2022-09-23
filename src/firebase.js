@@ -250,16 +250,50 @@ export const Crear_Progresos = async (alumno) => {
     console.log(error);
   }
 };
-
-export const Asistencia_de_Hoy = async (presentes, ausentes, Fecha_de_Hoy) => {
+export const Buscar_Grupo = async (fecha, grupo) => {
   try {
-    await setDoc(doc(db, "ASISTENCIAS", Fecha_de_Hoy), {
+    let q = query(
+      collection(db, "ASISTENCIAS"),
+      where("Fecha", "==", fecha),
+      where("grupo", "==", grupo)
+    );
+    const querySnapshot = await getDocs(q);
+    if (querySnapshot.empty === false) {
+      return querySnapshot.docs[0];
+    } else {
+      return false;
+    }
+  } catch (error) {
+    console.log(error);
+  }
+  return null;
+};
+export const Asistencia_de_Hoy = async (
+  presentes,
+  ausentes,
+  Fecha_de_Hoy,
+  grupo
+) => {
+  let res = await Buscar_Grupo(Fecha_de_Hoy, grupo).then((e) =>
+    e.id === undefined ? null : e.id
+  );
+  if (res === null) {
+    await addDoc(collection(db, "ASISTENCIAS"), {
       Fecha: Fecha_de_Hoy,
       Data: { presentes, ausentes },
+      grupo,
     });
+    // return console.log("Asistencia Creada!");
     return alert("Asistencia Guardada");
-  } catch (error) {
-    return alert(error);
+  } else {
+    const Ref = doc(db, "ASISTENCIAS", res);
+    await setDoc(Ref, {
+      Fecha: Fecha_de_Hoy,
+      Data: { presentes, ausentes },
+      grupo,
+    });
+    // return console.log("Asistencia Actualizada!", res);
+    return alert("Asistencia Actualizada");
   }
 };
 
@@ -284,18 +318,6 @@ export const Mostrar_todo = async () => {
     console.log(error);
   }
 };
-/**
- * Que mes buscaremos? //08
- * Obtener Lista de alumnos
- * Obtener Lista de Fechas donde el mes sea igual a 08
- * El [alumno 1] esta en [2022-08-01]? 'SI' esta en [Presentes]? 'SI' Contador.Presentes +1 //1
- * El [alumno 1] esta en [2022-08-02]? 'SI' esta en [Presentes]? 'NO' Esta en [Ausentes]? 'SI' Contador.Ausentes +1 //1
- * El [alumno 1] esta en [2022-08-03]? 'SI' esta en [Presentes]? 'SI' Contador.Presentes +1 //2
- * El [alumno 1] esta en [2022-08-04]? 'SI' esta en [Presentes]? 'NO' Esta en [Ausentes]? 'SI' Contador.Ausentes +1 //2
- *
- *
- *
- */
 
 export const Contar_Ausentes = async (mes = "08") => {
   let Ref = collection(db, "ASISTENCIAS");

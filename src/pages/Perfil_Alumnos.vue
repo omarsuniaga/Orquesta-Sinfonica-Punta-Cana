@@ -18,10 +18,12 @@
       >
         <q-btn-toggle
           class="col-auto flex justify-around"
-          rounded
           v-model="grupo"
+          rounded
           spread
+          stack
           no-caps
+          no-wrap
           toggle-color="primary"
           color="while"
           text-color="primary"
@@ -143,7 +145,6 @@ const Filtrar = async (res) => {
           .map((e) => e.data())
           .sort((a, b) => a.nombre.localeCompare(b.nombre))
       );
-
       break;
   }
 };

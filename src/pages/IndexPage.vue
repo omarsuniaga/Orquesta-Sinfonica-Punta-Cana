@@ -24,21 +24,20 @@
         >
           <q-btn-toggle
             class="col-auto flex justify-around"
-            rounded
             v-model="grupo"
+            rounded
             spread
             stack
             no-caps
+            no-wrap
             toggle-color="primary"
             color="while"
             text-color="primary"
-            no-wrap
             :options="[
-              { label: 'Inicio 1', value: 'Ini1' },
-              { label: 'Inicio 2', value: 'Ini2' },
+              { label: 'Inicio 1', value: 'Iniciacion 1' },
+              { label: 'Inicio 2', value: 'Iniciacion 2' },
               { label: 'Coro', value: 'Coro' },
-              { label: 'Orquesta', value: 'Orq' },
-              { label: 'Todos', value: 'All' },
+              { label: 'Orquesta', value: 'Orquesta' },
             ]"
           >
           </q-btn-toggle>
@@ -86,8 +85,18 @@
           Hoy
         </q-btn>
       </div>
-
-      <div class="q-pa-xs doc-container" style="min-width: 375px; width: 100%">
+      <div
+        v-if="grupo === 'All'"
+        class="q-pa-xl doc-container flex justify-center text-weight-regular"
+        style="min-width: 375px; width: 100%"
+      >
+        <span>Para pasar la asistencia, selecciona un grupo </span>
+      </div>
+      <div
+        v-else
+        class="q-pa-xs doc-container"
+        style="min-width: 375px; width: 100%"
+      >
         <div class="row col-12">
           <div class="col-6">
             <span class="text-body1">Ausentes</span>
@@ -108,8 +117,9 @@
                   v-for="(item, index) in Resultado_Busqueda"
                   :key="index"
                   @click="agregar(item)"
+                  v-touch-hold:2000.mouse="handleHold"
                 >
-                  <q-item v-if="!item.asistencia">
+                  <q-item v-if="!item.asistencia" :id="item.id">
                     <q-item-section>
                       <q-item-label class="text-weight-regular"
                         >{{ item.nombre }}
@@ -139,8 +149,9 @@
                   v-for="(item, index) in Listado"
                   :key="index"
                   @click="agregar(item)"
+                  v-touch-hold:2000.mouse="handleHold"
                 >
-                  <q-item v-if="!item.asistencia">
+                  <q-item v-if="!item.asistencia" :id="item.id">
                     <q-item-section>
                       <q-item-label class="text-weight-regular"
                         >{{ item.nombre }}
@@ -175,9 +186,10 @@
                   class="q-ma-xs bg-green-3"
                   v-for="(item, index) in Presentes"
                   :key="index"
+                  v-touch-hold:2000.mouse="handleHold"
                   @click="quitar(item)"
                 >
-                  <q-item>
+                  <q-item :id="item.id">
                     <!-- <q-item-section avatar>
                       <q-avatar>
                         <img src="https://cdn.quasar.dev/img/avatar2.jpg" />
@@ -224,31 +236,40 @@ import {
   Eventos_Calendario,
   Lista_Ausentes,
   Lista_Presentes,
+  Buscar_Grupo,
 } from "../firebase";
 import moment from "moment";
 import { ref, onMounted, watchEffect } from "vue";
 import HistorialAsistencias from "src/components/Historial-Asistencias.vue";
+import BuscarAlumnos from "src/components/Buscar-Alumnos.vue";
+import { useRouter } from "vue-router";
+// provide("_Alumnos", _Alumnos);
+// provide("_Asistencias", _Asistencias);
+
 const $q = useQuasar();
 const store = useCounterStore();
-let Alumnos = Mostrar_Listado().then((elem) => elem.map((e) => e.data()));
+const router = useRouter();
+// let posicion = useRouter().currentRoute._rawValue.params.posicion;
 let date = ref(moment().format("YYYY-MM-DD"));
 let hoy = ref(moment().format("YYYY-MM-DD"));
 let Resultado_Busqueda = ref([]);
 let Presentes = ref([]);
 let Listado = ref([]);
 let events = ref([]);
-let grupo = ref("");
+let grupo = ref("All");
 let text = ref("");
 let Loading = ref(false);
 let visible = ref(false);
-let url = ref("https://placeimg.com/500/300/nature?t=" + Math.random());
 
-onMounted(async () => {
-  events.value = await Eventos_Calendario();
-});
+function handleHold({ evt }) {
+  let id = evt.path[2].id;
+  console.log(id);
+  return router.push(`/Detalles_Alumnos/${id}`);
+}
+
 const eventEmittedFromChild = (res) => {
   if (res.length != 0) {
-    Resultado_Busqueda.value = res.map((e) => ({ ...e, avatar: url.value }));
+    Resultado_Busqueda.value = res.map((e) => ({ ...e }));
     return Resultado_Busqueda.value;
   } else {
     Resultado_Busqueda.value.length = 0;
@@ -259,6 +280,7 @@ const agregar = async (item) => {
     e.id === item.id ? Presentes.value.splice(i, 1) : null
   );
   Presentes.value.push({ ...item, asistencia: true });
+  Presentes.value.reverse();
   Listado.value.splice(Listado.value.indexOf(item), 1);
 };
 const quitar = (item) => {
@@ -280,185 +302,118 @@ const guardar = async () => {
   //El Listado.value pasa a ser los ausentes
   const Array_Ausentes = Listado.value.map((e) => e.id);
   const Array_Presentes = Presentes.value.map((e) => e.id);
-  const Fecha = date.value.split("/").join("-");
+  const Fecha = date.value;
+  const Grupo = grupo.value;
   //Guardar en firebase
-  await Asistencia_de_Hoy(Array_Presentes, Array_Ausentes, Fecha);
+  await Asistencia_de_Hoy(Array_Presentes, Array_Ausentes, Fecha, Grupo);
 };
 const Nuevo_Listado = async () => {
   resetear();
   date.value = hoy.value;
   Buscar();
 };
-const Procesar_Listado = async (Data) => {
-  return console.log(Data);
-};
 const resetear = () => {
   Presentes.value.length = 0;
   Listado.value.length = 0;
 };
-const clasificacion = (opcion) => {
-  Listado.value.length = 0;
-  if (Presentes.value.length > 0) {
-    Presentes.value.map((el) =>
-      opcion.filter((e, j) => (el.id === e.id ? opcion.splice(j, 1) : null))
-    );
-    Listado.value.length = 0;
-    Listado.value.push(
-      ...opcion.sort((a, b) => a.nombre.localeCompare(b.nombre))
-    );
-  } else {
-    Listado.value.length = 0;
-    Listado.value = opcion.sort((a, b) => a.nombre.localeCompare(b.nombre));
-  }
-};
-const Filtrar = async (res) => {
-  Alumnos = await Mostrar_Listado().then((elem) => elem.map((e) => e.data()));
-  if (date.value === hoy.value) {
-    switch (res) {
-      case "Orq":
-        let Orq = await Alumnos.filter((elem) =>
-          elem.grupo.find((e) => e === "Orquesta")
-        );
-        clasificacion(Orq);
-        break;
-      case "Coro":
-        Listado.value.length = 0;
-        let Coro = await Alumnos.filter((elem) =>
-          elem.grupo.find((e) => e === "Coro")
-        );
-        clasificacion(Coro);
-        break;
-      case "Ini2":
-        Listado.value.length = 0;
-        let Ini2 = await Alumnos.filter((elem) =>
-          elem.grupo.find((e) => e === "Iniciacion 2")
-        );
-        clasificacion(Ini2);
-        break;
-      case "Ini1":
-        Listado.value.length = 0;
-        let Ini1 = await Alumnos.filter((elem) =>
-          elem.grupo.find((e) => e === "Iniciacion 1")
-        );
-        clasificacion(Ini1);
-        break;
-      default:
-      case "All":
-        clasificacion(Alumnos);
-        break;
-    }
-  } else {
-    visible.value = false;
-    Presentes.value.length = 0;
+
+const Filtrar = async (fecha, res) => {
+  visible.value = false;
+  let r = await Buscar_Grupo(fecha, res).then((e) => e);
+  let Alumnos = await Mostrar_Listado().then((elem) =>
+    elem.map((e) => e.data())
+  );
+  if (r) {
     resetear();
+    const { presentes, ausentes } = await Buscar_Grupo(fecha, res).then(
+      (e) => e.data().Data
+    );
+    await presentes.map((e) =>
+      Buscar_Alumno(e).then((doc) =>
+        doc.id === e ? Presentes.value.push({ ...doc, asistencia: true }) : null
+      )
+    );
+    await ausentes.map((e) =>
+      Buscar_Alumno(e).then((doc) =>
+        doc.id === e ? Listado.value.push({ ...doc, asistencia: false }) : null
+      )
+    );
+    return;
+  } else {
     switch (res) {
-      case "Orq":
-        Lista_Presentes.map((e) =>
-          Buscar_Alumno(e).then((doc) =>
-            doc.grupo.filter((el) =>
-              el === "Orquesta"
-                ? Presentes.value.push({ ...doc, asistencia: true })
-                : null
-            )
+      case "Orquesta":
+        resetear();
+        await Alumnos.filter((elem) =>
+          elem.grupo.filter((e) =>
+            e === "Orquesta"
+              ? Listado.value.push({ ...elem, asistencia: false }) &&
+                Listado.value.sort((a, b) => a + b)
+              : null
           )
         );
-        Lista_Ausentes.map((e) => {
-          Buscar_Alumno(e).then((doc) =>
-            doc.grupo.filter((el) =>
-              el === "Orquesta"
-                ? Listado.value.push({ ...doc, asistencia: false })
-                : null
-            )
-          );
-        });
         break;
       case "Coro":
-        Lista_Presentes.map((e) =>
-          Buscar_Alumno(e).then((doc) =>
-            doc.grupo.filter((el) =>
-              el === "Coro"
-                ? Presentes.value.push({ ...doc, asistencia: true })
-                : null
-            )
+        resetear();
+        (await Alumnos).filter((elem) =>
+          elem.grupo.find((e) =>
+            e === "Coro"
+              ? Listado.value.push({ ...elem, asistencia: false }) &&
+                Listado.value
+                  .reverse()
+                  .sort((a, b) => a.nombre.localeCompare(b.nombre))
+              : null
           )
         );
-        Lista_Ausentes.map((e) => {
-          Buscar_Alumno(e).then((doc) =>
-            doc.grupo.filter((el) =>
-              el === "Coro"
-                ? Listado.value.push({ ...doc, asistencia: false })
-                : null
-            )
-          );
-        });
         break;
-      case "Ini2":
-        Lista_Presentes.map((e) =>
-          Buscar_Alumno(e).then((doc) =>
-            doc.grupo.filter((el) =>
-              el === "Iniciacion 2"
-                ? Presentes.value.push({ ...doc, asistencia: true })
-                : null
-            )
+      case "Iniciacion 2":
+        resetear();
+        (await Alumnos).filter((elem) =>
+          elem.grupo.find((e) =>
+            e === "Iniciacion 2"
+              ? Listado.value.push({ ...elem, asistencia: false }) &&
+                Listado.value
+                  .reverse()
+                  .sort((a, b) => a.nombre.localeCompare(b.nombre))
+              : null
           )
         );
-        Lista_Ausentes.map((e) => {
-          Buscar_Alumno(e).then((doc) =>
-            doc.grupo.filter((el) =>
-              el === "Iniciacion 2"
-                ? Listado.value.push({ ...doc, asistencia: false })
-                : null
-            )
-          );
-        });
         break;
-      case "ini1":
-        Lista_Presentes.map((e) =>
-          Buscar_Alumno(e).then((doc) =>
-            doc.grupo.filter((el) =>
-              el === "Iniciacion 1"
-                ? Presentes.value.push({ ...doc, asistencia: true })
-                : null
-            )
+      case "Iniciacion 1":
+        resetear();
+        Listado.value.length = 0;
+        (await Alumnos).filter((elem) =>
+          elem.grupo.find((e) =>
+            e === "Iniciacion 1"
+              ? Listado.value.push({ ...elem, asistencia: false }) &&
+                Listado.value
+                  .reverse()
+                  .sort((a, b) => a.nombre.localeCompare(b.nombre))
+              : null
           )
         );
-        Lista_Ausentes.map((e) => {
-          Buscar_Alumno(e).then((doc) =>
-            doc.grupo.filter((el) =>
-              el === "Iniciacion 1"
-                ? Listado.value.push({ ...doc, asistencia: false })
-                : null
-            )
-          );
-        });
-        break;
-      default:
-        Lista_Presentes.map((e) =>
-          Buscar_Alumno(e).then((doc) =>
-            Presentes.value.push({ ...doc, asistencia: true })
-          )
-        );
-        Lista_Ausentes.map((e) => {
-          Buscar_Alumno(e).then((doc) =>
-            Listado.value.push({ ...doc, asistencia: false })
-          );
-        });
-        break;
     }
   }
 };
 const Buscar = async () => {
-  Buscar_Por_Fecha(date.value).then((Data) =>
+  let Alumnos = await Mostrar_Listado().then((elem) =>
+    elem.map((e) => e.data())
+  );
+  Buscar_Por_Fecha(date.value).then((Data) => {
     Data !== null
-      ? resetear() && (visible.value = false)
+      ? resetear() && (visible.value = false) && console.log(Data)
       : date.value === hoy.value
       ? (visible.value = false)
-      : null
-  );
+      : null;
+  });
 };
 watchEffect(async () => {
+  // posicion = grupo.value;
+  // router.push(`/${grupo.value}`);
   date.value ? Buscar() : null;
-  await Filtrar(grupo.value);
+  await Filtrar(date.value, grupo.value);
+});
+onMounted(async () => {
+  events.value = await Eventos_Calendario();
 });
 </script>
 

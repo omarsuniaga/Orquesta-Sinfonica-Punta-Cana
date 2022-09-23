@@ -60,62 +60,76 @@
   </div>
 </template>
 
-<script>
+<script setup>
 import { ref } from "vue";
-
-const columns = [
-  {
-    name: "name",
-    required: true,
-    label: "Dessert (100g serving)",
-    align: "left",
-    field: (row) => row.name,
-    format: (val) => `${val}`,
-    sortable: true,
+import { useRouter } from "vue-router";
+import router from "src/router";
+import { Dialog, useQuasar } from "quasar";
+import { useQuasar } from "quasar";
+import { Crear_Alumnos } from "../firebase";
+import moment from "moment";
+const id = useRouter().currentRoute._rawValue.params.id;
+let columns;
+const $q = reactive(useQuasar());
+let model = ref(null);
+console.log(id);
+const progreso = ref({
+  nombre: "",
+  id: id,
+  registro: moment().format("LLLL"),
+  Interpretacion: {
+    Afinacion: "",
+    Colocacion_Instrumento: "",
+    Digitacion: "",
+    Posicion_Sentado: "",
+    Posicion_Pie: "",
+    Vibrato: "",
+    proyeccion_Sonido: "",
   },
-  {
-    name: "calories",
-    align: "center",
-    label: "Calories",
-    field: "calories",
-    sortable: true,
+  Arco: {
+    Agarre: "",
+    PuntoContacto: "",
+    Sonoridad: "",
   },
-  {
-    name: "fat",
-    label: "Fat (g)",
-    field: "fat",
-    sortable: true,
-    style: "width: 10px",
+  Lectura: {
+    Clave_Fa: "",
+    Clave_Sol: "",
+    Figuraciones: {
+      Redondas: "",
+      Blancas: "",
+      Negras: "",
+      Corcheas: "",
+      Semicorcheas: "",
+      Puntillos: "",
+      Silencios: "",
+      Sostenidos: "",
+      Bemoles: "",
+      Becuadros: "",
+      Repeticiones: "",
+    },
   },
-  { name: "carbs", label: "Carbs (g)", field: "carbs" },
-  { name: "protein", label: "Protein (g)", field: "protein" },
-  { name: "sodium", label: "Sodium (mg)", field: "sodium" },
-  {
-    name: "calcium",
-    label: "Calcium (%)",
-    field: "calcium",
-    sortable: true,
-    sort: (a, b) => parseInt(a, 10) - parseInt(b, 10),
+  Repertorio: {
+    Allegreto: "",
+    Aria: "",
+    Chorale: "",
+    Happy_Blue: "",
+    Himno_Alegria: "",
+    HornPipe: "",
+    Merengue_Primero: "",
+    Minuett: "",
   },
-  {
-    name: "iron",
-    label: "Iron (%)",
-    field: "iron",
-    sortable: true,
-    sort: (a, b) => parseInt(a, 10) - parseInt(b, 10),
-  },
-];
+});
 
 const rows = [
   {
-    name: "Frozen Yogurt",
-    calories: 159,
-    fat: 6.0,
-    carbs: 24,
-    protein: 4.0,
-    sodium: 87,
-    calcium: "14%",
-    iron: "1%",
+    name: "Repertorio",
+    Allegreto: 159,
+    Aria: 6.0,
+    Chorale: 24,
+    Happy_Blue: 4.0,
+    Himno_Alegria: 87,
+    HornPipe: "14%",
+    Merengue_Primero: "1%",
   },
   {
     name: "Ice cream sandwich",
@@ -209,12 +223,31 @@ const rows = [
   },
 ];
 
-export default {
-  setup() {
-    return {
-      columns,
-      rows: ref(rows),
-    };
-  },
+const registrarAlumno = async () => {
+  try {
+    return await Actualizar(alumno.value)
+      .then(() => {
+        $q.notify({
+          message: "Progreso Registrado",
+          color: "green-4",
+          textColor: "white",
+          icon: "cloud_done",
+        });
+      })
+      .then(onReset())
+      .catch((error) => {
+        $q.notify({
+          message: "Hubo un error, Comprueba que los campos",
+          color: "red-4",
+          textColor: "white",
+          icon: "cloud_done",
+        });
+      });
+  } catch (error) {
+    console.log(error);
+  }
+};
+const onSubmit = () => {
+  registrarAlumno();
 };
 </script>
