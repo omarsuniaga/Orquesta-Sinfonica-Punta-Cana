@@ -1,16 +1,31 @@
 <script setup>
 import moment from "moment";
-import { ref, onMounted } from "vue";
+import { ref, onMounted, computed, watchEffect } from "vue";
 import { Mostrar_todo, Mostrar_Listado, Contar_Ausentes } from "../firebase";
-import VueApexCharts from "vue3-apexcharts";
-console.log(VueApexCharts);
+// import VueApexCharts from "vue3-apexcharts";
+// console.log(VueApexCharts);
 
 let _l = ref([]);
 let Alumnos = ref([]);
 let PRESENTES = [];
 let AUSENTES = [];
 let diasRegistrados = ref("");
-
+let meses = [
+  "Enero",
+  "Febrero",
+  "Marzo",
+  "Abril",
+  "Mayo",
+  "Junio",
+  "Julio",
+  "Agosto",
+  "Septiembre",
+  "Octubre",
+  "Noviembre",
+  "Diciembre",
+];
+let num = ref(0);
+let numMes = ref(0);
 let rows = ref([]);
 
 const columns = [
@@ -49,12 +64,6 @@ const columns = [
     sortable: true,
     sort: (a, b) => parseInt(a, 10) - parseInt(b, 10),
   },
-  {
-    name: "Serial",
-    label: "Serial",
-    field: "Serial",
-    sortable: true,
-  },
 ];
 const ObtenerDia = (dia) => {
   let f = moment(dia).day();
@@ -78,6 +87,7 @@ let BuscarAlumno = (id) => {
   return nom;
 };
 const clasificacion = (grupo) => {
+  rows.value = [];
   rows.value = grupo.map((el, i) => {
     return {
       index: i + 1,
@@ -100,6 +110,7 @@ const clasificacion = (grupo) => {
   return rows.value;
 };
 let _a = (mes, grupo) => {
+  rows.value = [];
   let Listado = [];
   if (_l.value) {
     _l.value.filter((elem) => {
@@ -109,6 +120,8 @@ let _a = (mes, grupo) => {
         presentes.map((el) => PRESENTES.push(el));
         ausentes.map((el) => AUSENTES.push(el));
         return PRESENTES, AUSENTES;
+      } else {
+        return (num.value = "08");
       }
     });
   } else {
@@ -119,23 +132,69 @@ let _a = (mes, grupo) => {
   );
   return clasificacion(Listado);
 };
-
 let pagination = ref({
   rowsPerPage: 0,
 });
-
+const aumentarMes = () => {
+  num.value++;
+  numMes.value++;
+  numMes.value = numMes.value >= 11 ? (numMes.value = 0) : numMes.value++;
+  num.value =
+    num.value <= 9
+      ? "0" + num.value.toString()
+      : num.value <= 12 && num.value >= 10
+      ? num.value.toString()
+      : "0" + (num.value = 1).toString();
+  return num.value;
+};
+const disminuirMes = () => {
+  numMes.value--;
+  numMes.value = numMes.value <= 0 ? (numMes.value = 11) : numMes.value--;
+  num.value--;
+  num.value =
+    num.value <= 9
+      ? "0" + num.value
+      : num.value <= 12
+      ? num.value.toString()
+      : (num.value = 1);
+  return num.value;
+};
 onMounted(async () => {
   _l.value = await Mostrar_todo().then((elem) => elem.map((e) => e.data())); //Jalando asistencias
   Alumnos.value = await Mostrar_Listado().then((elem) =>
     elem.map((e) => e.data())
   );
-  _a("08", "Orquesta");
+});
+watchEffect(async () => {
+  console.log(num.value);
+  _a(num.value, "Orquesta");
 });
 </script>
 <template>
   <div>
+    <div class="flex justify-between q-pa-sm">
+      <q-btn
+        rounded
+        stack
+        toggle-color="primary"
+        color="while"
+        text-color="primary"
+        label="-"
+        @click="disminuirMes"
+      />
+      <span> mes: ({{ num }}) </span>
+      <q-btn
+        rounded
+        stack
+        toggle-color="primary"
+        color="while"
+        text-color="primary"
+        label="+"
+        @click="aumentarMes"
+      />
+    </div>
     <q-table
-      style="height: 400px"
+      style="min-height: 350px"
       title="Asistencias"
       :rows="rows"
       :columns="columns"
