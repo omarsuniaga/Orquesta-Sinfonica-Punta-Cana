@@ -226,6 +226,8 @@
       </div>
     </q-list>
     <q-separator />
+
+    <q-separator />
     <ArbolHabilidades />
     <LineaTiempo />
   </div>
@@ -251,6 +253,7 @@ const id = useRouter().currentRoute._rawValue.params.id;
 const alumno = reactive({});
 let editable = ref(false);
 let model = ref(null);
+let value = ref(3);
 let options = ref(["Orquesta", "Coro", "Iniciacion 2", "Iniciacion 1"]);
 onMounted(() => {
   Buscar_Alumno(id).then((elem) => {

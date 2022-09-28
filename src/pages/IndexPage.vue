@@ -6,7 +6,12 @@
           <div class="col-auto q-mx-sm">
             <q-btn-group>
               <q-btn color="blue-6" icon="today" @click="visible = !visible" />
-              <q-btn color="blue-6" icon-right="save" @click="guardar" />
+              <q-btn
+                color="blue-6"
+                icon-right="save"
+                @click="guardar"
+                :disable="Presentes.length === 0"
+              />
             </q-btn-group>
           </div>
           <div class="row">
@@ -227,26 +232,23 @@
 
 <script setup>
 import { useCounterStore } from "src/stores/example-store";
-import { useQuasar } from "quasar";
 import {
   Asistencia_de_Hoy,
   Buscar_Por_Fecha,
   Buscar_Alumno,
   Mostrar_Listado,
   Eventos_Calendario,
-  Lista_Ausentes,
-  Lista_Presentes,
   Buscar_Grupo,
 } from "../firebase";
 import moment from "moment";
-import { ref, onMounted, watchEffect } from "vue";
+import { ref, onMounted, watchEffect, reactive } from "vue";
 import HistorialAsistencias from "src/components/Historial-Asistencias.vue";
 import BuscarAlumnos from "src/components/Buscar-Alumnos.vue";
 import { useRouter } from "vue-router";
 // provide("_Alumnos", _Alumnos);
 // provide("_Asistencias", _Asistencias);
-
-const $q = useQuasar();
+import { Dialog, useQuasar } from "quasar";
+const $q = reactive(useQuasar());
 const store = useCounterStore();
 const router = useRouter();
 // let posicion = useRouter().currentRoute._rawValue.params.posicion;
@@ -298,14 +300,27 @@ const quitar = (item) => {
     .sort((a, b) => a.nombre.localeCompare(b.nombre));
 };
 const guardar = async () => {
-  //Se almacena la fecha actual
-  //El Listado.value pasa a ser los ausentes
-  const Array_Ausentes = Listado.value.map((e) => e.id);
-  const Array_Presentes = Presentes.value.map((e) => e.id);
-  const Fecha = date.value;
-  const Grupo = grupo.value;
-  //Guardar en firebase
-  await Asistencia_de_Hoy(Array_Presentes, Array_Ausentes, Fecha, Grupo);
+  let Array_Ausentes = Listado.value.map((e) => e.id);
+  let Array_Presentes = Presentes.value.map((e) => e.id);
+  let Fecha = date.value;
+  let Grupo = grupo.value;
+  await Asistencia_de_Hoy(Array_Presentes, Array_Ausentes, Fecha, Grupo)
+    .then(() => {
+      $q.notify({
+        message: "Listado Guardado con exito",
+        color: "green-4",
+        textColor: "white",
+        icon: "cloud_done",
+      });
+    })
+    .catch((error) => {
+      $q.notify({
+        message: "Ha ocurrido un Error",
+        color: "red-4",
+        textColor: "white",
+        icon: "cloud_done",
+      });
+    });
 };
 const Nuevo_Listado = async () => {
   resetear();

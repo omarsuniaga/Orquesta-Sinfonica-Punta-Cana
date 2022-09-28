@@ -121,7 +121,7 @@ let _a = (mes, grupo) => {
         ausentes.map((el) => AUSENTES.push(el));
         return PRESENTES, AUSENTES;
       } else {
-        return (num.value = "08");
+        return (num.value = "09");
       }
     });
   } else {
@@ -135,28 +135,34 @@ let _a = (mes, grupo) => {
 let pagination = ref({
   rowsPerPage: 0,
 });
+const transformar_Fecha = () => {
+  num.value = num.value.toString();
+  console.log("Transformar", num.value);
+};
 const aumentarMes = () => {
-  num.value++;
-  numMes.value++;
-  numMes.value = numMes.value >= 11 ? (numMes.value = 0) : numMes.value++;
-  num.value =
-    num.value <= 9
-      ? "0" + num.value.toString()
-      : num.value <= 12 && num.value >= 10
-      ? num.value.toString()
-      : "0" + (num.value = 1).toString();
+  num.value = parseInt(num.value);
+
+  // numMes.value = numMes.value >= 11 ? (numMes.value = 0) : numMes.value++;
+  // num.value =
+  //   num.value <= 9 && num.value > 0
+  //     ? num.value++ && "0" + num.value.toString()
+  //     : num.value >= 10 && num.value <= 12
+  //     ? num.value++ && num.value.toString()
+  //     : num.value > 12
+  //     ? (num.value = 1 && "0" + num.value.toString())
+  //     : "0" + (num.value = 1).toString();
   return num.value;
 };
 const disminuirMes = () => {
   numMes.value--;
   numMes.value = numMes.value <= 0 ? (numMes.value = 11) : numMes.value--;
   num.value--;
-  num.value =
-    num.value <= 9
-      ? "0" + num.value
-      : num.value <= 12
-      ? num.value.toString()
-      : (num.value = 1);
+  // num.value =
+  //   num.value <= 9
+  //     ? "0" + num.value
+  //     : num.value <= 12
+  //     ? num.value.toString()
+  //     : (num.value = 1);
   return num.value;
 };
 onMounted(async () => {
@@ -166,8 +172,7 @@ onMounted(async () => {
   );
 });
 watchEffect(async () => {
-  console.log(num.value);
-  _a(num.value, "Orquesta");
+  _a("09", "Orquesta");
 });
 </script>
 <template>
@@ -180,7 +185,6 @@ watchEffect(async () => {
         color="while"
         text-color="primary"
         label="-"
-        @click="disminuirMes"
       />
       <span> mes: ({{ num }}) </span>
       <q-btn
@@ -190,7 +194,6 @@ watchEffect(async () => {
         color="while"
         text-color="primary"
         label="+"
-        @click="aumentarMes"
       />
     </div>
     <q-table

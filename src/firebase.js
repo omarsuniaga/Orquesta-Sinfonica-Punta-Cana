@@ -21,8 +21,10 @@ import {
   limit,
   where,
   enableIndexedDbPersistence,
+  disableNetwork,
+  enableNetwork,
 } from "firebase/firestore";
-
+// import { algo } from "./data";
 // Subsequent
 import moment from "moment";
 export const firebaseConfig = {
@@ -75,6 +77,20 @@ enableIndexedDbPersistence(db).catch((err) => {
  * CRUD DE ALUMNOS
  */
 
+async function ConConexion() {
+  await enableNetwork(db);
+  console.log("Network disabled!", db);
+  // Do online actions
+  // ...
+}
+async function SinConexion() {
+  await disableNetwork(db);
+  console.log("Network disabled!");
+
+  // Do offline actions
+}
+
+SinConexion();
 //create alumno
 export const Crear_Alumnos = async (alumno) => {
   try {
@@ -277,23 +293,23 @@ export const Asistencia_de_Hoy = async (
   let res = await Buscar_Grupo(Fecha_de_Hoy, grupo).then((e) =>
     e.id === undefined ? null : e.id
   );
-  if (res === null) {
-    await addDoc(collection(db, "ASISTENCIAS"), {
-      Fecha: Fecha_de_Hoy,
-      Data: { presentes, ausentes },
-      grupo,
-    });
-    // return console.log("Asistencia Creada!");
-    return alert("Asistencia Guardada");
-  } else {
-    const Ref = doc(db, "ASISTENCIAS", res);
-    await setDoc(Ref, {
-      Fecha: Fecha_de_Hoy,
-      Data: { presentes, ausentes },
-      grupo,
-    });
-    // return console.log("Asistencia Actualizada!", res);
-    return alert("Asistencia Actualizada");
+  try {
+    if (res === null) {
+      return await addDoc(collection(db, "ASISTENCIAS"), {
+        Fecha: Fecha_de_Hoy,
+        Data: { presentes, ausentes },
+        grupo,
+      });
+    } else {
+      const Ref = doc(db, "ASISTENCIAS", res);
+      return await setDoc(Ref, {
+        Fecha: Fecha_de_Hoy,
+        Data: { presentes, ausentes },
+        grupo,
+      });
+    }
+  } catch (error) {
+    console.error(error);
   }
 };
 
