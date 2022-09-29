@@ -2,7 +2,16 @@ const routes = [
   {
     path: "/",
     component: () => import("layouts/MainLayout.vue"),
-    children: [{ path: "", component: () => import("pages/IndexPage.vue") }],
+    children: [{ path: "", component: () => import("pages/Dashboard.vue") }],
+  },
+  {
+    path: "/Pasar_Asistencias",
+    name: "Pasar_Asistencias",
+    component: () => import("layouts/MainLayout.vue"),
+    children: [
+      { path: "", component: () => import("pages/Pasar_Asistencias.vue") },
+    ],
+    // meta: { requiresAuth: true },
   },
   {
     path: "/Registrar_Alumnos",
@@ -10,7 +19,6 @@ const routes = [
     component: () => import("layouts/MainLayout.vue"),
     children: [
       { path: "", component: () => import("pages/Registrar_Alumnos.vue") },
-      { path: "", component: () => import("pages/Perfil_Alumnos.vue") },
     ],
     // meta: { requiresAuth: true },
   },

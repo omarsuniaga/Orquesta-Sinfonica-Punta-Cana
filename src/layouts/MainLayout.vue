@@ -5,12 +5,7 @@
         <q-space />
 
         <div class="no-wrap">
-          <q-btn
-            flat
-            no-wrap
-            class="flex justify-center"
-            @click="$router.push('/')"
-          >
+          <q-btn flat no-wrap class="flex justify-center" @click="$router.push('/')">
             <img
               src="~assets/favicon-96x96-orquesta.jpg"
               style="width: 60px; height: 60px"
@@ -25,14 +20,7 @@
         <q-space />
 
         <div class="q-gutter-sm row items-center no-wrap">
-          <q-btn
-            round
-            dense
-            flat
-            color="grey-8"
-            icon="language"
-            v-if="$q.screen.gt.sm"
-          >
+          <q-btn round dense flat color="grey-8" icon="language" v-if="$q.screen.gt.sm">
             <q-tooltip>Ingles</q-tooltip>
           </q-btn>
           <q-btn v-if="sesion" to="/" @click="Salir()" round flat>
@@ -128,8 +116,7 @@
           @click="toggleLeftDrawer"
         /> -->
       <q-item v-for="link in links1" :key="link.text" :to="link.to">
-        <q-btn flat :icon="link.icon" color="primary" :aria-label="link.text">
-        </q-btn>
+        <q-btn flat :icon="link.icon" color="primary" :aria-label="link.text"> </q-btn>
       </q-item>
     </q-footer>
     <q-page-container>
@@ -150,7 +137,11 @@ const sesion = true;
 
 // const sesion = inject("SESION");
 const links1 = ref([
-  { icon: "fact_check", text: "Ver Lista de Inactivos", to: "/" },
+  {
+    icon: "fact_check",
+    text: "Ver Lista de Inactivos",
+    to: "/Pasar_Asistencias",
+  },
   { icon: "person_add", text: "Registrar Alumnos", to: "/Registrar_Alumnos" },
   { icon: "view_list", text: "Perfil de Alumnos", to: "/Perfil_Alumnos" },
 ]);

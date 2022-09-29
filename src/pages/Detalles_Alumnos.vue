@@ -39,12 +39,7 @@
             label="Cedula"
             stack-label
           />
-          <q-input
-            v-model="alumno.edad"
-            :disable="editable"
-            label="Edad"
-            stack-label
-          />
+          <q-input v-model="alumno.edad" :disable="editable" label="Edad" stack-label />
           <q-input
             v-model="alumno.nac"
             :disable="editable"
@@ -66,12 +61,7 @@
         </div>
 
         <div class="col-5 offset-md-1">
-          <q-input
-            v-model="alumno.email"
-            :disable="editable"
-            label="Email"
-            stack-label
-          />
+          <q-input v-model="alumno.email" :disable="editable" label="Email" stack-label />
           <q-input
             v-model="alumno.emergencia"
             :disable="editable"
@@ -229,7 +219,7 @@
 
     <q-separator />
     <ArbolHabilidades />
-    <LineaTiempo />
+    <LineaTiempo :editable="editable" />
   </div>
 </template>
 
@@ -267,8 +257,7 @@ onMounted(() => {
     alumno.tlf = elem.tlf || "Vacio";
     alumno.emergencia = elem.emergencia || "Vacio";
     alumno.colegio_trabajo = elem.colegio_trabajo || "Vacio";
-    alumno.direccion_colegio_trabajo =
-      elem.direccion_colegio_trabajo || "Vacio";
+    alumno.direccion_colegio_trabajo = elem.direccion_colegio_trabajo || "Vacio";
     alumno.horario_colegio_trabajo = elem.horario_colegio_trabajo || "Vacio";
     alumno.registro = elem.registro;
     alumno.direccion = elem.direccion || "Vacio";

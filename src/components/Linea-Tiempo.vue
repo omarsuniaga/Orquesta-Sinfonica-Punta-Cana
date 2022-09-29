@@ -1,49 +1,71 @@
 <template>
   <div class="q-px-lg q-pb-md">
     <q-timeline color="secondary">
+      <h5>Reseña</h5>
+      <span>{{ informacion }}</span>
       <q-timeline-entry heading :body="fecha" />
 
-      <q-timeline-entry :title="titulo" :subtitle="fecha" :body="informacion">
-        <div
-          class="q-ma-xs flex justify-center"
-          style="width: 100%; max-width: 700px; min-width: 140px"
-        >
-          <h6>Calidad de Sonido</h6>
-          <q-slider
-            v-model="CalidadSonido"
-            :min="0"
-            :max="5"
-            color="green"
-            thumb-size="35px"
-            markers
-          />
-          <h6>Nivel del Vibrato</h6>
-          <q-slider
-            v-model="NivelVibrato"
-            :min="0"
-            :max="5"
-            color="green"
-            thumb-size="35px"
-            markers
-          />
+      <q-timeline-entry :title="titulo" :subtitle="fecha">
+        <div style="width: 100%; max-width: 700px; min-width: 140px">
+          <div class="row flex justify-between">
+            <div class="col-auto q-px-sm">
+              <h6>Calidad de Sonido</h6>
+              <q-slider
+                v-model="CalidadSonido"
+                :min="0"
+                :max="5"
+                color="green"
+                thumb-size="35px"
+                markers
+                label
+                label-always
+                :disable="editable"
+              />
+            </div>
+            <div class="col-auto q-px-sm">
+              <h6>Nivel del Vibrato</h6>
+              <q-slider
+                v-model="NivelVibrato"
+                :min="0"
+                :max="5"
+                color="green"
+                thumb-size="35px"
+                markers
+                label
+                label-always
+                :disable="editable"
+              />
+            </div>
+            <div class="col-auto q-px-ms">
+              <h6>Nivel del Vibrato</h6>
+              <q-slider
+                v-model="NivelVibrato"
+                :min="0"
+                :max="5"
+                color="green"
+                thumb-size="35px"
+                markers
+                label
+                label-always
+                :disable="editable"
+              />
+            </div>
+          </div>
         </div>
       </q-timeline-entry>
-
-      <q-timeline-entry
-        title="Event Title"
-        subtitle="February 21, 1986"
-        icon="delete"
-        body="body"
-      />
 
       <q-timeline-entry heading body="November, 2017" />
 
       <q-timeline-entry
+        v-for="(item, index) in 7"
+        :key="index"
         title="Event Title"
         subtitle="February 22, 1986"
         :body="informacion"
       />
     </q-timeline>
+    {{ templat }}
+    <q-btn @click="AddItem"> Crear Item</q-btn>
   </div>
 </template>
 
@@ -51,14 +73,48 @@
 import { ref, onMounted } from "vue";
 import { useRouter } from "vue-router";
 import { Nivel_Alumno } from "../data";
+const props = defineProps({
+  editable: Boolean,
+});
+const items = ref(["una", "dos", "tres"]);
+const templat = ref(`
+<q-timeline-entry
+        title="Event Title"
+        subtitle="February 22, 1986"
+        :body="informacion"
+      />
+    </q-timeline>
+`);
 const id = useRouter().currentRoute._rawValue.params.id;
-let titulo = "Indicadores";
+let titulo = "Diagnosticos";
 let fecha = "Febrero del 2022";
-let { CalidadSonido, NivelVibrato } = Nivel_Alumno();
-const informacion =
-  "Lorem ipsum dolor sit amet, consectetur adipisicing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum.";
+let {
+  CalidadSonido,
+  NivelVibrato,
+  TiempoTocando,
+  Instrumento,
+  Fila,
+  Atril,
+  FechaRegistrado,
+  Nivel,
+  Grupo,
+} = Nivel_Alumno();
 
+let Frase1 =
+  Grupo === "Orquesta"
+    ? `tocando en la ${Grupo} el ${Instrumento}. Pertenece a la Fila de ${Fila} en el atril ${Atril} por su nivel`
+    : Grupo === "Coro"
+    ? `cantando en el ${Grupo}. Pertenece a la Fila de ${Fila}`
+    : Grupo === "Iniciacion 1"
+    ? `en las filas de ${Grupo}. Necesita mas tiempo para subir de nivel`
+    : null;
+const informacion = `Este Alumno empezó el ${FechaRegistrado} en el nivel ${Nivel}, tiene ${TiempoTocando} ${Frase1}
+
+  `;
+const op1 = async (res) => {
+  console.log((CalidadSonido = res));
+};
 onMounted(async () => {
-  return console.log(CalidadSonido);
+  return;
 });
 </script>

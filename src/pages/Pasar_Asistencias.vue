@@ -17,16 +17,12 @@
           <div class="row">
             <BuscarAlumnos
               :text="text"
-              class=""
               style="width: 100%"
               @onFire="eventEmittedFromChild"
             ></BuscarAlumnos>
           </div>
         </div>
-        <div
-          class="justify-center flex row"
-          style="min-width: 375px; width: 100%"
-        >
+        <div class="justify-center flex row" style="min-width: 375px; width: 100%">
           <q-btn-toggle
             class="col-auto flex justify-around"
             v-model="grupo"
@@ -97,22 +93,15 @@
       >
         <span>Para pasar la asistencia, selecciona un grupo </span>
       </div>
-      <div
-        v-else
-        class="q-pa-xs doc-container"
-        style="min-width: 375px; width: 100%"
-      >
+
+      <div v-else class="q-pa-xs doc-container" style="min-width: 375px; width: 100%">
         <div class="row col-12">
           <div class="col-6">
             <span class="text-body1">Ausentes</span>
             <div v-if="Loading">
               <q-spinner-cube color="indigo" />
             </div>
-            <div
-              v-else
-              class="row flex justify-center scrollList"
-              ref="chatRef"
-            >
+            <div v-else class="row flex justify-center scrollList" ref="chatRef">
               <div
                 v-if="Resultado_Busqueda.length > 0"
                 style="width: 100%; max-width: 700px; min-width: 140px"
@@ -145,10 +134,7 @@
                   </q-item>
                 </q-card>
               </div>
-              <div
-                v-else
-                style="width: 100%; max-width: 700px; min-width: 140px"
-              >
+              <div v-else>
                 <q-card
                   class="q-ma-xs bg-red-3"
                   v-for="(item, index) in Listado"
@@ -225,6 +211,7 @@
         </div>
       </div>
       <HistorialAsistencias />
+
       <router-view />
     </q-page-container>
   </q-layout>
@@ -245,11 +232,9 @@ import { ref, onMounted, watchEffect, reactive } from "vue";
 import HistorialAsistencias from "src/components/Historial-Asistencias.vue";
 import BuscarAlumnos from "src/components/Buscar-Alumnos.vue";
 import { useRouter } from "vue-router";
-// provide("_Alumnos", _Alumnos);
-// provide("_Asistencias", _Asistencias);
 import { Dialog, useQuasar } from "quasar";
 const $q = reactive(useQuasar());
-const store = useCounterStore();
+// const store = useCounterStore();
 const router = useRouter();
 // let posicion = useRouter().currentRoute._rawValue.params.posicion;
 let date = ref(moment().format("YYYY-MM-DD"));
@@ -259,7 +244,7 @@ let Presentes = ref([]);
 let Listado = ref([]);
 let events = ref([]);
 let grupo = ref("All");
-let text = ref("");
+let text = ref(null);
 let Loading = ref(false);
 let visible = ref(false);
 
@@ -289,9 +274,7 @@ const quitar = (item) => {
   Presentes.value.filter((e) =>
     e.id === item.id
       ? Listado.value.push({ ...e, asistencia: false }) &&
-        Listado.value
-          .reverse()
-          .sort((a, b) => a.nombre.localeCompare(b.nombre)) &&
+        Listado.value.reverse().sort((a, b) => a.nombre.localeCompare(b.nombre)) &&
         Presentes.value.splice(Presentes.value.indexOf(e), 1)
       : null
   );
@@ -335,9 +318,7 @@ const resetear = () => {
 const Filtrar = async (fecha, res) => {
   visible.value = false;
   let r = await Buscar_Grupo(fecha, res).then((e) => e);
-  let Alumnos = await Mostrar_Listado().then((elem) =>
-    elem.map((e) => e.data())
-  );
+  let Alumnos = await Mostrar_Listado().then((elem) => elem.map((e) => e.data()));
   if (r) {
     resetear();
     const { presentes, ausentes } = await Buscar_Grupo(fecha, res).then(
@@ -373,9 +354,7 @@ const Filtrar = async (fecha, res) => {
           elem.grupo.find((e) =>
             e === "Coro"
               ? Listado.value.push({ ...elem, asistencia: false }) &&
-                Listado.value
-                  .reverse()
-                  .sort((a, b) => a.nombre.localeCompare(b.nombre))
+                Listado.value.reverse().sort((a, b) => a.nombre.localeCompare(b.nombre))
               : null
           )
         );
@@ -386,9 +365,7 @@ const Filtrar = async (fecha, res) => {
           elem.grupo.find((e) =>
             e === "Iniciacion 2"
               ? Listado.value.push({ ...elem, asistencia: false }) &&
-                Listado.value
-                  .reverse()
-                  .sort((a, b) => a.nombre.localeCompare(b.nombre))
+                Listado.value.reverse().sort((a, b) => a.nombre.localeCompare(b.nombre))
               : null
           )
         );
@@ -400,9 +377,7 @@ const Filtrar = async (fecha, res) => {
           elem.grupo.find((e) =>
             e === "Iniciacion 1"
               ? Listado.value.push({ ...elem, asistencia: false }) &&
-                Listado.value
-                  .reverse()
-                  .sort((a, b) => a.nombre.localeCompare(b.nombre))
+                Listado.value.reverse().sort((a, b) => a.nombre.localeCompare(b.nombre))
               : null
           )
         );
@@ -410,9 +385,7 @@ const Filtrar = async (fecha, res) => {
   }
 };
 const Buscar = async () => {
-  let Alumnos = await Mostrar_Listado().then((elem) =>
-    elem.map((e) => e.data())
-  );
+  let Alumnos = await Mostrar_Listado().then((elem) => elem.map((e) => e.data()));
   Buscar_Por_Fecha(date.value).then((Data) => {
     Data !== null
       ? resetear() && (visible.value = false) && console.log(Data)
