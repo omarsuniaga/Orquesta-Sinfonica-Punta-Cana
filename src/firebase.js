@@ -344,8 +344,26 @@ export const Grupo_Porcentaje_Fechas = async (grupo) => {
   return array;
 };
 export const Clasificacion_Generos = async () => {
-  let _l = await Leer_Alumnos().then();
-  console.log(_l);
+  const generos = {};
+  try {
+    let ConsultaFemenino = query(
+      collection(db, "ALUMNOS"),
+      where("sexo", "==", "Femenino")
+    );
+    let ConsultaMasculino = query(
+      collection(db, "ALUMNOS"),
+      where("sexo", "==", "Masculino")
+    );
+    const femenino = await getDocs(ConsultaFemenino);
+    const masculino = await getDocs(ConsultaMasculino);
+    femenino.empty === false || masculino === false
+      ? (generos.femenino = femenino.docs.length) &&
+        (generos.masculino = masculino.docs.length)
+      : false;
+  } catch (error) {
+    console.log(error);
+  }
+  return generos;
 };
 
 Clasificacion_Generos();
