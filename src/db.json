@@ -1,730 +1,363 @@
 [
   {
-    "grupo": ["Orquesta", "Solfeo 1", "Coro"],
-    "registro": "Wednesday, August 24, 2022 9:11 AM",
-    "tlf_madre": "+58-222-222-2222",
-    "colegio_trabajo": "Orquesta Sinfonica",
-    "direccion": "11800 NW 101 st Rd",
-    "padre": "Omar",
-    "cedula_madre": "8385167",
-    "horario_colegio_trabajo": "3:30-6:30",
-    "email": "omareduardo74@gmail.com",
+    "id": "1661346660784",
     "nombre": "Omar",
-    "edad": "13",
     "apellido": "Suniaga",
+    "edad": "13",
     "instrumento": "Violin",
-    "direccion_colegio_trabajo": "Centro Comunitario de Veron Punta Cana",
-    "Termino_Redes_Sociales": true,
-    "emergencia": "+18097176627",
     "nac": "13/10/1988",
-    "cedula_padre": "4050557",
-    "cedula": "19317628",
-    "tlf": "+18097176627",
-    "tlf_padre": "+58-333-333-3333",
-    "madre": "Elvia",
-    "Termino_Aporte_Mensual": true,
-    "id": "1661346660784"
+    "grupo": ["Orquesta", "Solfeo 1", "Coro"]
   },
   {
-    "tlf_madre": "+18091115789",
-    "nombre": "Ysabella Valentina",
-    "Termino_Redes_Sociales": true,
-    "padre": "Ronald Brito",
-    "emergencia": "Llamar a la mama",
-    "email": "Ysabella@gmail.com",
     "id": "1661350650058",
-    "colegio_trabajo": "Color de Esperanza",
-    "registro": "Wednesday, August 24, 2022 10:17 AM",
-    "cedula_padre": "12312312",
-    "direccion_colegio_trabajo": "Calle 3era Veron",
-    "instrumento": "Violoncello",
-    "cedula_madre": "1600000",
-    "horario_colegio_trabajo": "7:00 am - 12 m",
-    "tlf": "+1809-555-555-5555",
-    "nac": "12/07/2012",
-    "madre": "Marelvys Suniaga",
-    "tlf_padre": "+1809123123",
-    "cedula": "Vacio",
-    "Termino_Aporte_Mensual": true,
-    "edad": "9 años",
+    "nombre": "Ysabella Valentina",
     "apellido": "Brito Suniaga",
-    "grupo": ["Orquesta", "Coro"],
-    "direccion": "Veron - Punta Cana, Bavaro"
+    "nac": "12/07/2012",
+    "instrumento": "Violoncello",
+    "edad": "9 años",
+    "grupo": ["Orquesta", "Coro"]
   },
   {
-    "madre": "Sin Completar",
-    "tlf_madre": "Sin Completar",
-    "cedula_madre": "Sin Completar",
+    "id": "1661350968071",
+    "nombre": "Brianna Alexa",
     "apellido": "Molina",
     "edad": "8",
-    "tlf_padre": "Sin Completar",
-    "nombre": "Brianna Alexa",
-    "horario_colegio_trabajo": "Sin Completar",
     "nac": "09/05/2014",
-    "registro": "Wednesday, August 24, 2022 10:22 AM",
-    "Termino_Redes_Sociales": true,
-    "grupo": ["Iniciacion 1"],
-    "tlf": "N/A",
     "instrumento": "",
-    "id": "1661350968071",
-    "direccion_colegio_trabajo": "Sin Completar",
-    "cedula_padre": "Sin Completar",
-    "emergencia": "N/A",
-    "email": "N/A",
-    "Termino_Aporte_Mensual": true,
-    "colegio_trabajo": "Sin Completar",
-    "cedula": "N/A",
-    "direccion": "Sin Completar",
-    "padre": "Sin Completar"
+    "grupo": ["Iniciacion 1"]
   },
   {
-    "grupo": ["Iniciacion 1"],
-    "edad": "13",
-    "registro": "Wednesday, August 24, 2022 3:42 PM",
-    "cedula": "N/A",
-    "madre": "Sin Completar",
-    "tlf": "N/A",
-    "direccion_colegio_trabajo": "Sin Completar",
-    "nombre": "Chanel Crismeidi",
-    "tlf_madre": "Sin Completar",
-    "cedula_madre": "Sin Completar",
-    "nac": "06/07/2008",
-    "direccion": "Sin Completar",
-    "apellido": "Castro Joseph",
-    "tlf_padre": "Sin Completar",
-    "Termino_Aporte_Mensual": true,
     "id": "1661370163336",
-    "instrumento": "",
-    "colegio_trabajo": "Sin Completar",
-    "horario_colegio_trabajo": "Sin Completar",
-    "email": "N/A",
-    "emergencia": "N/A",
-    "Termino_Redes_Sociales": true,
-    "cedula_padre": "Sin Completar",
-    "padre": "Sin Completar"
-  },
-  {
-    "edad": "8 Años",
-    "Termino_Redes_Sociales": true,
-    "horario_colegio_trabajo": "Sin Completar",
-    "nombre": "Camila Sofia",
-    "direccion": "Sin Completar",
-    "direccion_colegio_trabajo": "Vacio",
-    "tlf_madre": "Sin Completar",
-    "cedula_madre": "Sin Completar",
-    "cedula": "Vacio",
-    "emergencia": "Vacio",
-    "madre": "Sin Completar",
-    "cedula_padre": "Sin Completar",
-    "apellido": "Melo Dominguez",
-    "instrumento": "N/A",
-    "padre": "Sin Completar",
-    "tlf": "Vacio",
+    "nombre": "Chanel Crismeidi",
+    "apellido": "Castro Joseph",
+    "edad": "13",
+    "nac": "06/07/2008",
     "grupo": ["Iniciacion 1"],
-    "colegio_trabajo": "Vacio",
-    "tlf_padre": "Sin Completar",
-    "registro": "Wednesday, August 24, 2022 3:53 PM",
-    "nac": "30/13/12",
-    "Termino_Aporte_Mensual": true,
-    "id": "1661370833414",
-    "email": "N/A"
+    "instrumento": ""
   },
   {
-    "nac": "01/11/2010",
-    "madre": "Sin Completar",
-    "horario_colegio_trabajo": "Sin Completar",
-    "emergencia": "N/A",
-    "cedula": "N/A",
-    "padre": "Sin Completar",
-    "apellido": "Masellis Polsenllis",
-    "Termino_Redes_Sociales": true,
-    "colegio_trabajo": "Sin Completar",
-    "edad": "11",
-    "tlf_madre": "Sin Completar",
-    "instrumento": "Violin",
-    "direccion": "Sin Completar",
-    "direccion_colegio_trabajo": "Sin Completar",
-    "email": "N/A",
+    "id": "1661370833414",
+    "nombre": "Camila Sofia",
+    "apellido": "Melo Dominguez",
+    "edad": "8 Años",
+    "instrumento": "N/A",
+    "grupo": ["Iniciacion 1"],
+    "nac": "30/13/12"
+  },
+  {
     "id": "1661464484530",
     "nombre": "Greysi",
-    "registro": "Thursday, August 25, 2022 5:54 PM",
-    "cedula_madre": "Sin Completar",
-    "tlf_padre": "Sin Completar",
-    "Termino_Aporte_Mensual": true,
-    "cedula_padre": "Sin Completar",
-    "tlf": "N/A",
+    "apellido": "Masellis Polsenllis",
+    "edad": "11",
+    "nac": "01/11/2010",
+    "instrumento": "Violin",
     "grupo": ["Iniciacion 1", "Orquesta"]
   },
   {
-    "direccion_colegio_trabajo": "Sin Completar",
-    "tlf": "N/A",
-    "cedula_padre": "Sin Completar",
-    "Termino_Redes_Sociales": true,
-    "padre": "Sin Completar",
-    "direccion": "Sin Completar",
     "instrumento": "Violoncello",
-    "cedula_madre": "Sin Completar",
     "grupo": ["Orquesta"],
-    "horario_colegio_trabajo": "Sin Completar",
-    "email": "N/A",
     "id": "1662214622972",
     "apellido": "Baez Paniagua",
-    "Termino_Aporte_Mensual": true,
     "edad": "17",
-    "cedula": "N/A",
-    "emergencia": "N/A",
-    "colegio_trabajo": "Sin Completar",
-    "tlf_padre": "Sin Completar",
     "nac": "17/11/2004",
-    "registro": "Saturday, September 3, 2022 10:17 AM",
-    "tlf_madre": "Sin Completar",
-    "nombre": "Carlianny ",
-    "madre": "Sin Completar"
+    "nombre": "Carlianny "
   },
   {
     "apellido": "Valenzuela ",
     "nac": "08/06/2005",
-    "registro": "Sunday, September 4, 2022 9:47 PM",
-    "tlf_madre": "Sin Completar",
     "instrumento": "Violin",
-    "cedula": "Vacío ",
     "id": "1662342453778",
-    "madre": "Yudelka Muñoz",
     "edad": "17",
-    "cedula_madre": "Sin Completar",
-    "Termino_Aporte_Mensual": true,
-    "direccion": "Pueblo Bavaro ",
-    "direccion_colegio_trabajo": "Sin Completar",
-    "horario_colegio_trabajo": "7:00 a 4:00pm",
-    "tlf": "8298890875",
-    "tlf_padre": "8298761669",
     "nombre": "Fernanda",
-    "grupo": ["Orquesta"],
-    "Termino_Redes_Sociales": true,
-    "padre": "Fernando Valenzuela ",
-    "emergencia": "8298761669",
-    "email": "Valenzuelaf357@gmail.com",
-    "cedula_padre": "Sin Completar",
-    "colegio_trabajo": "Calasanz Pueblo Bavaro "
+    "grupo": ["Orquesta"]
   },
   {
     "apellido": "Delgado",
     "nombre": "Tahairy",
-    "tlf_madre": "8299776638",
-    "tlf_padre": "Sin Completar",
-    "cedula_padre": "Sin Completar",
     "nac": "30/04/2004",
     "instrumento": "Violin",
     "id": "1662342562503",
-    "tlf": "8494537555",
-    "cedula": "085580927",
-    "horario_colegio_trabajo": "Sin Completar",
-    "direccion_colegio_trabajo": "Sin Completar",
-    "cedula_madre": "Sin Completar",
     "grupo": ["Orquesta"],
-    "direccion": "Ciudad del Sol, Veron ",
-    "Termino_Redes_Sociales": true,
-    "colegio_trabajo": "Sin Completar",
-    "edad": "18",
-    "emergencia": "8299776638",
-    "Termino_Aporte_Mensual": true,
-    "madre": "Marianella Quintero",
-    "registro": "Sunday, September 4, 2022 9:49 PM",
-    "padre": "Renan Delgado",
-    "email": "Tahairydelgado123@gmail.com"
+    "edad": "18"
   },
   {
     "edad": "17",
     "id": "1662342600096",
     "grupo": ["Orquesta"],
-    "cedula_madre": "Sin Completar",
-    "tlf_madre": "Sin Completar",
     "nombre": "Angel",
-    "colegio_trabajo": "Liceo de Artes Ramón Matías Mella ",
-    "tlf_padre": "Sin Completar",
-    "direccion_colegio_trabajo": "Sin Completar",
-    "horario_colegio_trabajo": "Sin Completar",
     "instrumento": "Violin",
-    "madre": "Sin Completar",
-    "emergencia": "8097513533",
-    "registro": "Sunday, September 4, 2022 9:50 PM",
-    "padre": "Sin Completar",
     "nac": "11/10/2004",
-    "direccion": "Las dos Bardas, Calle Tercera",
-    "Termino_Redes_Sociales": true,
-    "Termino_Aporte_Mensual": true,
-    "cedula": "N/A",
-    "email": "Angelcalderon687@gmail.com",
-    "tlf": "N/A",
-    "cedula_padre": "Sin Completar",
     "apellido": "Calderon"
   },
   {
-    "direccion_colegio_trabajo": "Sin Completar",
     "nac": "",
     "id": "1662342625442",
-    "colegio_trabajo": "Sin Completar",
-    "email": "N/A",
-    "registro": "Sunday, September 4, 2022 9:50 PM",
     "nombre": "Jeraimi",
-    "horario_colegio_trabajo": "Sin Completar",
-    "tlf": "N/A",
-    "emergencia": "N/A",
-    "Termino_Aporte_Mensual": true,
-    "cedula_madre": "Sin Completar",
     "apellido": "Castillo",
-    "direccion": "Sin Completar",
-    "tlf_madre": "Sin Completar",
-    "tlf_padre": "Sin Completar",
-    "cedula_padre": "Sin Completar",
     "instrumento": "Violin",
-    "madre": "Sin Completar",
     "grupo": ["Orquesta"],
-    "padre": "Sin Completar",
-    "cedula": "N/A",
-    "edad": "",
-    "Termino_Redes_Sociales": true
+    "edad": ""
   },
   {
-    "apellido": "Lamerique",
-    "colegio_trabajo": "Sin Completar",
-    "cedula": "N/A",
-    "registro": "Sunday, September 4, 2022 9:50 PM",
-    "emergencia": "N/A",
-    "tlf_padre": "Sin Completar",
-    "tlf_madre": "Sin Completar",
-    "cedula_padre": "Sin Completar",
-    "email": "N/A",
-    "grupo": ["Orquesta"],
-    "Termino_Redes_Sociales": true,
-    "edad": "",
-    "Termino_Aporte_Mensual": true,
-    "nac": "",
-    "padre": "Sin Completar",
-    "instrumento": "Violin",
-    "cedula_madre": "Sin Completar",
-    "direccion_colegio_trabajo": "Sin Completar",
-    "horario_colegio_trabajo": "Sin Completar",
-    "tlf": "N/A",
-    "direccion": "Sin Completar",
     "id": "1662342656180",
     "nombre": "Dyakenson",
-    "madre": "Sin Completar"
+    "apellido": "Lamerique",
+    "grupo": ["Orquesta"],
+    "edad": "",
+    "nac": "",
+    "instrumento": "Violin"
   },
   {
-    "Termino_Aporte_Mensual": true,
-    "horario_colegio_trabajo": "Sin Completar",
-    "cedula_madre": "Sin Completar",
-    "madre": "Sin Completar",
     "nac": "",
-    "tlf_padre": "Sin Completar",
-    "email": "N/A",
     "instrumento": "Violin",
     "edad": "",
-    "direccion": "Sin Completar",
-    "direccion_colegio_trabajo": "Sin Completar",
     "grupo": ["Orquesta"],
-    "tlf_madre": "Sin Completar",
-    "cedula_padre": "Sin Completar",
-    "emergencia": "N/A",
     "apellido": "Abreu",
-    "cedula": "N/A",
-    "colegio_trabajo": "Sin Completar",
-    "Termino_Redes_Sociales": true,
-    "registro": "Sunday, September 4, 2022 9:51 PM",
-    "tlf": "N/A",
     "id": "1662342682409",
-    "nombre": "Edelyn",
-    "padre": "Sin Completar"
+    "nombre": "Edelyn"
   },
   {
-    "cedula_padre": "Sin Completar",
-    "tlf": "N/A",
-    "direccion_colegio_trabajo": "Sin Completar",
-    "tlf_padre": "Sin Completar",
-    "direccion": "Sin Completar",
-    "padre": "Sin Completar",
-    "cedula": "N/A",
-    "email": "N/A",
-    "Termino_Aporte_Mensual": true,
     "grupo": ["Orquesta"],
     "nac": "",
     "edad": "",
-    "tlf_madre": "Sin Completar",
-    "registro": "Sunday, September 4, 2022 9:51 PM",
-    "Termino_Redes_Sociales": true,
     "id": "1662342703311",
-    "emergencia": "N/A",
-    "madre": "Sin Completar",
     "nombre": "Yeiri",
-    "colegio_trabajo": "Sin Completar",
     "instrumento": "Violin",
-    "horario_colegio_trabajo": "Sin Completar",
-    "apellido": "Michel",
-    "cedula_madre": "Sin Completar"
+    "apellido": "Michel"
   },
   {
-    "tlf_madre": "Sin Completar",
     "grupo": ["Orquesta"],
     "instrumento": "Violín ",
-    "madre": "Sin Completar",
-    "email": "N/A",
-    "cedula_padre": "Sin Completar",
-    "padre": "Sin Completar",
-    "tlf": "N/A",
-    "horario_colegio_trabajo": "Sin Completar",
-    "direccion_colegio_trabajo": "Sin Completar",
-    "cedula": "N/A",
     "apellido": "Acosta",
-    "emergencia": "N/A",
     "nac": "",
-    "cedula_madre": "Sin Completar",
-    "registro": "Sunday, September 4, 2022 9:52 PM",
     "nombre": "Yairol",
-    "tlf_padre": "Sin Completar",
     "id": "1662342729576",
-    "Termino_Aporte_Mensual": true,
-    "colegio_trabajo": "Sin Completar",
-    "edad": "",
-    "Termino_Redes_Sociales": true,
-    "direccion": "Sin Completar"
+    "edad": ""
   },
   {
-    "Termino_Redes_Sociales": true,
-    "Termino_Aporte_Mensual": true,
-    "registro": "Sunday, September 4, 2022 9:52 PM",
     "instrumento": "Violín ",
-    "direccion_colegio_trabajo": "Sin Completar",
     "id": "1662342750547",
     "apellido": "Santana ",
-    "cedula": "N/A",
-    "colegio_trabajo": "Sin Completar",
-    "cedula_padre": "Sin Completar",
     "nombre": "Yunilssa",
-    "tlf_madre": "Sin Completar",
     "edad": "",
     "nac": "",
-    "tlf_padre": "Sin Completar",
-    "padre": "Sin Completar",
-    "grupo": ["Orquesta"],
-    "emergencia": "N/A",
-    "email": "N/A",
-    "cedula_madre": "Sin Completar",
-    "direccion": "Sin Completar",
-    "madre": "Sin Completar",
-    "horario_colegio_trabajo": "Sin Completar",
-    "tlf": "N/A"
+    "grupo": ["Orquesta"]
   },
   {
     "edad": "",
-    "cedula": "N/A",
     "nombre": "Nathanie",
     "grupo": ["Orquesta"],
-    "direccion": "Sin Completar",
-    "horario_colegio_trabajo": "Sin Completar",
     "apellido": "Castro",
-    "cedula_padre": "Sin Completar",
-    "tlf": "N/A",
-    "colegio_trabajo": "Sin Completar",
-    "emergencia": "N/A",
     "id": "1662342771521",
-    "madre": "Sin Completar",
-    "cedula_madre": "Sin Completar",
-    "registro": "Sunday, September 4, 2022 9:52 PM",
-    "Termino_Redes_Sociales": true,
-    "email": "N/A",
-    "padre": "Sin Completar",
     "nac": "",
-    "Termino_Aporte_Mensual": true,
-    "tlf_padre": "Sin Completar",
-    "direccion_colegio_trabajo": "Sin Completar",
-    "instrumento": "Violin",
-    "tlf_madre": "Sin Completar"
+    "instrumento": "Violin"
   },
   {
-    "direccion": "María Veron",
-    "registro": "Sunday, September 4, 2022 9:53 PM",
     "nombre": "Sor Jeilee ",
     "nac": "06/01/2006",
     "grupo": ["Orquesta"],
-    "cedula": "",
-    "Termino_Aporte_Mensual": true,
-    "tlf_madre": "Sin Completar",
-    "tlf": "8096681794",
     "id": "1662342790640",
-    "direccion_colegio_trabajo": "Veron",
-    "padre": "No aplica",
     "apellido": "Hunt",
-    "colegio_trabajo": "Liceo de Artes Ramón Mella",
     "edad": "Vacio",
-    "tlf_padre": "Sin Completar",
-    "emergencia": "N/A",
-    "horario_colegio_trabajo": "8:00 - 4:00pm",
-    "cedula_padre": "Sin Completar",
-    "instrumento": "Viola",
-    "Termino_Redes_Sociales": true,
-    "cedula_madre": "Sin Completar",
-    "madre": "Soraida Ramos ",
-    "email": "Sorjeyleehunt2006@gimail.com"
+    "instrumento": "Viola"
   },
   {
     "nombre": "Eliezer ",
     "instrumento": "Viola",
-    "cedula_padre": "Sin Completar",
-    "cedula": "N/A",
-    "madre": "Sin Completar",
-    "tlf_padre": "Sin Completar",
     "nac": "",
-    "colegio_trabajo": "Sin Completar",
-    "cedula_madre": "Sin Completar",
-    "emergencia": "N/A",
-    "registro": "Sunday, September 4, 2022 9:53 PM",
-    "horario_colegio_trabajo": "Sin Completar",
-    "Termino_Redes_Sociales": true,
-    "email": "N/A",
-    "direccion": "Sin Completar",
     "grupo": ["Orquesta"],
     "id": "1662342817442",
     "edad": "",
-    "apellido": "Sano",
-    "direccion_colegio_trabajo": "Sin Completar",
-    "tlf": "N/A",
-    "tlf_madre": "Sin Completar",
-    "padre": "Sin Completar",
-    "Termino_Aporte_Mensual": true
+    "apellido": "Sano"
   },
   {
-    "direccion_colegio_trabajo": "Sin Completar",
-    "colegio_trabajo": "Sin Completar",
     "nombre": "Francisco",
     "id": "1662342846337",
-    "tlf_madre": "Sin Completar",
     "grupo": ["Orquesta"],
-    "cedula": "N/A",
-    "tlf": "N/A",
-    "madre": "Sin Completar",
     "apellido": "López",
     "instrumento": "Viola",
-    "horario_colegio_trabajo": "Sin Completar",
-    "cedula_padre": "Sin Completar",
-    "Termino_Aporte_Mensual": true,
-    "Termino_Redes_Sociales": true,
     "edad": "",
-    "padre": "Sin Completar",
-    "cedula_madre": "Sin Completar",
-    "registro": "Sunday, September 4, 2022 9:54 PM",
-    "direccion": "Sin Completar",
-    "nac": "",
-    "emergencia": "N/A",
-    "tlf_padre": "Sin Completar",
-    "email": "N/A"
+    "nac": ""
   },
   {
-    "madre": "Romina Aschpurwis ",
-    "cedula_madre": "Sin Completar",
-    "emergencia": "N/A",
     "edad": "9 años",
     "nombre": "Aaron",
     "grupo": ["Orquesta"],
-    "direccion_colegio_trabajo": "Sin Completar",
     "nac": "12/02/2003",
-    "Termino_Redes_Sociales": true,
     "id": "1662342863129",
-    "padre": "Flavio Di Lorenzo ",
-    "cedula": "N/A",
     "instrumento": "Violoncello",
-    "tlf_padre": "Sin Completar",
-    "cedula_padre": "Sin Completar",
-    "email": "N/A",
-    "Termino_Aporte_Mensual": true,
-    "direccion": "Sin Completar",
-    "registro": "Sunday, September 4, 2022 9:54 PM",
-    "tlf": "N/A",
-    "tlf_madre": "Sin Completar",
-    "apellido": "Di Lorenzo",
-    "horario_colegio_trabajo": "Sin Completar",
-    "colegio_trabajo": "Sin Completar"
+    "apellido": "Di Lorenzo"
   },
   {
     "id": "1662342925106",
-    "tlf_madre": "Sin Completar",
-    "colegio_trabajo": "Sin Completar",
-    "direccion_colegio_trabajo": "Sin Completar",
-    "Termino_Aporte_Mensual": true,
-    "madre": "Sin Completar",
-    "horario_colegio_trabajo": "Sin Completar",
     "edad": "",
-    "cedula_padre": "Sin Completar",
-    "email": "N/A",
-    "registro": "Sunday, September 4, 2022 9:55 PM",
     "apellido": "Soñé ",
     "nombre": "María",
-    "Termino_Redes_Sociales": true,
-    "tlf": "N/A",
-    "tlf_padre": "Sin Completar",
     "instrumento": "Flauta",
-    "direccion": "Sin Completar",
-    "cedula_madre": "Sin Completar",
     "nac": "",
-    "emergencia": "N/A",
-    "padre": "Sin Completar",
-    "grupo": ["Orquesta"],
-    "cedula": "N/A"
+    "grupo": ["Orquesta"]
   },
   {
     "edad": "",
     "nombre": "Bárbara ",
-    "direccion": "Sin Completar",
-    "Termino_Redes_Sociales": true,
-    "registro": "Sunday, September 4, 2022 9:55 PM",
-    "padre": "Sin Completar",
-    "tlf_padre": "Sin Completar",
     "nac": "",
-    "email": "N/A",
     "apellido": "Holmes",
     "grupo": ["Orquesta", "Coro"],
-    "tlf": "N/A",
-    "Termino_Aporte_Mensual": true,
-    "id": "1662342948847",
-    "emergencia": "N/A",
-    "cedula_padre": "Sin Completar",
-    "direccion_colegio_trabajo": "Veron",
-    "cedula_madre": "Sin Completar",
-    "instrumento": "Violoncello ",
-    "cedula": "N/A",
-    "madre": "Sin Completar",
-    "tlf_madre": "Sin Completar",
-    "horario_colegio_trabajo": "Sin Completar",
-    "colegio_trabajo": "Licro de Artes Ramón Matías Mella "
+    "id": "",
+    "instrumento": "Violoncello "
   },
   {
-    "cedula_padre": "Sin Completar",
-    "direccion": "Sin Completar",
     "nombre": "Jesula",
-    "tlf_madre": "Sin Completar",
-    "email": "N/A",
-    "registro": "Sunday, September 4, 2022 9:56 PM",
-    "Termino_Aporte_Mensual": true,
-    "direccion_colegio_trabajo": "Sin Completar",
-    "madre": "Sin Completar",
-    "cedula": "N/A",
-    "padre": "Sin Completar",
-    "horario_colegio_trabajo": "Sin Completar",
-    "cedula_madre": "Sin Completar",
     "nac": "",
-    "tlf_padre": "Sin Completar",
-    "Termino_Redes_Sociales": true,
     "grupo": ["Coro", "Iniciacion 2"],
-    "colegio_trabajo": "Sin Completar",
     "id": "1662342968376",
-    "emergencia": "N/A",
-    "tlf": "N/A",
     "apellido": "Lamerique",
     "edad": "",
     "instrumento": "1era Voz"
   },
   {
-    "madre": "Sin Completar",
     "edad": "",
-    "cedula_madre": "Sin Completar",
-    "registro": "Sunday, September 4, 2022 9:56 PM",
-    "horario_colegio_trabajo": "Sin Completar",
-    "tlf_padre": "Sin Completar",
-    "emergencia": "N/A",
-    "cedula": "N/A",
-    "direccion": "Sin Completar",
-    "tlf_madre": "Sin Completar",
-    "email": "N/A",
     "nombre": "Smailin",
-    "direccion_colegio_trabajo": "Sin Completar",
-    "cedula_padre": "Sin Completar",
     "nac": "",
     "grupo": ["Iniciacion 2", "Coro"],
-    "padre": "Sin Completar",
     "id": "1662342997664",
-    "colegio_trabajo": "Sin Completar",
     "apellido": "Pérez ",
-    "instrumento": "1era Voz",
-    "tlf": "N/A",
-    "Termino_Aporte_Mensual": true,
-    "Termino_Redes_Sociales": true
+    "instrumento": "1era Voz"
   },
   {
     "instrumento": "1era Voz",
-    "direccion": "Sin Completar",
-    "madre": "Sin Completar",
     "apellido": "Sentelus",
-    "padre": "Sin Completar",
-    "emergencia": "N/A",
-    "horario_colegio_trabajo": "Sin Completar",
-    "tlf_madre": "Sin Completar",
     "nombre": "Dasnisse",
-    "cedula": "N/A",
-    "Termino_Redes_Sociales": true,
-    "cedula_madre": "Sin Completar",
     "nac": "",
-    "tlf": "N/A",
-    "colegio_trabajo": "Sin Completar",
-    "email": "N/A",
-    "direccion_colegio_trabajo": "Sin Completar",
-    "Termino_Aporte_Mensual": true,
-    "cedula_padre": "Sin Completar",
     "grupo": ["Iniciacion 1"],
-    "tlf_padre": "Sin Completar",
     "edad": "",
-    "id": "1662343056211",
-    "registro": "Sunday, September 4, 2022 9:57 PM"
+    "id": "1662343056211"
   },
   {
-    "emergencia": "N/A",
-    "cedula": "N/A",
     "grupo": ["Iniciacion 1", "Coro"],
     "edad": "",
-    "registro": "Sunday, September 4, 2022 9:58 PM",
-    "tlf_padre": "Sin Completar",
-    "Termino_Aporte_Mensual": true,
-    "Termino_Redes_Sociales": true,
-    "direccion": "Sin Completar",
-    "padre": "Sin Completar",
     "apellido": "Sujute",
-    "cedula_padre": "Sin Completar",
     "id": "1662343086605",
-    "cedula_madre": "Sin Completar",
     "nac": "",
-    "horario_colegio_trabajo": "Sin Completar",
-    "madre": "Sin Completar",
-    "email": "N/A",
-    "tlf": "N/A",
-    "tlf_madre": "Sin Completar",
     "instrumento": "2da Voz",
-    "colegio_trabajo": "Sin Completar",
-    "direccion_colegio_trabajo": "Sin Completar",
     "nombre": "Jurma"
   },
   {
     "apellido": "Fisner ",
     "grupo": ["Orquesta"],
-    "padre": "Vacio",
     "edad": "Vacio",
-    "horario_colegio_trabajo": "Vacio",
-    "cedula_padre": "Vacio",
     "id": "1662827336071",
-    "tlf": "Vacio",
     "nombre": "José Miguel",
-    "tlf_padre": "Vacio",
-    "direccion": "Vacio",
-    "emergencia": "Vacio",
-    "registro": "Saturday, September 10, 2022 12:28 PM",
-    "Termino_Aporte_Mensual": true,
     "instrumento": "Viola",
-    "colegio_trabajo": "Vacio",
-    "direccion_colegio_trabajo": "Vacio",
-    "Termino_Redes_Sociales": true,
-    "tlf_madre": "Vacio",
-    "cedula": "Vacio",
-    "nac": "Vacio",
-    "email": "Vacio",
-    "cedula_madre": "Vacio",
-    "madre": "Vacio"
+    "nac": "Vacio"
   }
 ]
+
+1663248359918 => Manuela Gil Aquino
+1663248027973 => Arlenny Reyes Maitre
+1663247917745 => Kaitlyn Y Mejia Evangelista
+1663249072151 => Escarlet Martinez Castro
+1663244558652 => Catherina Clairflis
+1663244485536 => Amelia Cabrera Mejia
+1663244388253 => Braily Isaac Alcantara M
+1663244521168 => Wilfreisy Celestino
+1663247662346 => Dauni Josph
+1663247756900 => Elianny Y Mejia Evangelista
+1663249869919 => Analia Pierre Santly
+1661370163336 => Chanel Crismeidi Castro Joseph
+1662342968376 => Jesula Lamerique
+1662343086605 => Jurma Sujute
+1663250097254 => Gelen Malaver
+1663250147427 => Ashley Sánchez
+1663248993846 => Zoila Esther
+1663250208006 => Juna Alan
+1663250258927 => Angel David Almonte
+1663250290173 => Alondra Moreta
+1663248993846 => Zoila Esther
+1663248500348 => Yereni Michael
+1662342703311 => Yeiry
+1663248280420 => Wilmery Ruiz Gomez
+1662342562503 => Tahairy
+1662342997664 => Smailin
+1663249124050 => Lucy Estela Thenor Jn Phillippe
+1663244767062 => Jiselle Dahomy Feliz Fernández
+1662342968376 => Jesula
+1663250270842 => Gensy Yorgenis M. García
+1662342846337 => Francisco
+1663244746589 => Esmeralda Malaver
+1662342817442 => Eliezer
+1662342682409 => Edelyn
+1663250191623 => Deisy
+1662343056211 => Denisse
+1663244388253 => Braily
+1663250147427 => Ashley
+1663250258927 => Angel
+1663249869919 => Analia
+1663249659776 => Anaiah Bradandt
+1663250290173 => Alondra
+1663250018817 => Anaisbela Sentelus
+1662342600096 => Angel Calderon
+1663248027973 => Arlenny
+1662342948847 => Bárbara Holmes
+1661370163336 => Chanel
+1663247662346 => Dauni
+1662342656180 => Dyakenson
+1663247756900 => Elianny
+1663249072151 => Escarlet
+1663250120179 => Felix Manuel De León
+1663250097254 => Gelen
+1663244638297 => Jaime De la Cruz Nicolás
+1663244445740 => Johan Moises Bautista Mitil
+1663250228964 => Josue
+1662343086605 => Jurma
+1663244839190 => Lisette Denis Feliz Fernández
+1663248359918 => Manuela
+1662342790640 => Sor
+1663244521168 => Wilfreisy
+1663249996067 => Wilson Esteban Masellis
+1663247416581 => Yarolin Jimenez Ramirez
+1661350650058 => Ysabella
+
+10/09/22
+1662827336071 => Jose Miguel Fisner
+1662342453778 => Fernanda
+1662342600096 => Angel
+1662342846337 => Francisco
+1662342790640 => Sor
+1662342656180 => Dyakenson
+1662342562503 => Tahairy
+1662342703311 => Yeiry
+
+12/09/22
+1662342703311 => Yeiry
+1662342863129 => Aaron
+1662342600096 => Angel
+1662342948847 => Barbara
+1662342656180 => Dyakenson
+1662342682409 => Edelyn
+1662342453778 => Fernanda Valenzuela
+1662342846337 => Francisco
+1662342625442 => Jeraimy
+1662342790640 => Sor
+1662342562503 => Tahairy
+1661350650058 => Ysabella
+1662342925106 => Maria
+
+22/09/22
+1663244521168 => Wilfreisy
+1662343086605 => Jurma
+1663244445740 => Johan
+1663247756900 => Elianny
+1663244558652 => Catherina
+1663248027973 => Arlenny
+1663249869919 => Analia
+1663249659776 => Anaiah
+1663250290173 => Alondra
+1663244485536 => Amelia
+1663250018817 => Anaisbela
+1663250258927 => Angel
+1663244388253 => Braily
+1663247662346 => Dauni
+1663250270842 => Gensy
+1663250228964 => Josue
+1663247917745 => Kaitlyn

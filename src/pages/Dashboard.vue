@@ -14,94 +14,61 @@
         </template>
       </q-input>
       <q-space></q-space>
-      <q-btn color="white" text-color="black" icon="fas fa-moon" />
+      <q-btn color="white" text-color="black" icon="fas fa-moon"></q-btn>
     </q-toolbar>
     <q-toolbar>
       <h6 class="text-weight-bolder">Dashboard</h6>
-      <q-space></q-space>
+      <q-space />
       <q-icon name="fas fa-calendar-minus" size="" class="q-mr-sm" />
       <div class="text-overline">{{ Fecha }}</div>
     </q-toolbar>
-    <div class="row q-col-gutter-md top">
-      <div class="col-3">
-        <q-card class="q-mx-md" bordered>
+    <div class="row top flex flex-center">
+      <div class="col-auto">
+        <q-card class="q-ma-md q-pa-md" bordered>
+          <div class="text-overline">La Orquesta</div>
           <div class="flex flex-center column">
-            <q-circular-progress
-              show-value
-              font-size="12px"
-              value="30"
-              size="100px"
-              :thickness="0.22"
-              color="green-7"
-              track-color="green-2"
-              class="q-ma-md"
-            >
-              784 Patients
-            </q-circular-progress>
-            <div><q-badge color="green-2" rounded class="q-mr-sm" />Woman 40%</div>
-            <div class="q-mb-xl">
-              <q-badge color="green-7" rounded class="q-mr-sm" />Man 60%
-            </div>
+            <VueApexCharts
+              type="pie"
+              :options="pie.chartOptions"
+              :series="pie.series"
+            ></VueApexCharts>
           </div>
         </q-card>
       </div>
-      <div class="col-3">
-        <q-card class="q-mx-md q-pa-md" bordered>
-          <div class="text-overline">New patients</div>
+      <div class="col-auto">
+        <q-card class="q-ma-md q-pa-md" bordered>
+          <div class="text-overline">La Orquesta</div>
+          <div class="flex flex-center column">
+            <VueApexCharts
+              type="bar"
+              :options="linea.chartOptions"
+              :series="linea.series"
+            ></VueApexCharts>
+          </div>
+        </q-card>
+      </div>
+      <div class="flex justify-between no-wrap">
+        <q-card class="q-mx-md q-pa-md">
+          <div class="text-overline">Total Alumnos</div>
           <div class="flex flex-center row">
-            <div class="text-h4 text-weight-bolder q-mr-md">54</div>
-            <q-chip color="green-1" text-color="green-3" icon="fas fa-chevron-up"
-              >51%</q-chip
+            <div class="text-h4 text-weight-bolder q-mr-md">
+              {{ TotalAlumnos }}
+            </div>
+            <q-chip
+              color="green-1"
+              text-color="green-3"
+              icon="fas fa-chevron-up"
+              >% que asisten</q-chip
             >
           </div>
         </q-card>
-        <q-card class="q-mx-md q-pa-md q-mt-sm" bordered>
-          <div class="text-overline">Old patients</div>
+        <q-card class="q-mx-md q-pa-md">
+          <div class="text-overline">Alumnos Irregulares</div>
           <div class="flex flex-center row">
             <div class="text-h4 text-weight-bolder q-mr-md">32</div>
             <q-chip color="red-1" text-color="red-3" icon="fas fa-chevron-down"
               >02%</q-chip
             >
-          </div>
-        </q-card>
-      </div>
-      <div class="col-6">
-        <q-card class="q-mx-md q-pa-md doctors" bordered>
-          <div class="text-overline">Statistic</div>
-          <div class="">
-            <q-carousel
-              v-model="slide"
-              vertical
-              transition-prev="slide-down"
-              transition-next="slide-up"
-              swipeable
-              animated
-              control-color="green-7"
-              navigation-icon="radio_button_unchecked"
-              navigation
-              padding
-              arrows
-              height="160px"
-              class="text-black shadow-1 rounded-borders"
-            >
-              <q-carousel-slide name="style" class="column no-wrap flex-center">
-                <div class="q-mt-md text-center">
-                  <p>Lunes:</p>
-                  <p>Clases de Chelo: 3:30</p>
-                  <p>Clases de Chelo: 3:30</p>
-                  <p>Clases de Chelo: 3:30</p>
-                </div>
-              </q-carousel-slide>
-              <q-carousel-slide name="tv" class="column no-wrap flex-center">
-                <div class="q-mt-md text-center">Miercoles</div>
-              </q-carousel-slide>
-              <q-carousel-slide name="layers" class="column no-wrap flex-center">
-                <div class="q-mt-md text-center">Jueves</div>
-              </q-carousel-slide>
-              <q-carousel-slide name="layers" class="column no-wrap flex-center">
-                <div class="q-mt-md text-center">Sabados</div>
-              </q-carousel-slide>
-            </q-carousel>
           </div>
         </q-card>
       </div>
@@ -112,7 +79,12 @@
 
       <div class="text-overline">Your patients today</div>
       <div class="text-caption text-green q-ml-md">All patients</div>
-      <q-icon name="fas fa-chevron-right" size="10px" class="" color="green-7" />
+      <q-icon
+        name="fas fa-chevron-right"
+        size="10px"
+        class=""
+        color="green-7"
+      />
     </q-toolbar>
     <div class="row q-col-gutter-md">
       <div class="col-6">
@@ -199,7 +171,9 @@
         <q-card class="q-mx-md q-pa-sm" bordered>
           <div class="row q-col-gutter-md">
             <div class="col-3">
-              <div class="text-caption text-weight-bolder q-mt-lg">10:00 am</div>
+              <div class="text-caption text-weight-bolder q-mt-lg">
+                10:00 am
+              </div>
             </div>
             <div class="col-9">
               <q-card class="q-px-sm colorCard" bordered flat>
@@ -223,7 +197,9 @@
           </div>
           <div class="row q-col-gutter-md q-mt-md">
             <div class="col-3">
-              <div class="text-caption text-weight-bolder q-mt-lg">10:00 am</div>
+              <div class="text-caption text-weight-bolder q-mt-lg">
+                10:00 am
+              </div>
             </div>
             <div class="col-9">
               <q-card class="q-px-sm colorCard" bordered flat>
@@ -232,11 +208,6 @@
                     <q-avatar>
                       <img src="https://cdn.quasar.dev/img/avatar2.jpg" />
                     </q-avatar>
-                  </q-item-section>
-
-                  <q-item-section>
-                    <q-item-label>Sarah Hosten</q-item-label>
-                    <q-item-label caption>Diagnosis: Stroke</q-item-label>
                   </q-item-section>
                   <q-item-section side>
                     <q-icon name="fas fa-ellipsis-v" color="" />
@@ -252,29 +223,120 @@
   <RightSideBar />
 </template>
 
-<script>
-// @ is an alias to /src
+<script setup>
 import { ref } from "vue";
+import { Leer_Alumnos, Grupo_Porcentaje_Fechas } from "../firebase";
 import RightSideBar from "src/components/RightSideBar.vue";
-// import { shuffle } from "lodash";
 import moment from "moment";
+import VueApexCharts from "vue3-apexcharts";
+import { useQuasar } from "quasar";
+const props = defineProps({
+  text: String,
+});
 
-export default {
-  name: "HomeView",
-  components: { RightSideBar },
-
-  setup() {
-    return {
-      Fecha: moment().format("LLLL"),
-      slide: ref("style"),
-      lorem: "Lorem ipsum dolor, sit amet consectetur adipi.",
-      selection: ref(["green"]),
-      text: "",
-      dense: false,
-      value: "",
-    };
+let TotalAlumnos = ref(0);
+let Alumnos = ref(0);
+const $q = useQuasar();
+const darka = true;
+$q.dark.set(darka);
+let ausentes = ref([]);
+let presentes = ref([]);
+let suma = ref([]);
+const pie = {
+  series: [4, 4, 4, 7, 3],
+  chartOptions: {
+    chart: {
+      width: 580,
+      type: "pie",
+    },
+    labels: ["Violin 1", "Violin 2", "Violin 3", "Violas", "Chelos"],
+    responsive: [
+      {
+        breakpoint: 720,
+        options: {
+          chart: {
+            width: 260,
+          },
+          legend: {
+            position: "top",
+          },
+        },
+      },
+    ],
   },
 };
+const linea = ref({
+  series: [
+    {
+      name: "Ausentes",
+      data: [44, 55, 57, 56, 61, 58, 63, 60, 66],
+    },
+    {
+      name: "Presentes",
+      data: [76, 85, 101, 98, 87, 105, 91, 114, 94],
+    },
+    {
+      name: "Suma",
+      data: [35, 41, 36, 26, 45, 48, 52, 53, 41],
+    },
+  ],
+  chartOptions: {
+    chart: {
+      height: 450,
+      type: "line",
+      zoom: {
+        enabled: false,
+      },
+    },
+    dataLabels: {
+      enabled: false,
+    },
+    stroke: {
+      curve: "straight",
+    },
+    title: {
+      text: "% Asistencias de la Orquesta",
+      align: "left",
+    },
+    grid: {
+      row: {
+        colors: ["#f3f3f3", "transparent"], // takes an array which will be repeated on columns
+        opacity: 0.5,
+      },
+    },
+    xaxis: {
+      categories: [],
+    },
+  },
+});
+Leer_Alumnos().then(
+  (e) => (TotalAlumnos.value = e.size) && (Alumnos.value = e.docs)
+);
+// Grupo_Porcentaje_Fechas("Orquesta").then((elem) => {
+//   presentes.value.push(elem.map((el) => el.presentes));
+//   ausentes.value.push(elem.map((el) => el.ausentes));
+//   suma.value.push(elem.map((el) => el.presentes + el.ausentes));
+//   return;
+// });
+// linea.value.series.filter((elem) => {
+//   elem.name === "Presentes" ? (elem.data = presentes.value) : null;
+//   elem.name === "Ausentes" ? (elem.data = ausentes.value) : null;
+//   elem.name === "Suma" ? (elem.data = suma.value) : null;
+//   return;
+// });
+
+// linea.value.series.push({
+//   name: "asd",
+//   data: elem.map((el) => Math.ceil(el.porcentaje)),
+// }) &&
+//   linea.value.chartOptions.xaxis.categories.push(elem.map((el) => el.fecha));
+let Fecha = moment().format("LLLL");
+let slide = ref("style");
+let lorem = "Lorem ipsum dolor; sit amet consectetur adipi.";
+let selection = ref(["green"]);
+let text = "";
+let dense = false;
+let value = "20";
 </script>
 <style scoped>
 .search {

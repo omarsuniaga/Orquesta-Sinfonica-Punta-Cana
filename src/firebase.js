@@ -42,9 +42,7 @@ const db = getFirestore(app);
 const Fecha = moment().format("YYYY/MM/DD");
 let Lista_Ausentes = [];
 let Lista_Presentes = [];
-
 export { auth, db, Fecha, Lista_Presentes, Lista_Ausentes };
-
 export const useAuthState = () => {
   const user = ref(null);
   const error = ref(null);
@@ -61,22 +59,6 @@ export const useAuthState = () => {
   const isAuthenticated = computed(() => user.value != null);
   return { user, error, isAuthenticated };
 };
-enableIndexedDbPersistence(db).catch((err) => {
-  if (err.code == "failed-precondition") {
-    console.log(err.code);
-    // Multiple tabs open, persistence can only be enabled
-    // in one tab at a a time.
-    // ...
-  } else if (err.code == "unimplemented") {
-    // The current browser does not support all of the
-    // features required to enable persistence
-    // ...
-  }
-});
-/**
- * CRUD DE ALUMNOS
- */
-
 async function ConConexion() {
   await enableNetwork(db);
   console.log("Network disabled!", db);
@@ -89,9 +71,20 @@ async function SinConexion() {
 
   // Do offline actions
 }
-
-SinConexion();
-//create alumno
+enableIndexedDbPersistence(db).catch((err) => {
+  if (err.code == "failed-precondition") {
+    console.log(err.code);
+    ConConexion();
+    // Multiple tabs open, persistence can only be enabled
+    // in one tab at a a time.
+    // ...
+  } else if (err.code == "unimplemented") {
+    SinConexion();
+    // The current browser does not support all of the
+    // features required to enable persistence
+    // ...
+  }
+});
 export const Crear_Alumnos = async (alumno) => {
   try {
     const docRef = await setDoc(
@@ -169,14 +162,12 @@ export const Buscar_Alumno_Nombre = async (text) => {
   }
   return;
 };
-
 export const Eventos_Calendario = async () => {
   let listadoRef = collection(db, "ASISTENCIAS");
   let fechas = await getDocs(listadoRef);
   let eventos = fechas.docs.map((e) => e.data().Fecha.split("-").join("/"));
   return eventos;
 };
-
 export const Buscar_Por_Fecha = async (Fecha) => {
   let listadoRef = collection(db, "ASISTENCIAS");
   let q = query(listadoRef, where("Fecha", "==", Fecha)); //"2022-08-03"
@@ -193,7 +184,6 @@ export const Buscar_Por_Fecha = async (Fecha) => {
 /*
  ****** CRUD USER SESION ******
  */
-
 export const Crear_User_Sesion = async (user) => {
   try {
     let userRef = collection(db, "USER_SESION");
@@ -232,11 +222,9 @@ export const Eliminar_User_Sesion = async (user) => {
     console.log(error);
   }
 };
-
 /*
  ****** LOGIN Y LOGOUT *******
  */
-
 export const Entrar = async (email, password) => {
   try {
     await signInWithEmailAndPassword(auth, email, password).then((e) =>
@@ -253,11 +241,9 @@ export const Salir = async () => {
     alert(e.message);
   }
 };
-
 export const Iniciar_Automaticamente = () => {
   new Promise((resolve, reject) => onAuthStateChanged(auth, resolve, reject));
 };
-
 export const Crear_Progresos = async (alumno) => {
   try {
     const Ref = doc(db, "ORQUESTA", alumno.id);
@@ -312,7 +298,6 @@ export const Asistencia_de_Hoy = async (
     console.error(error);
   }
 };
-
 export const Mostrar_Listado = async () => {
   try {
     let listadoRef = collection(db, "ALUMNOS");
@@ -323,7 +308,6 @@ export const Mostrar_Listado = async () => {
     console.log(error);
   }
 };
-
 export const Mostrar_todo = async () => {
   try {
     let asistenciasRef = collection(db, "ASISTENCIAS");
@@ -334,9 +318,34 @@ export const Mostrar_todo = async () => {
     console.log(error);
   }
 };
-
-export const Contar_Ausentes = async (mes = "08") => {
+export const Contar_Ausentes = async (mes = "09") => {
   let Ref = collection(db, "ASISTENCIAS");
   let Listado_Fechas = await getDocs(Ref);
   return Listado_Fechas;
 };
+/**
+ * Data para graficas del Dashboard
+ */
+export const Grupo_Porcentaje_Fechas = async (grupo) => {
+  let array = [];
+  let _l = [];
+  _l.value = await Mostrar_todo().then((elem) => elem.map((e) => e.data())); //Jalando asistencias
+  _l.value.filter((elem) => {
+    if (elem.grupo === grupo) {
+      array.push({
+        fecha: elem.Fecha,
+        presentes: elem.Data.presentes.length,
+        ausentes: elem.Data.ausentes.length,
+        porcentaje: (elem.Data.presentes.length * 100) / 22,
+      });
+      return array.sort((a, b) => a.Fecha - b.Fecha);
+    }
+  });
+  return array;
+};
+export const Clasificacion_Generos = async () => {
+  let _l = await Leer_Alumnos().then();
+  console.log(_l);
+};
+
+Clasificacion_Generos();

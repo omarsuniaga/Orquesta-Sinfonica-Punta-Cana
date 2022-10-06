@@ -2,8 +2,6 @@
 import moment from "moment";
 import { ref, onMounted, computed, watchEffect } from "vue";
 import { Mostrar_todo, Mostrar_Listado, Contar_Ausentes } from "../firebase";
-// import VueApexCharts from "vue3-apexcharts";
-// console.log(VueApexCharts);
 
 let _l = ref([]);
 let Alumnos = ref([]);
@@ -166,14 +164,25 @@ const disminuirMes = () => {
   return num.value;
 };
 onMounted(async () => {
-  _l.value = await Mostrar_todo().then((elem) => elem.map((e) => e.data())); //Jalando asistencias
+  let array = [];
   Alumnos.value = await Mostrar_Listado().then((elem) =>
     elem.map((e) => e.data())
   );
+  _l.value = await Mostrar_todo().then((elem) => elem.map((e) => e.data())); //Jalando asistencias
+  _l.value.filter((elem) => {
+    if (elem.grupo === "Orquesta") {
+      array.push({
+        fecha: elem.Fecha,
+        presentes: elem.Data.presentes.length,
+        porcentaje: (elem.Data.presentes.length * 100) / 22,
+      });
+      return array.sort((a, b) => a.Fecha - b.Fecha);
+    }
+  });
+  console.log(array);
+  // _a("09", "Orquesta");
 });
-watchEffect(async () => {
-  _a("09", "Orquesta");
-});
+watchEffect(async () => {});
 </script>
 <template>
   <div>

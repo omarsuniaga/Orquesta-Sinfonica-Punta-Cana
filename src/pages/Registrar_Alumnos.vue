@@ -2,19 +2,8 @@
   <div class="q-pa-sm">
     <!-- Formulario del alumno -->
     <q-form @submit="onSubmit" @reset="onReset" class="q-gutter-md">
-      <q-stepper
-        v-model="step"
-        ref="stepper"
-        alternative-labels
-        color="primary"
-        animated
-      >
-        <q-step
-          :name="1"
-          title="Datos del Alumno"
-          icon="settings"
-          :done="step > 1"
-        >
+      <q-stepper v-model="step" ref="stepper" alternative-labels color="primary" animated>
+        <q-step :name="1" title="Datos del Alumno" icon="settings" :done="step > 1">
           <q-input
             class="col-5 q-mb-md"
             filled
@@ -32,12 +21,7 @@
             label="Apellido"
             placeholder="Apellidos Completos"
           />
-          <q-btn
-            class="col-5 q-mb-md"
-            @click="registrarAlumno() && $router.push('/Perfil_Alumnos')"
-            color="secondary"
-            label="Registrar"
-          />
+
           <q-input
             filled
             lazy-rules
@@ -45,7 +29,6 @@
             v-model="alumno.nac"
             label="Año Nacimiento"
             placeholder="DD/MM/AAAA"
-            :rules="[(val) => (val && val.length > 0) || 'Campo Obligatorio']"
           />
           <q-input
             filled
@@ -54,7 +37,21 @@
             v-model="alumno.edad"
             label="Edad"
             placeholder="Edad"
+          />
+          <q-input
+            filled
+            lazy-rules
+            class="col-5"
+            v-model="alumno.sexo"
+            label="Sexo"
+            placeholder="Sexo"
             :rules="[(val) => (val && val.length > 0) || 'Campo Obligatorio']"
+          />
+          <q-btn
+            class="col-5 q-mb-md"
+            @click="registrarAlumno() && $router.push('/Perfil_Alumnos')"
+            color="secondary"
+            label="Registrar"
           />
           <q-input
             filled
@@ -254,6 +251,7 @@ const alumno = ref({
   apellido: "",
   nac: "",
   edad: "",
+  sexo: "",
   cedula: "",
   tlf_alumno: "",
   grupo: ["Iniciacion 1"],

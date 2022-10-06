@@ -65,7 +65,7 @@
       />
     </q-timeline>
     {{ templat }}
-    <q-btn @click="AddItem"> Crear Item</q-btn>
+    <q-btn> Crear Item</q-btn>
   </div>
 </template>
 

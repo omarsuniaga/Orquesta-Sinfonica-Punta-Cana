@@ -22,7 +22,10 @@
             ></BuscarAlumnos>
           </div>
         </div>
-        <div class="justify-center flex row" style="min-width: 375px; width: 100%">
+        <div
+          class="justify-center flex row"
+          style="min-width: 375px; width: 100%"
+        >
           <q-btn-toggle
             class="col-auto flex justify-around"
             v-model="grupo"
@@ -94,14 +97,22 @@
         <span>Para pasar la asistencia, selecciona un grupo </span>
       </div>
 
-      <div v-else class="q-pa-xs doc-container" style="min-width: 375px; width: 100%">
+      <div
+        v-else
+        class="q-pa-xs doc-container"
+        style="min-width: 375px; width: 100%"
+      >
         <div class="row col-12">
           <div class="col-6">
             <span class="text-body1">Ausentes</span>
             <div v-if="Loading">
               <q-spinner-cube color="indigo" />
             </div>
-            <div v-else class="row flex justify-center scrollList" ref="chatRef">
+            <div
+              v-else
+              class="row flex justify-center scrollList"
+              ref="chatRef"
+            >
               <div
                 v-if="Resultado_Busqueda.length > 0"
                 style="width: 100%; max-width: 700px; min-width: 140px"
@@ -274,7 +285,9 @@ const quitar = (item) => {
   Presentes.value.filter((e) =>
     e.id === item.id
       ? Listado.value.push({ ...e, asistencia: false }) &&
-        Listado.value.reverse().sort((a, b) => a.nombre.localeCompare(b.nombre)) &&
+        Listado.value
+          .reverse()
+          .sort((a, b) => a.nombre.localeCompare(b.nombre)) &&
         Presentes.value.splice(Presentes.value.indexOf(e), 1)
       : null
   );
@@ -318,7 +331,9 @@ const resetear = () => {
 const Filtrar = async (fecha, res) => {
   visible.value = false;
   let r = await Buscar_Grupo(fecha, res).then((e) => e);
-  let Alumnos = await Mostrar_Listado().then((elem) => elem.map((e) => e.data()));
+  let Alumnos = await Mostrar_Listado().then((elem) =>
+    elem.map((e) => e.data())
+  );
   if (r) {
     resetear();
     const { presentes, ausentes } = await Buscar_Grupo(fecha, res).then(
@@ -354,7 +369,9 @@ const Filtrar = async (fecha, res) => {
           elem.grupo.find((e) =>
             e === "Coro"
               ? Listado.value.push({ ...elem, asistencia: false }) &&
-                Listado.value.reverse().sort((a, b) => a.nombre.localeCompare(b.nombre))
+                Listado.value
+                  .reverse()
+                  .sort((a, b) => a.nombre.localeCompare(b.nombre))
               : null
           )
         );
@@ -365,7 +382,9 @@ const Filtrar = async (fecha, res) => {
           elem.grupo.find((e) =>
             e === "Iniciacion 2"
               ? Listado.value.push({ ...elem, asistencia: false }) &&
-                Listado.value.reverse().sort((a, b) => a.nombre.localeCompare(b.nombre))
+                Listado.value
+                  .reverse()
+                  .sort((a, b) => a.nombre.localeCompare(b.nombre))
               : null
           )
         );
@@ -377,7 +396,9 @@ const Filtrar = async (fecha, res) => {
           elem.grupo.find((e) =>
             e === "Iniciacion 1"
               ? Listado.value.push({ ...elem, asistencia: false }) &&
-                Listado.value.reverse().sort((a, b) => a.nombre.localeCompare(b.nombre))
+                Listado.value
+                  .reverse()
+                  .sort((a, b) => a.nombre.localeCompare(b.nombre))
               : null
           )
         );
@@ -385,7 +406,9 @@ const Filtrar = async (fecha, res) => {
   }
 };
 const Buscar = async () => {
-  let Alumnos = await Mostrar_Listado().then((elem) => elem.map((e) => e.data()));
+  let Alumnos = await Mostrar_Listado().then((elem) =>
+    elem.map((e) => e.data())
+  );
   Buscar_Por_Fecha(date.value).then((Data) => {
     Data !== null
       ? resetear() && (visible.value = false) && console.log(Data)
@@ -397,7 +420,7 @@ const Buscar = async () => {
 watchEffect(async () => {
   // posicion = grupo.value;
   // router.push(`/${grupo.value}`);
-  date.value ? Buscar() : null;
+  date.value ? Buscar() : hoy.value;
   await Filtrar(date.value, grupo.value);
 });
 onMounted(async () => {

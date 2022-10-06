@@ -33,13 +33,20 @@
       <q-separator />
       <div class="row q-mx-lg">
         <div class="col-5">
+          <q-input v-model="alumno.edad" :disable="editable" label="Edad" stack-label />
+          <q-select
+            v-model="alumno.sexo"
+            label="sexo"
+            :options="sexo"
+            stack-label
+            :disable="editable"
+          />
           <q-input
             v-model="alumno.cedula"
             :disable="editable"
             label="Cedula"
             stack-label
           />
-          <q-input v-model="alumno.edad" :disable="editable" label="Edad" stack-label />
           <q-input
             v-model="alumno.nac"
             :disable="editable"
@@ -244,6 +251,7 @@ const alumno = reactive({});
 let editable = ref(false);
 let model = ref(null);
 let value = ref(3);
+let sexo = ref(["Masculino", "Femenino"]);
 let options = ref(["Orquesta", "Coro", "Iniciacion 2", "Iniciacion 1"]);
 onMounted(() => {
   Buscar_Alumno(id).then((elem) => {
@@ -253,6 +261,7 @@ onMounted(() => {
     alumno.cedula = elem.cedula || "Vacio";
     alumno.nac = elem.nac || "Vacio";
     alumno.edad = elem.edad || "Vacio";
+    alumno.sexo = elem.sexo || "Vacio";
     alumno.email = elem.email || "Vacio";
     alumno.tlf = elem.tlf || "Vacio";
     alumno.emergencia = elem.emergencia || "Vacio";
