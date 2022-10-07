@@ -22,101 +22,96 @@
       <q-icon name="fas fa-calendar-minus" size="" class="q-mr-sm" />
       <div class="text-overline">{{ Fecha }}</div>
     </q-toolbar>
-    <div class="row top flex flex-center">
-      <div class="flex justify-between no-wrap">
-        <q-card class="q-mx-md q-pa-md">
-          <div class="text-overline">Alumnos</div>
-          <div class="flex flex-center row">
-            <div class="text-h4 text-weight-bolder q-mr-md">
-              {{ TotalAlumnos }}
-            </div>
-            <q-chip color="red-1" text-color="red-3" icon="fas fa-chevron-down"
-              >02%</q-chip
-            >
-            <div>
-              <div class="flex flex-center column"></div>
-            </div>
+    <div class="col-auto">
+      <q-card class="q-mx-md q-pa-md" bordered>
+        <div class="text-overline">Alumnos</div>
+        <div class="flex flex-center row">
+          <div class="text-h4 text-weight-bolder q-mr-md">
+            {{ TotalAlumnos }}
           </div>
-        </q-card>
-        <q-card class="q-mx-md q-pa-md">
-          <div class="text-overline">Horarios</div>
-          <div class="flex justify-between no-wrap items-center">
-            <q-tree
-              :nodes="simple"
-              dense
-              node-key="label"
-              v-model:expanded="expanded"
-            />
+          <q-chip color="red-1" text-color="red-3" icon="fas fa-chevron-down"
+            >20%</q-chip
+          >
+          <div>
+            <div class="flex flex-center column"></div>
           </div>
-        </q-card>
-      </div>
-      <div class="col-auto">
-        <q-card class="q-ma-md q-pa-md" bordered>
-          <div class="text-overline">La Orquesta</div>
-          <div class="flex justify-between no-wrap">
-            <VueApexCharts
-              type="pie"
-              :options="pie.chartOptions"
-              :series="pie.series"
-            ></VueApexCharts>
-            <VueApexCharts
-              type="pie"
-              :options="generos.chartOptions"
-              :series="generos.series"
-            ></VueApexCharts>
-          </div>
-        </q-card>
-      </div>
-      <div class="col-auto">
-        <q-card class="q-ma-md q-pa-md" bordered>
-          <div class="text-overline">La Orquesta</div>
-          <div class="flex flex-center column">
-            <VueApexCharts
-              type="bar"
-              :options="linea.chartOptions"
-              :series="linea.series"
-            ></VueApexCharts>
-          </div>
-        </q-card>
-      </div>
+        </div>
+      </q-card>
     </div>
-    <q-toolbar>
-      <div class="text-overline">Eventos</div>
-      <q-space></q-space>
+    <div class="col-auto">
+      <q-card class="q-mx-md q-pa-md">
+        <div class="text-overline">Horarios</div>
+        <div class="flex justify-between no-wrap items-center">
+          <q-tree
+            :nodes="simple"
+            dense
+            node-key="label"
+            v-model:expanded="expanded"
+          />
+        </div>
+      </q-card>
+    </div>
+    <div class="col-auto">
+      <q-card class="q-ma-md q-pa-md" bordered>
+        <div class="text-overline">La Orquesta</div>
+        <div class="flex justify-between items-center">
+          <VueApexCharts
+            type="donut"
+            :options="pie.chartOptions"
+            :series="pie.series"
+          ></VueApexCharts>
+          <VueApexCharts
+            type="pie"
+            :options="generos.chartOptions"
+            :series="generos.series"
+          ></VueApexCharts>
+        </div>
+      </q-card>
+    </div>
+    <div class="col-auto">
+      <q-card class="q-ma-md q-pa-md" bordered>
+        <div class="text-overline">La Orquesta</div>
+        <div class="flex flex-center column">
+          <VueApexCharts
+            type="bar"
+            :options="linea.chartOptions"
+            :series="linea.series"
+          ></VueApexCharts>
+        </div>
+      </q-card>
+    </div>
+  </div>
+  <q-toolbar>
+    <div class="text-overline">Eventos</div>
+    <q-space></q-space>
 
-      <div class="text-overline">Horarios</div>
-      <div class="text-caption text-green q-ml-md">All patients</div>
-      <q-icon
-        name="fas fa-chevron-right"
-        size="10px"
-        class=""
-        color="green-7"
-      />
-    </q-toolbar>
-    <div class="row q-col-gutter-md">
-      <div class="col-6">
-        <q-card class="card1 q-mx-md q-pa-sm" bordered>
-          <div class="row q-col-gutter-md">
-            <div class="col-6">
-              <div class="text-caption">Concierto 14 de Oct</div>
-              <div class="text-caption text-grey-5">4:30pm - 7:30pm</div>
-              <div>Hotel Barcelo</div>
-            </div>
-            <div class="col-6">
-              <div class="flex justify-end row">Autobus</div>
-            </div>
+    <div class="text-overline">Horarios</div>
+    <div class="text-caption text-green q-ml-md">All patients</div>
+    <q-icon name="fas fa-chevron-right" size="10px" class="" color="green-7" />
+  </q-toolbar>
+  <div class="row q-col-gutter-md">
+    <div class="col-6">
+      <q-card class="card1 q-mx-md q-pa-sm" bordered>
+        <div class="row q-col-gutter-md">
+          <div class="col-6">
+            <div class="text-caption">Concierto 14 de Oct</div>
+            <div class="text-caption text-grey-5">4:30pm - 7:30pm</div>
+            <div>Hotel Barcelo</div>
           </div>
-        </q-card>
-      </div>
-      <div class="col-6">
-        <q-card class="q-mx-md q-pa-sm" bordered>
-          <div class="row q-col-gutter-md">
-            <div class="col-3">aaa</div>
-            <div class="col-9">bbb</div>
+          <div class="col-6">
+            <div class="flex justify-end row">Autobus</div>
           </div>
-          <div class="row q-col-gutter-md q-mt-md"></div>
-        </q-card>
-      </div>
+        </div>
+      </q-card>
+    </div>
+    <div class="col-6">
+      <q-card class="q-mx-md q-pa-sm" bordered>
+        <div class="row q-col-gutter-md">
+          <div class="col-3">aaa</div>
+          <div class="col-9">bbb</div>
+        </div>
+        <div class="row q-col-gutter-md q-mt-md"></div>
+      </q-card>
     </div>
   </div>
   <RightSideBar />
@@ -387,10 +382,6 @@ let generos = ref({
 const pie = {
   series: [4, 4, 4, 7, 3],
   chartOptions: {
-    chart: {
-      width: 580,
-      type: "pie",
-    },
     labels: ["Violin 1", "Violin 2", "Violin 3", "Violas", "Chelos"],
     responsive: [
       {
@@ -407,6 +398,7 @@ const pie = {
     ],
   },
 };
+console.log(pie);
 const linea = ref({
   series: [
     {

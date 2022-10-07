@@ -258,13 +258,11 @@ let grupo = ref("All");
 let text = ref(null);
 let Loading = ref(false);
 let visible = ref(false);
-
 function handleHold({ evt }) {
   let id = evt.path[2].id;
   console.log(id);
   return router.push(`/Detalles_Alumnos/${id}`);
 }
-
 const eventEmittedFromChild = (res) => {
   if (res.length != 0) {
     Resultado_Busqueda.value = res.map((e) => ({ ...e }));
@@ -327,7 +325,6 @@ const resetear = () => {
   Presentes.value.length = 0;
   Listado.value.length = 0;
 };
-
 const Filtrar = async (fecha, res) => {
   visible.value = false;
   let r = await Buscar_Grupo(fecha, res).then((e) => e);

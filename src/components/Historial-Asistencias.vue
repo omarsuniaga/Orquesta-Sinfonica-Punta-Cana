@@ -2,7 +2,38 @@
 import moment from "moment";
 import { ref, onMounted, computed, watchEffect } from "vue";
 import { Mostrar_todo, Mostrar_Listado, Contar_Ausentes } from "../firebase";
-
+import VueApexCharts from "vue3-apexcharts";
+const linea = ref({
+  series: [],
+  chartOptions: {
+    chart: {
+      height: 450,
+      type: "line",
+      zoom: {
+        enabled: false,
+      },
+    },
+    dataLabels: {
+      enabled: false,
+    },
+    stroke: {
+      curve: "straight",
+    },
+    title: {
+      text: "% Asistencias de la Orquesta",
+      align: "left",
+    },
+    grid: {
+      row: {
+        colors: ["#f3f3f3", "transparent"], // takes an array which will be repeated on columns
+        opacity: 0.5,
+      },
+    },
+    xaxis: {
+      categories: ["a", "b"],
+    },
+  },
+});
 let _l = ref([]);
 let Alumnos = ref([]);
 let PRESENTES = [];
@@ -92,7 +123,6 @@ const clasificacion = (grupo) => {
       Nombre: "",
       Asistencia: 0,
       Inasistencia: 0,
-      Rendimiento: 0,
       Serial: el,
     };
   });
@@ -171,15 +201,16 @@ onMounted(async () => {
   _l.value = await Mostrar_todo().then((elem) => elem.map((e) => e.data())); //Jalando asistencias
   _l.value.filter((elem) => {
     if (elem.grupo === "Orquesta") {
-      array.push({
-        fecha: elem.Fecha,
-        presentes: elem.Data.presentes.length,
-        porcentaje: (elem.Data.presentes.length * 100) / 22,
+      // console.log(elem.Data.ausentes.length);
+      linea.value.series.push({
+        name: "Ausentes",
+        data: elem.Data.map((e) => e.ausentes),
       });
-      return array.sort((a, b) => a.Fecha - b.Fecha);
+      linea.value.chartOptions.xaxis.categories.push(elem.Fecha);
+      return linea.value.chartOptions.xaxis.categories.sort((a, b) => a - b);
     }
   });
-  console.log(array);
+  console.log(linea.value.chartOptions.xaxis.categories);
   // _a("09", "Orquesta");
 });
 watchEffect(async () => {});
@@ -216,5 +247,10 @@ watchEffect(async () => {});
       :rows-per-page-options="[0]"
     />
   </div>
+  <VueApexCharts
+    type="bar"
+    :options="linea.chartOptions"
+    :series="linea.series"
+  ></VueApexCharts>
 </template>
 <style></style>
