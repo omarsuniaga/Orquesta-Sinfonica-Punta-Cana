@@ -7,17 +7,33 @@ const linea = ref({
   series: [],
   chartOptions: {
     chart: {
-      height: 450,
-      type: "line",
+      height: 350,
+      type: "bar",
+      stacked: true,
+      toolbar: {
+        show: true,
+      },
       zoom: {
-        enabled: false,
+        enabled: true,
       },
     },
-    dataLabels: {
-      enabled: false,
-    },
-    stroke: {
-      curve: "straight",
+    responsive: [
+      {
+        breakpoint: 480,
+        options: {
+          legend: {
+            position: "bottom",
+            offsetX: -10,
+            offsetY: 0,
+          },
+        },
+      },
+    ],
+    plotOptions: {
+      bar: {
+        horizontal: false,
+        borderRadius: 10,
+      },
     },
     title: {
       text: "% Asistencias de la Orquesta",
@@ -29,8 +45,16 @@ const linea = ref({
         opacity: 0.5,
       },
     },
+    legend: {
+      position: "right",
+      offsetY: 40,
+    },
+    fill: {
+      opacity: 1,
+    },
     xaxis: {
-      categories: ["a", "b"],
+      type: "datetime",
+      categories: [],
     },
   },
 });
@@ -194,23 +218,29 @@ const disminuirMes = () => {
   return num.value;
 };
 onMounted(async () => {
-  let array = [];
+  let ausentes = [];
+  let presentes = [];
   Alumnos.value = await Mostrar_Listado().then((elem) =>
     elem.map((e) => e.data())
   );
   _l.value = await Mostrar_todo().then((elem) => elem.map((e) => e.data())); //Jalando asistencias
   _l.value.filter((elem) => {
     if (elem.grupo === "Orquesta") {
-      // console.log(elem.Data.ausentes.length);
-      linea.value.series.push({
-        name: "Ausentes",
-        data: elem.Data.map((e) => e.ausentes),
-      });
+      ausentes.push(elem.Data.ausentes.length);
+      presentes.push(elem.Data.presentes.length);
       linea.value.chartOptions.xaxis.categories.push(elem.Fecha);
       return linea.value.chartOptions.xaxis.categories.sort((a, b) => a - b);
     }
   });
-  console.log(linea.value.chartOptions.xaxis.categories);
+  linea.value.series.push({
+    name: "Ausentes",
+    data: ausentes,
+  });
+  linea.value.series.push({
+    name: "Presentes",
+    data: presentes,
+  });
+
   // _a("09", "Orquesta");
 });
 watchEffect(async () => {});
