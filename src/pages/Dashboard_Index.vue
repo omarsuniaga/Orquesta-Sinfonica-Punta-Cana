@@ -70,14 +70,7 @@
     </div>
     <div class="col-auto">
       <q-card class="q-ma-md q-pa-md" bordered>
-        <div class="text-overline">La Orquesta</div>
-        <div class="flex flex-center column">
-          <VueApexCharts
-            type="bar"
-            :options="linea.chartOptions"
-            :series="linea.series"
-          ></VueApexCharts>
-        </div>
+        <HistorialAsistencias />
       </q-card>
     </div>
   </div>
@@ -128,6 +121,7 @@ import RightSideBar from "src/components/RightSideBar.vue";
 import moment from "moment";
 import VueApexCharts from "vue3-apexcharts";
 import { useQuasar } from "quasar";
+import HistorialAsistencias from "src/components/Historial-Asistencias.vue";
 const props = defineProps({
   text: String,
 });
@@ -398,51 +392,6 @@ const pie = {
     ],
   },
 };
-console.log(pie);
-const linea = ref({
-  series: [
-    {
-      name: "Ausentes",
-      data: [44, 55, 57, 56, 61, 58, 63, 60, 66],
-    },
-    {
-      name: "Presentes",
-      data: [76, 85, 101, 98, 87, 105, 91, 114, 94],
-    },
-    {
-      name: "Suma",
-      data: [35, 41, 36, 26, 45, 48, 52, 53, 41],
-    },
-  ],
-  chartOptions: {
-    chart: {
-      height: 450,
-      type: "line",
-      zoom: {
-        enabled: false,
-      },
-    },
-    dataLabels: {
-      enabled: false,
-    },
-    stroke: {
-      curve: "straight",
-    },
-    title: {
-      text: "% Asistencias de la Orquesta",
-      align: "left",
-    },
-    grid: {
-      row: {
-        colors: ["#f3f3f3", "transparent"], // takes an array which will be repeated on columns
-        opacity: 0.5,
-      },
-    },
-    xaxis: {
-      categories: [],
-    },
-  },
-});
 Leer_Alumnos().then(
   (e) => (TotalAlumnos.value = e.size) && (Alumnos.value = e.docs)
 );

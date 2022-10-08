@@ -7,54 +7,35 @@ const linea = ref({
   series: [],
   chartOptions: {
     chart: {
-      height: 350,
       type: "bar",
-      stacked: true,
-      toolbar: {
-        show: true,
-      },
-      zoom: {
-        enabled: true,
-      },
+      height: 350,
     },
-    responsive: [
-      {
-        breakpoint: 480,
-        options: {
-          legend: {
-            position: "bottom",
-            offsetX: -10,
-            offsetY: 0,
-          },
-        },
-      },
-    ],
     plotOptions: {
       bar: {
         horizontal: false,
-        borderRadius: 10,
+        columnWidth: "55%",
+        endingShape: "rounded",
       },
     },
-    title: {
-      text: "% Asistencias de la Orquesta",
-      align: "left",
+    dataLabels: {
+      enabled: false,
     },
-    grid: {
-      row: {
-        colors: ["#f3f3f3", "transparent"], // takes an array which will be repeated on columns
-        opacity: 0.5,
-      },
-    },
-    legend: {
-      position: "right",
-      offsetY: 40,
-    },
-    fill: {
-      opacity: 1,
+    stroke: {
+      show: true,
+      width: 2,
+      colors: ["transparent"],
     },
     xaxis: {
       type: "datetime",
       categories: [],
+    },
+    fill: {
+      opacity: 1,
+    },
+    legend: {
+      position: "right",
+      offsetX: 0,
+      offsetY: 50,
     },
   },
 });
@@ -247,7 +228,7 @@ watchEffect(async () => {});
 </script>
 <template>
   <div>
-    <div class="flex justify-between q-pa-sm">
+    <!-- <div class="flex justify-between q-pa-sm">
       <q-btn
         rounded
         stack
@@ -275,12 +256,12 @@ watchEffect(async () => {});
       virtual-scroll
       v-model:pagination="pagination"
       :rows-per-page-options="[0]"
-    />
+    /> -->
+    <VueApexCharts
+      type="bar"
+      :options="linea.chartOptions"
+      :series="linea.series"
+    ></VueApexCharts>
   </div>
-  <VueApexCharts
-    type="bar"
-    :options="linea.chartOptions"
-    :series="linea.series"
-  ></VueApexCharts>
 </template>
 <style></style>
