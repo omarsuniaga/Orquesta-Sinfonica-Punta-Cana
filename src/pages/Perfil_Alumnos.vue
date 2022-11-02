@@ -65,9 +65,20 @@
                   <div :key="index" :class="item.class" class="q-pa-xs">
                     <q-badge top outline color="secondary" :label="item" />
                   </div>
+                  {{ card.ausente }}
                 </q-virtual-scroll>
               </q-item-label>
             </q-item-section>
+            <q-circular-progress
+              min="0"
+              :max="card.totalClases"
+              :value="card.presente"
+              size="50px"
+              thickness="0.22"
+              color="teal"
+              track-color="grey-3"
+            />
+
             <q-item-section side>
               <q-icon name="swipe_left" />
             </q-item-section>
@@ -81,29 +92,60 @@
 </template>
 <script setup>
 import { ref, onMounted, onBeforeUnmount, computed, watchEffect } from "vue";
-import { Mostrar_Listado } from "../firebase";
+import { Mostrar_Listado, Mostrar_todo, ObtenerAsistencias } from "../firebase";
 import { useQuasar } from "quasar";
 import BuscarAlumnos from "../components/Buscar-Alumnos.vue";
+import { useRouter } from "vue-router";
 const $q = useQuasar();
+const _l = ref([]);
 let Listado = ref([]);
 let text = ref("");
 let timer;
-let url = ref("https://placeimg.com/500/300/nature?t=" + Math.random());
 let grupo = ref("");
 let Alumnos = ref("");
-
+const router = useRouter();
+let filter = ref(router.currentRoute._rawValue.params.filter);
 const eventEmittedFromChild = (res) => {
   if (res.length != 0) {
-    Listado.value = res.map((e) => ({ ...e, avatar: url.value }));
+    Listado.value = res.map((e) => ({ ...e }));
     return Listado.value;
   } else {
     return cargar_alumnos();
   }
 };
 const cargar_alumnos = async () => {
+  let algo = async (id) => {
+    const obj = {};
+    obj.presente = await ObtenerAsistencias(id).then((e) => e.presente);
+    obj.ausente = await ObtenerAsistencias(id).then((e) => e.ausente);
+    return { obj };
+  };
+
   Listado.value = await Mostrar_Listado().then((elem) =>
-    elem.map((e) => ({ ...e.data(), avatar: url.value }))
+    elem.map((e) => ({ ...e.data() }))
   );
+  Listado.value.map((elem) =>
+    algo(elem.id).then(
+      (e) =>
+        (elem.presente = e.obj.presente) &&
+        (elem.ausente = e.obj.ausente) &&
+        (elem.totalClases = e.obj.ausente + e.obj.presente)
+    )
+  );
+
+  return console.log(Listado.value);
+};
+
+const Funcion_Switch = async (res) => {
+  Listado.value.length = 0;
+
+  Alumnos.value = await Mostrar_Listado().then((elem) =>
+    elem.map((e) => e.data()).sort((a, b) => a.nombre.localeCompare(b.nombre))
+  );
+  Listado.value = await Alumnos.value
+    .filter((elem) => elem.grupo.find((e) => e === res))
+    .sort((a, b) => a.nombre.localeCompare(b.nombre));
+  return router.push(`/Perfil_Alumnos/${res}`);
 };
 
 const Filtrar = async (res) => {
@@ -112,39 +154,27 @@ const Filtrar = async (res) => {
   );
   switch (res) {
     case "Orq":
-      //Alumnos de la Orquesta
-      Listado.value.length = 0;
-      Listado.value = await Alumnos.value
-        .filter((elem) => elem.grupo.find((e) => e === "Orquesta"))
-        .sort((a, b) => a.nombre.localeCompare(b.nombre));
-
+      Funcion_Switch("Orquesta");
       break;
     case "Coro":
-      Listado.value.length = 0;
-      Listado.value = await Alumnos.value
-        .filter((elem) => elem.grupo.find((e) => e === "Coro"))
-        .sort((a, b) => a.nombre.localeCompare(b.nombre));
+      Funcion_Switch("Coro");
       break;
     case "Ini2":
-      Listado.value.length = 0;
-      Listado.value = await Alumnos.value
-        .filter((elem) => elem.grupo.find((e) => e === "Iniciacion 2"))
-        .sort((a, b) => a.nombre.localeCompare(b.nombre));
+      Funcion_Switch("Iniciacion 2");
       break;
     case "Ini1":
-      Listado.value.length = 0;
-      Listado.value = await Alumnos.value
-        .filter((elem) => elem.grupo.find((e) => e === "Iniciacion 1"))
-        .sort((a, b) => a.nombre.localeCompare(b.nombre));
+      Funcion_Switch("Iniciacion 1");
       break;
-    default:
     case "All":
+      router.push(`/Perfil_Alumnos/All`);
       Listado.value.length = 0;
       Listado.value = await Mostrar_Listado().then((elem) =>
         elem
           .map((e) => e.data())
           .sort((a, b) => a.nombre.localeCompare(b.nombre))
       );
+      break;
+    default:
       break;
   }
 };
@@ -174,6 +204,10 @@ const onSlide = ({ side, ratio, isReset }) => {
   );
 };
 watchEffect(async () => {
-  await Filtrar(grupo.value);
+  filter.value = grupo.value;
+  grupo.value = filter.value;
+  console.log("valor de filter ", router.currentRoute._rawValue.params.filter);
+  // await Filtrar(router.currentRoute._rawValue.params.filter);
+  await Filtrar(filter.value);
 });
 </script>

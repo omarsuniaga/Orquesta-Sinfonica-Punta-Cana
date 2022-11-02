@@ -165,7 +165,8 @@ export const Buscar_Alumno_Nombre = async (text) => {
 export const Eventos_Calendario = async () => {
   let listadoRef = collection(db, "ASISTENCIAS");
   let fechas = await getDocs(listadoRef);
-  let eventos = fechas.docs.map((e) => e.data().Fecha.split("-").join("/"));
+  let eventos = fechas.docs.map((e) => e.data().Fecha); //"2022/11/01"
+  eventos = eventos.map((e) => (e === null ? "" : e.split("-").join("/")));
   return eventos;
 };
 export const Buscar_Por_Fecha = async (Fecha) => {
@@ -318,6 +319,29 @@ export const Mostrar_todo = async () => {
     console.log(error);
   }
 };
+
+//Obtener asistencias
+export const ObtenerAsistencias = async (id) => {
+  let objeto = {};
+  try {
+    let pres = 0;
+    let ause = 0;
+    let _l = await Mostrar_todo().then((elem) => elem.map((e) => e.data())); //Jalando asistencias
+    _l.filter(
+      (elem) =>
+        elem.Data.presentes.filter((e) =>
+          e === id ? (pres = pres + 1) : null
+        ) &&
+        elem.Data.ausentes.filter((e) => (e === id ? (ause = ause + 1) : null))
+    );
+    objeto.presente = pres;
+    objeto.ausente = ause;
+    objeto.id = id;
+    return objeto;
+  } catch (error) {
+    console.log(error);
+  }
+};
 export const Contar_Ausentes = async (mes = "09") => {
   let Ref = collection(db, "ASISTENCIAS");
   let Listado_Fechas = await getDocs(Ref);
@@ -365,5 +389,15 @@ export const Clasificacion_Generos = async () => {
   }
   return generos;
 };
-
+export const PROCESOS = async (id) => {
+  try {
+    let RefColeccion = collection(db, "PROGRESOS");
+    let q = query(RefColeccion, where("id", "==", id));
+    const querySnapshot = await getDocs(q);
+    return querySnapshot.docs[0].data();
+  } catch (error) {
+    console.log(error);
+  }
+  return null;
+};
 Clasificacion_Generos();

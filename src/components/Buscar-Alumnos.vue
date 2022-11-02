@@ -1,5 +1,5 @@
 <template>
-  <div class="col-auto" style="width: 65%">
+  <div class="col-auto" style="width: 85%">
     <q-input
       outlined
       bottom-slots

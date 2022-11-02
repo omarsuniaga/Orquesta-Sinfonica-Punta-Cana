@@ -24,9 +24,19 @@ const routes = [
     ],
     // meta: { requiresAuth: true },
   },
+  // {
+  //   path: "/Perfil_Alumnos",
+  //   name: "Perfil_Alumnos",
+  //   component: () => import("layouts/MainLayout.vue"),
+  //   children: [
+  //     { path: "", component: () => import("pages/Perfil_Alumnos.vue") },
+  //   ],
+  //   // meta: { requiresAuth: true },
+  // },
   {
-    path: "/Perfil_Alumnos",
+    path: "/Perfil_Alumnos/:filter",
     name: "Perfil_Alumnos",
+    props: true,
     component: () => import("layouts/MainLayout.vue"),
     children: [
       { path: "", component: () => import("pages/Perfil_Alumnos.vue") },

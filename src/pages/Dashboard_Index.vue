@@ -1,20 +1,47 @@
 <template>
   <div class="q-pa-md">
+    <BuscarAlumnos
+      :text="text"
+      style="width: 100%"
+      @onFire="eventEmittedFromChild"
+    ></BuscarAlumnos>
     <q-toolbar class="q-ma-sm">
-      <q-input
-        outlined
-        v-model="text"
-        label="Search"
-        :dense="dense"
-        rounded
-        class="search"
+      <div
+        v-if="Resultado_Busqueda.length > 0"
+        style="width: 100%; max-width: 700px; min-width: 140px"
       >
-        <template v-slot:append>
-          <q-icon name="search" />
-        </template>
-      </q-input>
+        <div class="row flex justify-center scrollList" ref="chatRef">
+          <div style="width: 100%; max-width: 700px; min-width: 140px">
+            <q-card
+              class="q-ma-xs bg-gray-3"
+              v-for="(item, index) in Resultado_Busqueda"
+              :key="index"
+              @click="detalle(item.id)"
+            >
+              <q-item v-if="!item.asistencia" :id="item.id">
+                <q-item-section>
+                  <q-item-label class="text-weight-regular"
+                    >{{ item.nombre }}
+                    {{ $q.screen.gt.xs ? item.apellido : "" }}</q-item-label
+                  >
+                  <q-item-label>
+                    <q-virtual-scroll
+                      :items="item.grupo"
+                      virtual-scroll-horizontal
+                      v-slot="{ item, index }"
+                    >
+                      <div :key="index" :class="item.class" class="q-px-xs">
+                        <q-badge top color="red" :label="item" />
+                      </div>
+                    </q-virtual-scroll>
+                  </q-item-label>
+                </q-item-section>
+              </q-item>
+            </q-card>
+          </div>
+        </div>
+      </div>
       <q-space></q-space>
-      <q-btn color="white" text-color="black" icon="fas fa-moon"></q-btn>
     </q-toolbar>
     <q-toolbar>
       <h6 class="text-weight-bolder">Dashboard</h6>
@@ -117,15 +144,30 @@ import {
   Grupo_Porcentaje_Fechas,
   Clasificacion_Generos,
 } from "../firebase";
+
 import RightSideBar from "src/components/RightSideBar.vue";
 import moment from "moment";
 import VueApexCharts from "vue3-apexcharts";
 import { useQuasar } from "quasar";
 import HistorialAsistencias from "src/components/Historial-Asistencias.vue";
+import BuscarAlumnos from "src/components/Buscar-Alumnos.vue";
+import { useRouter } from "vue-router";
+const router = useRouter();
 const props = defineProps({
   text: String,
 });
-
+let detalle = (id) => {
+  return router.push(`/Detalles_Alumnos/${id}`);
+};
+let Resultado_Busqueda = ref([]);
+const eventEmittedFromChild = (res) => {
+  if (res.length != 0) {
+    Resultado_Busqueda.value = res.map((e) => ({ ...e }));
+    return Resultado_Busqueda.value;
+  } else {
+    Resultado_Busqueda.value.length = 0;
+  }
+};
 let TotalAlumnos = ref(0);
 let Alumnos = ref(0);
 const $q = useQuasar();

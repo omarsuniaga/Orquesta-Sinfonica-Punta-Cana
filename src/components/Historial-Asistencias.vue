@@ -9,6 +9,7 @@ const linea = ref({
     chart: {
       type: "bar",
       height: 350,
+      title: "Orquesta",
     },
     plotOptions: {
       bar: {
@@ -36,6 +37,13 @@ const linea = ref({
       position: "right",
       offsetX: 0,
       offsetY: 50,
+    },
+    tooltip: {
+      y: {
+        formatter: function (val) {
+          return val + " Alumnos";
+        },
+      },
     },
   },
 });
@@ -199,27 +207,52 @@ const disminuirMes = () => {
   return num.value;
 };
 onMounted(async () => {
-  let ausentes = [];
-  let presentes = [];
+  let ausentesCoro = [];
+  let presentesCoro = [];
+  let ausentesOrquesta = [];
+  let presentesOrquesta = [];
   Alumnos.value = await Mostrar_Listado().then((elem) =>
     elem.map((e) => e.data())
   );
   _l.value = await Mostrar_todo().then((elem) => elem.map((e) => e.data())); //Jalando asistencias
   _l.value.filter((elem) => {
+    if (elem.grupo === "Coro") {
+      elem.Data.ausentes.length === null
+        ? ausentesCoro.push(0)
+        : ausentesCoro.push(elem.Data.ausentes.length) &&
+          listadoPresentesCoro.push(elem.Data.presentes);
+      elem.Data.presentes.length === null
+        ? presentesCoro.push(0)
+        : presentesCoro.push(elem.Data.presentes.length);
+      linea.value.chartOptions.xaxis.categories.push(elem.Fecha);
+      return linea.value.chartOptions.xaxis.categories.sort((a, b) => a - b);
+    }
     if (elem.grupo === "Orquesta") {
-      ausentes.push(elem.Data.ausentes.length);
-      presentes.push(elem.Data.presentes.length);
+      elem.Data.ausentes.length === null
+        ? ausentesOrquesta.push(0)
+        : ausentesOrquesta.push(elem.Data.ausentes.length);
+      elem.Data.presentes.length === null
+        ? presentesOrquesta.push(0)
+        : presentesOrquesta.push(elem.Data.presentes.length);
       linea.value.chartOptions.xaxis.categories.push(elem.Fecha);
       return linea.value.chartOptions.xaxis.categories.sort((a, b) => a - b);
     }
   });
   linea.value.series.push({
-    name: "Ausentes",
-    data: ausentes,
+    name: "Ausentes de Coro",
+    data: ausentesCoro,
   });
   linea.value.series.push({
-    name: "Presentes",
-    data: presentes,
+    name: "Presentes de Coro",
+    data: presentesCoro,
+  });
+  linea.value.series.push({
+    name: "Ausentes de Orquesta",
+    data: ausentesOrquesta,
+  });
+  linea.value.series.push({
+    name: "Presentes de Orquesta",
+    data: presentesOrquesta,
   });
 
   // _a("09", "Orquesta");
