@@ -219,8 +219,7 @@ onMounted(async () => {
     if (elem.grupo === "Coro") {
       elem.Data.ausentes.length === null
         ? ausentesCoro.push(0)
-        : ausentesCoro.push(elem.Data.ausentes.length) &&
-          listadoPresentesCoro.push(elem.Data.presentes);
+        : ausentesCoro.push(elem.Data.ausentes.length);
       elem.Data.presentes.length === null
         ? presentesCoro.push(0)
         : presentesCoro.push(elem.Data.presentes.length);
