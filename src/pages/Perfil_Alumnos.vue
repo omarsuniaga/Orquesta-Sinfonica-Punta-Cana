@@ -65,7 +65,6 @@
                   <div :key="index" :class="item.class" class="q-pa-xs">
                     <q-badge top outline color="secondary" :label="item" />
                   </div>
-                  {{ card.ausente }}
                 </q-virtual-scroll>
               </q-item-label>
             </q-item-section>

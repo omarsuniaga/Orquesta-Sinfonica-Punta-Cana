@@ -1,6 +1,6 @@
 <script setup>
 import moment from "moment";
-import { ref, onMounted, computed, watchEffect } from "vue";
+import { ref, onMounted, watchEffect } from "vue";
 import { Mostrar_todo, Mostrar_Listado, Contar_Ausentes } from "../firebase";
 import VueApexCharts from "vue3-apexcharts";
 const linea = ref({
@@ -66,10 +66,11 @@ let meses = [
   "Noviembre",
   "Diciembre",
 ];
+const mesActual = new Date().getMonth() + 1;
+let mes = ref(0);
 let num = ref(0);
 let numMes = ref(0);
 let rows = ref([]);
-
 const columns = [
   {
     name: "index",
@@ -148,13 +149,24 @@ const clasificacion = (grupo) => {
     item.Rendimiento = p + a / diasRegistrados.value;
     return item;
   });
+  console.log(rows.value);
   return rows.value;
 };
-let _a = (mes, grupo) => {
+const _a = (mes, grupo = "Orquesta") => {
+  // mes =
+  mes <= 11
+    ? mes < 10
+      ? (mes = "0" + mes.toString())
+      : (mes = mes.toString())
+    : (mes = "0" + 1);
+
+  console.log(mes);
   rows.value = [];
   let Listado = [];
-  if (_l.value) {
-    _l.value.filter((elem) => {
+  _l.value.filter((elem) => {
+    if (elem.Fecha === null) {
+      return null;
+    } else {
       if (elem.Fecha.split("-")[1] === mes) {
         let { ausentes, presentes } = elem.Data;
         diasRegistrados.value++;
@@ -162,55 +174,44 @@ let _a = (mes, grupo) => {
         ausentes.map((el) => AUSENTES.push(el));
         return PRESENTES, AUSENTES;
       } else {
-        return (num.value = "09");
+        return (num.value = mesActual);
       }
-    });
-  } else {
-    return;
-  }
+    }
+  });
   Alumnos.value.filter((el) =>
     el.grupo.map((e) => (e === grupo ? Listado.push(el.id) : null))
   );
   return clasificacion(Listado);
 };
 let pagination = ref({
-  rowsPerPage: 0,
+  rowsPerPage: 10,
 });
 const transformar_Fecha = () => {
   num.value = num.value.toString();
   console.log("Transformar", num.value);
 };
 const aumentarMes = () => {
-  num.value = parseInt(num.value);
-
-  // numMes.value = numMes.value >= 11 ? (numMes.value = 0) : numMes.value++;
-  // num.value =
-  //   num.value <= 9 && num.value > 0
-  //     ? num.value++ && "0" + num.value.toString()
-  //     : num.value >= 10 && num.value <= 12
-  //     ? num.value++ && num.value.toString()
-  //     : num.value > 12
-  //     ? (num.value = 1 && "0" + num.value.toString())
-  //     : "0" + (num.value = 1).toString();
-  return num.value;
+  return num.value++;
 };
 const disminuirMes = () => {
-  numMes.value--;
-  numMes.value = numMes.value <= 0 ? (numMes.value = 11) : numMes.value--;
-  num.value--;
-  // num.value =
-  //   num.value <= 9
-  //     ? "0" + num.value
-  //     : num.value <= 12
-  //     ? num.value.toString()
-  //     : (num.value = 1);
-  return num.value;
+  // num.value = parseInt(num.value); //9
+  // numMes.value = numMes.value >= 12 ? (numMes.value = 1) : numMes.value++;
+
+  // num.value <= 11
+  //   ? num.value < 10
+  //     ? (num.value = "0" + num.value.toString())
+  //     : (num.value = num.value.toString())
+  //   : (num.value = "0" + 1);
+  // // console.log(num.value);
+  // num.value--;
+  return num.value--;
 };
 onMounted(async () => {
   let ausentesCoro = [];
   let presentesCoro = [];
   let ausentesOrquesta = [];
   let presentesOrquesta = [];
+
   Alumnos.value = await Mostrar_Listado().then((elem) =>
     elem.map((e) => e.data())
   );
@@ -240,27 +241,33 @@ onMounted(async () => {
   linea.value.series.push({
     name: "Ausentes de Coro",
     data: ausentesCoro,
-  });
-  linea.value.series.push({
-    name: "Presentes de Coro",
-    data: presentesCoro,
+    color: "#C39BD3", //light red
   });
   linea.value.series.push({
     name: "Ausentes de Orquesta",
     data: ausentesOrquesta,
+    color: "#76D7C4",
+  });
+  linea.value.series.push({
+    name: "Presentes de Coro",
+    data: presentesCoro,
+    color: "#633974",
   });
   linea.value.series.push({
     name: "Presentes de Orquesta",
     data: presentesOrquesta,
+    color: "#117864",
   });
-
-  // _a("09", "Orquesta");
 });
-watchEffect(async () => {});
+watchEffect(async () => {
+  // num.value === mesActual ? _a(mesActual, "Orquesta") : _a("09", "Orquesta");
+  _a(num.value, "Orquesta");
+  console.log(num.value);
+});
 </script>
 <template>
-  <div>
-    <!-- <div class="flex justify-between q-pa-sm">
+  <div class="col-auto">
+    <div class="flex justify-between q-pa-sm">
       <q-btn
         rounded
         stack
@@ -268,8 +275,9 @@ watchEffect(async () => {});
         color="while"
         text-color="primary"
         label="-"
+        @click="disminuirMes"
       />
-      <span> mes: ({{ num }}) </span>
+      <span> Mes Numero: ({{ num }}) </span>
       <q-btn
         rounded
         stack
@@ -277,6 +285,7 @@ watchEffect(async () => {});
         color="while"
         text-color="primary"
         label="+"
+        @click="aumentarMes"
       />
     </div>
     <q-table
@@ -288,7 +297,7 @@ watchEffect(async () => {});
       virtual-scroll
       v-model:pagination="pagination"
       :rows-per-page-options="[0]"
-    /> -->
+    />
     <VueApexCharts
       type="bar"
       :options="linea.chartOptions"
