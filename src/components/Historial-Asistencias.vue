@@ -49,9 +49,6 @@ const linea = ref({
 });
 let _l = ref([]);
 let Alumnos = ref([]);
-let PRESENTES = [];
-let AUSENTES = [];
-let diasRegistrados = ref("");
 let meses = [
   "Enero",
   "Febrero",
@@ -66,46 +63,53 @@ let meses = [
   "Noviembre",
   "Diciembre",
 ];
+let arr = ref([]);
+let pre = ref([]);
+let MesesRegistrados = ref({});
+let separator = ref("cell");
 const mesActual = new Date().getMonth() + 1;
-let mes = ref(0);
+let mes = ref("");
 let num = ref(0);
 let numMes = ref(0);
 let rows = ref([]);
 const columns = [
   {
-    name: "index",
-    label: "#",
-    field: "index",
+    name: "Fecha",
+    label: "Fecha",
+    field: "Fecha",
+    sortable: true,
+    sort: (a, b) => parseInt(a, 10) - parseInt(b, 10),
   },
   {
-    name: "Nombre",
+    name: "Grupo",
+    align: "center",
+    label: "Grupo",
+    field: "Grupo",
+    sortable: true,
+  },
+
+  {
+    name: "Presentes",
     required: true,
-    label: "Nombre",
+    label: "Presentes",
     align: "left",
-    field: (row) => row.Nombre,
+    field: (row) => row.Presentes,
     format: (val) => `${val}`,
     sortable: true,
   },
   {
-    name: "Asistencia",
-    align: "center",
-    label: "Asistencia (P)",
-    field: "Asistencia",
+    name: "Ausentes",
+    required: true,
+    align: "left",
+    label: "Ausentes",
+    field: (row) => row.Ausentes,
+    format: (val) => `${val}`,
     sortable: true,
   },
   {
-    name: "Inasistencia",
-    label: "Inasistencia (A)",
-    field: "Inasistencia",
-    sortable: true,
-    sort: (a, b) => parseInt(a, 10) - parseInt(b, 10),
-  },
-  {
-    name: "Rendimiento",
-    label: "Rendimiento (%)",
-    field: "Rendimiento",
-    sortable: true,
-    sort: (a, b) => parseInt(a, 10) - parseInt(b, 10),
+    name: "index",
+    label: "ID",
+    field: "index",
   },
 ];
 const ObtenerDia = (dia) => {
@@ -116,7 +120,7 @@ const ObtenerDia = (dia) => {
     "Martes",
     "Miercoles",
     "Jueves",
-    " Viernes",
+    "Viernes",
     "Sabado",
   ];
   f = Semana.filter((e, i) => (i === f ? e : null));
@@ -129,84 +133,80 @@ let BuscarAlumno = (id) => {
   );
   return nom;
 };
-const clasificacion = (grupo) => {
+let BuscarGrupo = (id) => {
+  let grupo = "";
+  Alumnos.value.filter((elem) =>
+    elem.id === id ? (grupo = elem.grupo) : null
+  );
+  return grupo;
+};
+const DatosColumna = (listado) => {
   rows.value = [];
-  rows.value = grupo.map((el, i) => {
+  rows.value = listado.map((el, i) => {
     return {
       index: i + 1,
-      Nombre: "",
-      Asistencia: 0,
-      Inasistencia: 0,
-      Serial: el,
+      Fecha: el.Fecha,
+      Ausentes: el.Data.ausentes.map((elem) => BuscarAlumno(elem)).length,
+      Presentes: el.Data.presentes.map((elem) => BuscarAlumno(elem)).length,
+      Grupo: el.grupo,
     };
   });
-  rows.value.map((item) => {
-    const p = PRESENTES.filter((id) => id === item.Serial).length;
-    const a = AUSENTES.filter((id) => id === item.Serial).length;
-    item.Asistencia = p;
-    item.Inasistencia = a;
-    item.Nombre = BuscarAlumno(item.Serial);
-    item.Rendimiento = p + a / diasRegistrados.value;
-    return item;
-  });
-  console.log(rows.value);
-  return rows.value;
+  return rows.value.sort(
+    (a, b) => a.Fecha.split("-")[2] - b.Fecha.split("-")[2]
+  );
 };
-const _a = (mes, grupo = "Orquesta") => {
-  // mes =
-  mes <= 11
-    ? mes < 10
-      ? (mes = "0" + mes.toString())
-      : (mes = mes.toString())
-    : (mes = "0" + 1);
 
-  console.log(mes);
-  rows.value = [];
-  let Listado = [];
-  _l.value.filter((elem) => {
+const _a = (mes) => {
+  let ListadoMes = [];
+  let PRESENTES = [];
+
+  ListadoMes = _l.value.filter((elem) => {
     if (elem.Fecha === null) {
       return null;
     } else {
-      if (elem.Fecha.split("-")[1] === mes) {
+      if (elem.Fecha.split("-")[1] === mes.toString()) {
         let { ausentes, presentes } = elem.Data;
-        diasRegistrados.value++;
-        presentes.map((el) => PRESENTES.push(el));
-        ausentes.map((el) => AUSENTES.push(el));
-        return PRESENTES, AUSENTES;
+        presentes.map((elem) => PRESENTES.push(elem));
+        return ausentes, presentes;
       } else {
-        return (num.value = mesActual);
+        return null;
       }
     }
   });
-  Alumnos.value.filter((el) =>
-    el.grupo.map((e) => (e === grupo ? Listado.push(el.id) : null))
+
+  pre.value = PRESENTES.reduce(
+    (prev, cur) => ((prev[cur] = prev[cur] + 1 || 1), prev),
+    {}
   );
-  return clasificacion(Listado);
+  for (let clave in pre.value) {
+    pre.value[clave] = {
+      id: clave,
+      nombre: BuscarAlumno(clave),
+      asistencias: pre.value[clave],
+      grupo: BuscarGrupo(clave),
+    };
+  }
+  // pre.value.sort((a, b) => a + b);
+  return DatosColumna(ListadoMes);
 };
 let pagination = ref({
   rowsPerPage: 10,
 });
-const transformar_Fecha = () => {
-  num.value = num.value.toString();
-  console.log("Transformar", num.value);
-};
-const aumentarMes = () => {
-  return num.value++;
-};
-const disminuirMes = () => {
-  // num.value = parseInt(num.value); //9
-  // numMes.value = numMes.value >= 12 ? (numMes.value = 1) : numMes.value++;
 
-  // num.value <= 11
-  //   ? num.value < 10
-  //     ? (num.value = "0" + num.value.toString())
-  //     : (num.value = num.value.toString())
-  //   : (num.value = "0" + 1);
-  // // console.log(num.value);
-  // num.value--;
-  return num.value--;
-};
 onMounted(async () => {
+  _l.value = await Mostrar_todo().then((elem) => elem.map((e) => e.data()));
+
+  //Iniciar meses registrados
+  _l.value.filter((elem) =>
+    elem.Fecha === null ? null : arr.value.push(elem.Fecha.split("-")[1])
+  );
+  // Meses Registrados
+  MesesRegistrados.value = arr.value.reduce(
+    (prev, cur) => ((prev[cur] = prev[cur] + 1 || 1), prev),
+    {}
+  );
+
+  //Iniciar Graficas
   let ausentesCoro = [];
   let presentesCoro = [];
   let ausentesOrquesta = [];
@@ -215,7 +215,9 @@ onMounted(async () => {
   Alumnos.value = await Mostrar_Listado().then((elem) =>
     elem.map((e) => e.data())
   );
-  _l.value = await Mostrar_todo().then((elem) => elem.map((e) => e.data())); //Jalando asistencias
+
+  //Jalando asistencias
+
   _l.value.filter((elem) => {
     if (elem.grupo === "Coro") {
       elem.Data.ausentes.length === null
@@ -260,44 +262,101 @@ onMounted(async () => {
   });
 });
 watchEffect(async () => {
-  // num.value === mesActual ? _a(mesActual, "Orquesta") : _a("09", "Orquesta");
-  _a(num.value, "Orquesta");
-  console.log(num.value);
+  // _a(mes);
 });
 </script>
 <template>
   <div class="col-auto">
-    <div class="flex justify-between q-pa-sm">
-      <q-btn
-        rounded
-        stack
-        toggle-color="primary"
-        color="while"
-        text-color="primary"
-        label="-"
-        @click="disminuirMes"
-      />
-      <span> Mes Numero: ({{ num }}) </span>
-      <q-btn
-        rounded
-        stack
-        toggle-color="primary"
-        color="while"
-        text-color="primary"
-        label="+"
-        @click="aumentarMes"
-      />
-    </div>
-    <q-table
-      style="min-height: 350px"
-      title="Asistencias"
-      :rows="rows"
-      :columns="columns"
-      row-key="index"
-      virtual-scroll
-      v-model:pagination="pagination"
-      :rows-per-page-options="[0]"
-    />
+    <q-list bordered class="rounded-borders">
+      <q-expansion-item
+        expand-separator
+        icon="receipt"
+        label="Asistencias"
+        caption="Meses Registrados"
+        default-opened
+      >
+        <div
+          v-for="(item, i) of MesesRegistrados"
+          :key="item.id"
+          @click="_a(i)"
+        >
+          <q-expansion-item>
+            <template v-slot:header>
+              <q-item-section avatar>
+                <q-avatar icon="list" color="primary" text-color="white" />
+              </q-item-section>
+
+              <q-item-section> {{ meses[i - 1] }} </q-item-section>
+
+              <q-item-section side>
+                <div class="row items-center">
+                  <q-badge rounded color="red" :label="item"></q-badge>
+                </div>
+              </q-item-section>
+            </template>
+
+            <q-card>
+              <q-card-section>
+                <q-card>
+                  <q-card-section>
+                    <div class="cols">
+                      <q-item
+                        clickable
+                        v-ripple
+                        v-for="user of pre"
+                        :key="user.id"
+                      >
+                        <q-item-section avatar>
+                          <q-avatar>
+                            <img src="https://cdn.quasar.dev/img/avatar2.jpg" />
+                          </q-avatar>
+                        </q-item-section>
+
+                        <q-item-section>
+                          <q-item-label lines="1">{{
+                            user.nombre
+                          }}</q-item-label>
+                          <q-item-label caption lines="2">
+                            <span class="text-weight-bold">Asistencias:</span>
+                            {{ user.asistencias }} | {{ user.grupo }}
+                          </q-item-label>
+                          <q-item-label caption lines="3"> </q-item-label>
+                        </q-item-section>
+                      </q-item>
+                      <q-option-group
+                        v-model="separator"
+                        inline
+                        class="q-mb-md"
+                        :options="[
+                          {
+                            label: 'Horizontal (default)',
+                            value: 'horizontal',
+                          },
+                          { label: 'Vertical', value: 'vertical' },
+                          { label: 'Cell', value: 'cell' },
+                          { label: 'None', value: 'none' },
+                        ]"
+                      />
+                      <q-table
+                        style="min-height: 350px"
+                        title="Asistencias"
+                        :rows="rows"
+                        :columns="columns"
+                        row-key="ID"
+                        virtual-scroll
+                        v-model:pagination="pagination"
+                        :separator="separator"
+                      />
+                    </div>
+                  </q-card-section>
+                </q-card>
+              </q-card-section>
+            </q-card>
+          </q-expansion-item>
+        </div>
+      </q-expansion-item>
+    </q-list>
+
     <VueApexCharts
       type="bar"
       :options="linea.chartOptions"
@@ -305,4 +364,3 @@ watchEffect(async () => {
     ></VueApexCharts>
   </div>
 </template>
-<style></style>

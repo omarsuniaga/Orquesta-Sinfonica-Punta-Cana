@@ -83,7 +83,7 @@
         <div class="text-overline">La Orquesta</div>
         <div class="flex justify-between items-center">
           <VueApexCharts
-            type="donut"
+            type="pie"
             :options="pie.chartOptions"
             :series="pie.series"
           ></VueApexCharts>
@@ -408,16 +408,20 @@ let generos = ref({
             width: 260,
           },
           legend: {
-            position: "top",
+            position: "left",
           },
         },
       },
     ],
   },
 });
-const pie = {
+const pie = ref({
   series: [4, 4, 4, 7, 3],
   chartOptions: {
+    chart: {
+      type: "pie",
+      width: 580,
+    },
     labels: ["Violin 1", "Violin 2", "Violin 3", "Violas", "Chelos"],
     responsive: [
       {
@@ -427,13 +431,13 @@ const pie = {
             width: 260,
           },
           legend: {
-            position: "top",
+            position: "left",
           },
         },
       },
     ],
   },
-};
+});
 Leer_Alumnos().then(
   (e) => (TotalAlumnos.value = e.size) && (Alumnos.value = e.docs)
 );
