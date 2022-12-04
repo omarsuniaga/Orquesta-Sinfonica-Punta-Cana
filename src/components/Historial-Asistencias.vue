@@ -64,13 +64,17 @@ let meses = [
   "Diciembre",
 ];
 let arr = ref([]);
-let pre = ref([]);
+let Dia = [
+  "Lunes",
+  "Martes",
+  "Miercoles",
+  "Jueves",
+  "Viernes",
+  "Sabado",
+  "Domingo",
+];
 let MesesRegistrados = ref({});
 let separator = ref("cell");
-const mesActual = new Date().getMonth() + 1;
-let mes = ref("");
-let num = ref(0);
-let numMes = ref(0);
 let rows = ref([]);
 const columns = [
   {
@@ -78,11 +82,12 @@ const columns = [
     label: "Fecha",
     field: "Fecha",
     sortable: true,
+    align: "center",
     sort: (a, b) => parseInt(a, 10) - parseInt(b, 10),
   },
   {
-    name: "Grupo",
     align: "center",
+    name: "Grupo",
     label: "Grupo",
     field: "Grupo",
     sortable: true,
@@ -92,7 +97,7 @@ const columns = [
     name: "Presentes",
     required: true,
     label: "Presentes",
-    align: "left",
+    align: "center",
     field: (row) => row.Presentes,
     format: (val) => `${val}`,
     sortable: true,
@@ -100,16 +105,29 @@ const columns = [
   {
     name: "Ausentes",
     required: true,
-    align: "left",
+    align: "center",
     label: "Ausentes",
     field: (row) => row.Ausentes,
     format: (val) => `${val}`,
     sortable: true,
   },
   {
+    name: "Dia",
+    required: true,
+    align: "center",
+    label: "Dia",
+    field: (row) => row.Dia,
+    format: (val) => `${val}`,
+    sortable: true,
+  },
+  {
     name: "index",
     label: "ID",
-    field: "index",
+    align: "center",
+    required: true,
+    sortable: true,
+    field: (row) => row.index,
+    format: (val) => `${val}`,
   },
 ];
 const ObtenerDia = (dia) => {
@@ -143,12 +161,16 @@ let BuscarGrupo = (id) => {
 const DatosColumna = (listado) => {
   rows.value = [];
   rows.value = listado.map((el, i) => {
+    let Xmas95 = new Date(el.Fecha);
+    let weekday = Xmas95.getDay();
+
     return {
       index: i + 1,
       Fecha: el.Fecha,
       Ausentes: el.Data.ausentes.map((elem) => BuscarAlumno(elem)).length,
       Presentes: el.Data.presentes.map((elem) => BuscarAlumno(elem)).length,
       Grupo: el.grupo,
+      Dia: Dia[weekday],
     };
   });
   return rows.value.sort(
@@ -158,6 +180,7 @@ const DatosColumna = (listado) => {
 const _a = (mes) => {
   let ListadoMes = [];
   let Listado = [];
+  let ListadoAusentes = [];
   let PRESENTES = [];
   let AUSENTES = [];
   //Filtrar todos los registros donde el mes sea igual al seleccionado
@@ -180,6 +203,20 @@ const _a = (mes) => {
     (prev, cur) => ((prev[cur] = prev[cur] + 1 || 1), prev),
     {}
   );
+  ListadoAusentes = AUSENTES.reduce(
+    (prev, cur) => ((prev[cur] = prev[cur] + 1 || 1), prev),
+    {}
+  );
+  for (let id in ListadoAusentes) {
+    ListadoAusentes[id] = {
+      id: id,
+      Inasistencias: ListadoAusentes[id],
+    };
+  }
+
+  // Object.entries(ListadoAusentes).forEach(([key, value]) => {
+  //   return console.log(value.id.toString());
+  // });
 
   //crea objeto de los registros
   for (let clave in Listado) {
@@ -189,11 +226,18 @@ const _a = (mes) => {
       asistencias: Listado[clave],
       grupo: BuscarGrupo(clave),
     };
+    Object.entries(ListadoAusentes).forEach(([key, value]) =>
+      key === clave
+        ? (Listado[clave].inasistencias = value.Inasistencias)
+        : null
+    );
+    Listado[clave].Rendimiento =
+      (Listado[clave].inasistencias + Listado[clave].asistencias) / 2;
   }
   //insertar la asistencia de cada uno en el listado mensual
   MesesRegistrados.value[mes].Listado = Listado;
-  DatosColumna(ListadoMes);
-  return;
+  console.log(MesesRegistrados.value[mes]);
+  return DatosColumna(ListadoMes);
 };
 let pagination = ref({
   rowsPerPage: 10,
@@ -217,7 +261,6 @@ onMounted(async () => {
       id: clave,
       mes: meses[parseInt(clave)],
       registros: MesesRegistrados.value[clave],
-      // obj: _a(clave),
     };
   }
 
@@ -276,9 +319,7 @@ onMounted(async () => {
     color: "#117864",
   });
 });
-watchEffect(async () => {
-  // _a(mes);
-});
+watchEffect(async () => {});
 </script>
 <template>
   <div class="col-auto">
@@ -305,9 +346,10 @@ watchEffect(async () => {
 
               <q-item-section side>
                 <div class="row items-center">
+                  <span>Asistencias Registradas</span>
                   <q-badge
                     rounded
-                    color="red"
+                    color="primary"
                     :label="item.registros"
                   ></q-badge>
                 </div>
@@ -324,6 +366,13 @@ watchEffect(async () => {
                         v-ripple
                         v-for="user of item.Listado"
                         :key="user.id"
+                        :class="[
+                          user.asistencias < user.inasistencias
+                            ? 'bg-red-2'
+                            : user.asistencias === user.inasistencias
+                            ? 'bg-orange-2'
+                            : 'bg-green-1',
+                        ]"
                       >
                         <q-item-section avatar>
                           <q-avatar>
@@ -334,14 +383,23 @@ watchEffect(async () => {
                         <q-item-section>
                           <q-item-label lines="1"
                             >{{ user.nombre }}
+                          </q-item-label>
+                          <q-item-label caption lines="2">
                             <q-badge
                               rounded
                               color="green"
                               :label="user.asistencias"
                             >
                             </q-badge>
+                            <q-badge
+                              v-if="user.inasistencias != null"
+                              rounded
+                              color="red"
+                              :label="user.inasistencias"
+                            >
+                            </q-badge>
                           </q-item-label>
-                          <q-item-label caption lines="2">
+                          <q-item-label caption lines="3">
                             <span class="text-weight-bold">{{
                               user.grupo
                             }}</span>
@@ -364,7 +422,7 @@ watchEffect(async () => {
                       />
                       <q-table
                         style="min-height: 350px"
-                        title="Asistencias"
+                        title="Asistencias Por Fechas"
                         :rows="rows"
                         :columns="columns"
                         row-key="ID"
