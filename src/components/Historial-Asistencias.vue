@@ -155,11 +155,12 @@ const DatosColumna = (listado) => {
     (a, b) => a.Fecha.split("-")[2] - b.Fecha.split("-")[2]
   );
 };
-
 const _a = (mes) => {
   let ListadoMes = [];
+  let Listado = [];
   let PRESENTES = [];
-
+  let AUSENTES = [];
+  //Filtrar todos los registros donde el mes sea igual al seleccionado
   ListadoMes = _l.value.filter((elem) => {
     if (elem.Fecha === null) {
       return null;
@@ -167,27 +168,32 @@ const _a = (mes) => {
       if (elem.Fecha.split("-")[1] === mes.toString()) {
         let { ausentes, presentes } = elem.Data;
         presentes.map((elem) => PRESENTES.push(elem));
+        ausentes.map((elem) => AUSENTES.push(elem));
         return ausentes, presentes;
       } else {
         return null;
       }
     }
   });
-
-  pre.value = PRESENTES.reduce(
+  //Ordenan los registros
+  Listado = PRESENTES.reduce(
     (prev, cur) => ((prev[cur] = prev[cur] + 1 || 1), prev),
     {}
   );
-  for (let clave in pre.value) {
-    pre.value[clave] = {
+
+  //crea objeto de los registros
+  for (let clave in Listado) {
+    Listado[clave] = {
       id: clave,
       nombre: BuscarAlumno(clave),
-      asistencias: pre.value[clave],
+      asistencias: Listado[clave],
       grupo: BuscarGrupo(clave),
     };
   }
-  // pre.value.sort((a, b) => a + b);
-  return DatosColumna(ListadoMes);
+  //insertar la asistencia de cada uno en el listado mensual
+  MesesRegistrados.value[mes].Listado = Listado;
+  DatosColumna(ListadoMes);
+  return;
 };
 let pagination = ref({
   rowsPerPage: 10,
@@ -205,6 +211,15 @@ onMounted(async () => {
     (prev, cur) => ((prev[cur] = prev[cur] + 1 || 1), prev),
     {}
   );
+
+  for (let clave in MesesRegistrados.value) {
+    MesesRegistrados.value[clave] = await {
+      id: clave,
+      mes: meses[parseInt(clave)],
+      registros: MesesRegistrados.value[clave],
+      // obj: _a(clave),
+    };
+  }
 
   //Iniciar Graficas
   let ausentesCoro = [];
@@ -286,11 +301,15 @@ watchEffect(async () => {
                 <q-avatar icon="list" color="primary" text-color="white" />
               </q-item-section>
 
-              <q-item-section> {{ meses[i - 1] }} </q-item-section>
+              <q-item-section> {{ item.mes }} </q-item-section>
 
               <q-item-section side>
                 <div class="row items-center">
-                  <q-badge rounded color="red" :label="item"></q-badge>
+                  <q-badge
+                    rounded
+                    color="red"
+                    :label="item.registros"
+                  ></q-badge>
                 </div>
               </q-item-section>
             </template>
@@ -303,7 +322,7 @@ watchEffect(async () => {
                       <q-item
                         clickable
                         v-ripple
-                        v-for="user of pre"
+                        v-for="user of item.Listado"
                         :key="user.id"
                       >
                         <q-item-section avatar>
@@ -313,14 +332,20 @@ watchEffect(async () => {
                         </q-item-section>
 
                         <q-item-section>
-                          <q-item-label lines="1">{{
-                            user.nombre
-                          }}</q-item-label>
-                          <q-item-label caption lines="2">
-                            <span class="text-weight-bold">Asistencias:</span>
-                            {{ user.asistencias }} | {{ user.grupo }}
+                          <q-item-label lines="1"
+                            >{{ user.nombre }}
+                            <q-badge
+                              rounded
+                              color="green"
+                              :label="user.asistencias"
+                            >
+                            </q-badge>
                           </q-item-label>
-                          <q-item-label caption lines="3"> </q-item-label>
+                          <q-item-label caption lines="2">
+                            <span class="text-weight-bold">{{
+                              user.grupo
+                            }}</span>
+                          </q-item-label>
                         </q-item-section>
                       </q-item>
                       <q-option-group
