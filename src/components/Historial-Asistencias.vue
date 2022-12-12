@@ -368,7 +368,7 @@ onMounted(async () => {
     color: "#633974",
   });
 
-  _B(mesHoy);
+  _B(mesHoy - 1);
 });
 watchEffect(async () => {});
 </script>
