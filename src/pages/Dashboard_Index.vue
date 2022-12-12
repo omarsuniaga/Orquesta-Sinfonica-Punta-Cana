@@ -50,19 +50,34 @@
       <div class="text-overline">{{ Fecha }}</div>
     </q-toolbar>
     <div class="col-auto">
+      <div class="text-overline">Los 5 Alumnos mas inasistentes del mes</div>
       <q-card class="q-mx-md q-pa-md" bordered>
-        <div class="text-overline">Alumnos</div>
-        <div class="flex flex-center row">
-          <div class="text-h4 text-weight-bolder q-mr-md">
-            {{ TotalAlumnos }}
+        <q-card-section>
+          <div class="cols">
+            <q-item
+              clickable
+              v-ripple
+              v-for="lista of ObjetoGlobal.topInasistencias"
+              :key="lista.id"
+              class="'bg-red-2'"
+              @click="$router.push('/Detalles_Alumnos/' + lista.id)"
+            >
+              <q-item-section avatar>
+                <!-- <q-avatar>
+                  <img src="https://cdn.quasar.dev/img/avatar2.jpg" />
+                </q-avatar> -->
+              </q-item-section>
+
+              <q-item-section>
+                <q-item-label lines="1">
+                  {{ lista.nombre }}
+                  <q-badge rounded color="red" :label="lista.inasistencias">
+                  </q-badge>
+                </q-item-label>
+              </q-item-section>
+            </q-item>
           </div>
-          <q-chip color="red-1" text-color="red-3" icon="fas fa-chevron-down"
-            >20%</q-chip
-          >
-          <div>
-            <div class="flex flex-center column"></div>
-          </div>
-        </div>
+        </q-card-section>
       </q-card>
     </div>
     <div class="col-auto">
@@ -138,7 +153,7 @@
 </template>
 
 <script setup>
-import { ref, onMounted } from "vue";
+import { ref, onMounted, provide } from "vue";
 import {
   Leer_Alumnos,
   Grupo_Porcentaje_Fechas,
@@ -171,8 +186,12 @@ const eventEmittedFromChild = (res) => {
 let TotalAlumnos = ref(0);
 let Alumnos = ref(0);
 const $q = useQuasar();
-// const darka = true;
-// $q.dark.set(darka);
+
+//crear una variable global para usarlo en el dashboar
+const ObjetoGlobal = ref([]);
+provide(/* key */ "ObjetoGlobal", /* value */ ObjetoGlobal.value);
+
+console.log(ObjetoGlobal.value);
 const expanded = ref(["Evolucion del Alumno", "Repertorio"]);
 let simple = [
   {
@@ -460,13 +479,10 @@ Leer_Alumnos().then(
 // }) &&
 //   linea.value.chartOptions.xaxis.categories.push(elem.map((el) => el.fecha));
 let Fecha = moment().format("LLLL");
-let slide = ref("style");
-let lorem = "Lorem ipsum dolor; sit amet consectetur adipi.";
-let selection = ref(["green"]);
+let mes = new Date(Fecha).getMonth() + 1;
 let text = "";
-let dense = false;
-let value = "20";
 onMounted(async () => {
+  console.log(ObjetoGlobal.value);
   let femeninas = (await Clasificacion_Generos()).femenino;
   let masculinos = (await Clasificacion_Generos()).masculino;
   generos.value.series.push(masculinos, femeninas);

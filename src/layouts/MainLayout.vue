@@ -56,7 +56,7 @@
     >
       <q-separator class="q-mt-md q-mb-xs" />
       <q-item-label header class="text-weight-bold text-uppercase">
-        Operaciones
+        Lista de Alumnos
       </q-item-label>
       <q-scroll-area class="fit">
         <q-list padding>

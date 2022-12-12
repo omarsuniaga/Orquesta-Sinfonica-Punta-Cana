@@ -1,52 +1,59 @@
 <script setup>
 import moment from "moment";
-import { ref, onMounted, watchEffect } from "vue";
+import { ref, inject, onMounted, watchEffect } from "vue";
 import { Mostrar_todo, Mostrar_Listado, Contar_Ausentes } from "../firebase";
 import VueApexCharts from "vue3-apexcharts";
 const linea = ref({
-  series: [],
+  // series: [],
+  series: [
+    // {
+    // name: "Coro",
+    // data: [],
+    // },
+  ],
   chartOptions: {
     chart: {
-      type: "bar",
-      height: 350,
+      // type: "bar",
+      type: "area",
+      height: 550,
       title: "Orquesta",
     },
-    plotOptions: {
-      bar: {
-        horizontal: false,
-        columnWidth: "55%",
-        endingShape: "rounded",
-      },
-    },
+    // plotOptions: {
+    //   bar: {
+    //     horizontal: false,
+    //     columnWidth: "55%",
+    //     endingShape: "rounded",
+    //   },
+    // },
     dataLabels: {
       enabled: false,
     },
     stroke: {
-      show: false,
-      width: 2,
-      colors: ["transparent"],
+      curve: "smooth",
+      // show: false,
+      // width: 2,
+      // colors: ["transparent"],
     },
     xaxis: {
       type: "datetime",
       categories: [],
     },
-    fill: {
-      opacity: 1,
-    },
-    legend: {
-      position: "right",
-      offsetX: 0,
-      offsetY: 50,
-    },
+    // fill: {
+    //   opacity: 1,
+    // },
+    // legend: {
+    //   position: "right",
+    //   offsetX: 0,
+    //   offsetY: 50,
+    // },
     tooltip: {
-      y: {
-        formatter: function (val) {
-          return val + " Alumnos";
-        },
+      x: {
+        format: "dd/MM/yy",
       },
     },
   },
 });
+
 let _l = ref([]);
 let Alumnos = ref([]);
 let meses = [
@@ -63,6 +70,8 @@ let meses = [
   "Noviembre",
   "Diciembre",
 ];
+let Fecha = moment().format("LLLL");
+let mesHoy = new Date(Fecha).getMonth() + 1;
 let arr = ref([]);
 let Dia = [
   "Lunes",
@@ -76,6 +85,7 @@ let Dia = [
 let MesesRegistrados = ref({});
 let separator = ref("cell");
 let rows = ref([]);
+let ObjetoGlobal = inject("ObjetoGlobal");
 const columns = [
   {
     name: "Fecha",
@@ -144,14 +154,14 @@ const ObtenerDia = (dia) => {
   f = Semana.filter((e, i) => (i === f ? e : null));
   return f;
 };
-let BuscarAlumno = (id) => {
+const BuscarAlumno = (id) => {
   let nom = "";
   Alumnos.value.filter((elem) =>
     elem.id === id ? (nom = elem.nombre + " " + elem.apellido) : null
   );
   return nom;
 };
-let BuscarGrupo = (id) => {
+const BuscarGrupo = (id) => {
   let grupo = "";
   Alumnos.value.filter((elem) =>
     elem.id === id ? (grupo = elem.grupo) : null
@@ -203,7 +213,7 @@ const _a = (mes) => {
     (prev, cur) => ((prev[cur] = prev[cur] + 1 || 1), prev),
     {}
   );
-  ListadoAusentes = AUSENTES.reduce(
+  ListadoAusentes = AUSENTES.sort((a, b) => a + b).reduce(
     (prev, cur) => ((prev[cur] = prev[cur] + 1 || 1), prev),
     {}
   );
@@ -213,10 +223,6 @@ const _a = (mes) => {
       Inasistencias: ListadoAusentes[id],
     };
   }
-
-  // Object.entries(ListadoAusentes).forEach(([key, value]) => {
-  //   return console.log(value.id.toString());
-  // });
 
   //crea objeto de los registros
   for (let clave in Listado) {
@@ -231,14 +237,52 @@ const _a = (mes) => {
         ? (Listado[clave].inasistencias = value.Inasistencias)
         : null
     );
-    Listado[clave].Rendimiento =
-      (Listado[clave].inasistencias + Listado[clave].asistencias) / 2;
   }
+
   //insertar la asistencia de cada uno en el listado mensual
   MesesRegistrados.value[mes].Listado = Listado;
-  console.log(MesesRegistrados.value[mes]);
+
   return DatosColumna(ListadoMes);
 };
+
+const _B = (mes) => {
+  let ListadoAusentes = [];
+  let AUSENTES = [];
+
+  //Filtrar todos los registros donde el mes sea igual al seleccionado
+
+  let ListadoMes = _l.value.filter((elem) => {
+    if (!!elem.Fecha) {
+      if (elem.Fecha.split("-")[1] === mes.toString()) {
+        let { ausentes } = elem.Data;
+        ausentes.map((elem) => AUSENTES.push(elem));
+        return ausentes;
+      }
+      return;
+    }
+  });
+  // //Ordenan los registros
+
+  ListadoAusentes = AUSENTES.sort((a, b) => a + b).reduce(
+    (prev, cur) => ((prev[cur] = prev[cur] + 1 || 1), prev),
+    {}
+  );
+
+  const entries = Object.entries(ListadoAusentes);
+  const sortedEntries = entries.sort((a, b) => b[1] - a[1]);
+  const topFiveEntries = sortedEntries.slice(0, 5);
+  const topFiveKeys = topFiveEntries.map((entry) => entry);
+
+  for (let clave in topFiveKeys) {
+    topFiveKeys[clave] = {
+      id: topFiveKeys[clave][0],
+      nombre: BuscarAlumno(topFiveKeys[clave][0]),
+      inasistencias: topFiveKeys[clave][1],
+    };
+  }
+  return (ObjetoGlobal.topInasistencias = topFiveKeys);
+};
+
 let pagination = ref({
   rowsPerPage: 10,
 });
@@ -257,7 +301,7 @@ onMounted(async () => {
   );
 
   for (let clave in MesesRegistrados.value) {
-    MesesRegistrados.value[clave] = await {
+    MesesRegistrados.value[clave] = {
       id: clave,
       mes: meses[parseInt(clave)],
       registros: MesesRegistrados.value[clave],
@@ -265,9 +309,9 @@ onMounted(async () => {
   }
 
   //Iniciar Graficas
-  let ausentesCoro = [];
+  // let ausentesCoro = [];
   let presentesCoro = [];
-  let ausentesOrquesta = [];
+  // let ausentesOrquesta = [];
   let presentesOrquesta = [];
 
   Alumnos.value = await Mostrar_Listado().then((elem) =>
@@ -276,48 +320,55 @@ onMounted(async () => {
 
   //Jalando asistencias
 
-  _l.value.filter((elem) => {
-    if (elem.grupo === "Coro") {
-      elem.Data.ausentes.length === null
-        ? ausentesCoro.push(0)
-        : ausentesCoro.push(elem.Data.ausentes.length);
-      elem.Data.presentes.length === null
-        ? presentesCoro.push(0)
-        : presentesCoro.push(elem.Data.presentes.length);
-      linea.value.chartOptions.xaxis.categories.push(elem.Fecha);
-      return linea.value.chartOptions.xaxis.categories.sort((a, b) => a - b);
+  let Graficar = _l.value.filter((elem) => !!elem.Fecha);
+
+  // Graficar = Graficar.sort((a, b) => a.fecha - b.fecha);
+
+  Graficar = Graficar.filter((e) => {
+    if (e.grupo === "Coro") {
+      let fecha = new Date(e.Fecha);
+      presentesCoro.push({
+        data: e.Data.presentes.length,
+        fecha: fecha,
+        grupo: e.grupo,
+      });
+      return presentesCoro;
     }
-    if (elem.grupo === "Orquesta") {
-      elem.Data.ausentes.length === null
-        ? ausentesOrquesta.push(0)
-        : ausentesOrquesta.push(elem.Data.ausentes.length);
-      elem.Data.presentes.length === null
-        ? presentesOrquesta.push(0)
-        : presentesOrquesta.push(elem.Data.presentes.length);
-      linea.value.chartOptions.xaxis.categories.push(elem.Fecha);
-      return linea.value.chartOptions.xaxis.categories.sort((a, b) => a - b);
+    if (e.grupo === "Orquesta") {
+      let fecha = new Date(e.Fecha);
+      presentesOrquesta.push({
+        data: e.Data.presentes.length,
+        fecha: fecha,
+        grupo: e.grupo,
+      });
+      return presentesOrquesta;
     }
   });
+
+  let nuevoArrayPresentes = ref(presentesOrquesta.concat(presentesCoro));
+  nuevoArrayPresentes.value = nuevoArrayPresentes.value.sort(
+    (a, b) => a.fecha - b.fecha
+  );
+  nuevoArrayPresentes.value.map((elem) =>
+    linea.value.chartOptions.xaxis.categories.push(elem.fecha.toString())
+  );
+  console.log(linea.value.series);
   linea.value.series.push({
-    name: "Ausentes de Coro",
-    data: ausentesCoro,
-    color: "#C39BD3", //light red
-  });
-  linea.value.series.push({
-    name: "Ausentes de Orquesta",
-    data: ausentesOrquesta,
+    name: "Orquesta",
+    data: nuevoArrayPresentes.value.map((elem) =>
+      elem.grupo === "Orquesta" ? elem.data : 0
+    ),
     color: "#76D7C4",
   });
   linea.value.series.push({
-    name: "Presentes de Coro",
-    data: presentesCoro,
+    name: "Coro",
+    data: nuevoArrayPresentes.value.map((elem) =>
+      elem.grupo === "Coro" ? elem.data : 0
+    ),
     color: "#633974",
   });
-  linea.value.series.push({
-    name: "Presentes de Orquesta",
-    data: presentesOrquesta,
-    color: "#117864",
-  });
+
+  _B(mesHoy - 1);
 });
 watchEffect(async () => {});
 </script>
@@ -346,7 +397,6 @@ watchEffect(async () => {});
 
               <q-item-section side>
                 <div class="row items-center">
-                  <span>Asistencias Registradas</span>
                   <q-badge
                     rounded
                     color="primary"
@@ -439,9 +489,9 @@ watchEffect(async () => {});
         </div>
       </q-expansion-item>
     </q-list>
-
     <VueApexCharts
-      type="bar"
+      type="area"
+      height="350"
       :options="linea.chartOptions"
       :series="linea.series"
     ></VueApexCharts>
