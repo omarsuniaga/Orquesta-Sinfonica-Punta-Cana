@@ -59,17 +59,11 @@
               v-ripple
               v-for="lista of ObjetoGlobal.topInasistencias"
               :key="lista.id"
-              class="'bg-red-2'"
+              class="'bg-red-4'"
               @click="$router.push('/Detalles_Alumnos/' + lista.id)"
             >
-              <q-item-section avatar>
-                <!-- <q-avatar>
-                  <img src="https://cdn.quasar.dev/img/avatar2.jpg" />
-                </q-avatar> -->
-              </q-item-section>
-
               <q-item-section>
-                <q-item-label lines="1">
+                <q-item-label lines="1" class="text-red-3">
                   {{ lista.nombre }}
                   <q-badge rounded color="red" :label="lista.inasistencias">
                   </q-badge>
@@ -80,7 +74,7 @@
         </q-card-section>
       </q-card>
     </div>
-    <div class="col-auto">
+    <!-- <div class="col-auto">
       <q-card class="q-mx-md q-pa-md">
         <div class="text-overline">Horarios</div>
         <div class="flex justify-between no-wrap items-center">
@@ -92,13 +86,21 @@
           />
         </div>
       </q-card>
-    </div>
+    </div> -->
     <div class="col-auto">
       <q-card class="q-ma-md q-pa-md" bordered>
-        <div class="text-overline">La Orquesta</div>
+        <div class="text-overline">
+          Cantidad de Alumnos en la Orquesta {{ TotalAlumnos_Orquesta.length }}
+        </div>
+        <div class="text-overline">
+          Cantidad de Alumnos en el Coro {{ TotalAlumnos_Coro.length }}
+        </div>
+        <div class="text-overline">
+          Cantidad de Alumnos en el Solfeo {{ TotalAlumnos_Solfeo.length }}
+        </div>
         <div class="flex justify-between items-center">
           <VueApexCharts
-            type="pie"
+            type="polarArea"
             :options="pie.chartOptions"
             :series="pie.series"
           ></VueApexCharts>
@@ -129,7 +131,7 @@
       <q-card class="card1 q-mx-md q-pa-sm" bordered>
         <div class="row q-col-gutter-md">
           <div class="col-6">
-            <div class="text-caption">Concierto 14 de Oct</div>
+            <div class="text-caption">Cantidad del coro</div>
             <div class="text-caption text-grey-5">4:30pm - 7:30pm</div>
             <div>Hotel Barcelo</div>
           </div>
@@ -158,6 +160,9 @@ import {
   Leer_Alumnos,
   Grupo_Porcentaje_Fechas,
   Clasificacion_Generos,
+  Total_Orquesta,
+  Total_Coro,
+  Total_Solfeo,
 } from "../firebase";
 
 import RightSideBar from "src/components/RightSideBar.vue";
@@ -168,13 +173,18 @@ import HistorialAsistencias from "src/components/Historial-Asistencias.vue";
 import BuscarAlumnos from "src/components/Buscar-Alumnos.vue";
 import { useRouter } from "vue-router";
 const router = useRouter();
-const props = defineProps({
-  text: String,
-});
+const ObjetoGlobal = ref([]);
+let Resultado_Busqueda = ref([]);
+let TotalAlumnos_Orquesta = ref(0);
+let TotalAlumnos_Coro = ref(0);
+let TotalAlumnos_Solfeo = ref(0);
+const $q = useQuasar();
 let detalle = (id) => {
   return router.push(`/Detalles_Alumnos/${id}`);
 };
-let Resultado_Busqueda = ref([]);
+const props = defineProps({
+  text: String,
+});
 const eventEmittedFromChild = (res) => {
   if (res.length != 0) {
     Resultado_Busqueda.value = res.map((e) => ({ ...e }));
@@ -183,12 +193,8 @@ const eventEmittedFromChild = (res) => {
     Resultado_Busqueda.value.length = 0;
   }
 };
-let TotalAlumnos = ref(0);
-let Alumnos = ref(0);
-const $q = useQuasar();
-
 //crear una variable global para usarlo en el dashboar
-const ObjetoGlobal = ref([]);
+
 provide(/* key */ "ObjetoGlobal", /* value */ ObjetoGlobal.value);
 
 console.log(ObjetoGlobal.value);
@@ -421,13 +427,13 @@ let generos = ref({
     labels: ["Masculinos", "Femeninas"],
     responsive: [
       {
-        breakpoint: 720,
+        breakpoint: 280,
         options: {
           chart: {
-            width: 260,
+            width: 400,
           },
           legend: {
-            position: "left",
+            position: "bottom",
           },
         },
       },
@@ -435,57 +441,48 @@ let generos = ref({
   },
 });
 const pie = ref({
-  series: [4, 4, 4, 7, 3],
+  series: [],
   chartOptions: {
     chart: {
-      type: "pie",
+      type: "polarArea",
       width: 580,
     },
-    labels: ["Violin 1", "Violin 2", "Violin 3", "Violas", "Chelos"],
+    labels: [],
     responsive: [
       {
-        breakpoint: 720,
+        breakpoint: 280,
         options: {
           chart: {
-            width: 260,
+            width: 400,
           },
           legend: {
-            position: "left",
+            position: "bottom",
           },
         },
       },
     ],
   },
 });
-Leer_Alumnos().then(
-  (e) => (TotalAlumnos.value = e.size) && (Alumnos.value = e.docs)
-);
-// Grupo_Porcentaje_Fechas("Orquesta").then((elem) => {
-//   presentes.value.push(elem.map((el) => el.presentes));
-//   ausentes.value.push(elem.map((el) => el.ausentes));
-//   suma.value.push(elem.map((el) => el.presentes + el.ausentes));
-//   return;
-// });
-// linea.value.series.filter((elem) => {
-//   elem.name === "Presentes" ? (elem.data = presentes.value) : null;
-//   elem.name === "Ausentes" ? (elem.data = ausentes.value) : null;
-//   elem.name === "Suma" ? (elem.data = suma.value) : null;
-//   return;
-// });
 
-// linea.value.series.push({
-//   name: "asd",
-//   data: elem.map((el) => Math.ceil(el.porcentaje)),
-// }) &&
-//   linea.value.chartOptions.xaxis.categories.push(elem.map((el) => el.fecha));
 let Fecha = moment().format("LLLL");
-let mes = new Date(Fecha).getMonth() + 1;
 let text = "";
 onMounted(async () => {
-  console.log(ObjetoGlobal.value);
+  TotalAlumnos_Coro.value = await Total_Coro();
+  TotalAlumnos_Orquesta.value = await Total_Orquesta();
+  TotalAlumnos_Solfeo.value = await Total_Solfeo();
   let femeninas = (await Clasificacion_Generos()).femenino;
   let masculinos = (await Clasificacion_Generos()).masculino;
   generos.value.series.push(masculinos, femeninas);
+
+  let instrumentos = TotalAlumnos_Orquesta.value
+    .map((e) => e.instrumento)
+    .sort((a, b) => a - b)
+    .reduce((prev, cur) => ((prev[cur] = prev[cur] + 1 || 1), prev), {});
+
+  for (let clave in instrumentos) {
+    pie.value.series.push(instrumentos[clave]);
+    pie.value.chartOptions.labels.push(clave);
+  }
 });
 </script>
 <style scoped>

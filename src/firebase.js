@@ -350,6 +350,36 @@ export const Contar_Ausentes = async (mes = "09") => {
 /**
  * Data para graficas del Dashboard
  */
+
+// Contar alumnos de la orquesta
+export const Total_Orquesta = async () => {
+  let Alumnos = await Mostrar_Listado().then((elem) =>
+    elem.map((e) => e.data()).sort((a, b) => a.nombre.localeCompare(b.nombre))
+  );
+  Alumnos = await Alumnos.filter((elem) =>
+    elem.grupo.find((e) => e === "Orquesta")
+  ).sort((a, b) => a.nombre.localeCompare(b.nombre));
+  return Alumnos;
+};
+export const Total_Coro = async () => {
+  let Alumnos = await Mostrar_Listado().then((elem) =>
+    elem.map((e) => e.data()).sort((a, b) => a.nombre.localeCompare(b.nombre))
+  );
+  Alumnos = await Alumnos.filter((elem) =>
+    elem.grupo.find((e) => e === "Coro")
+  ).sort((a, b) => a.nombre.localeCompare(b.nombre));
+  return Alumnos;
+};
+export const Total_Solfeo = async () => {
+  let Alumnos = await Mostrar_Listado().then((elem) =>
+    elem.map((e) => e.data()).sort((a, b) => a.nombre.localeCompare(b.nombre))
+  );
+  Alumnos = await Alumnos.filter((elem) =>
+    elem.grupo.find((e) => e === "Iniciacion 1" || e === "Iniciacion 2")
+  ).sort((a, b) => a.nombre.localeCompare(b.nombre));
+  return Alumnos;
+};
+
 export const Grupo_Porcentaje_Fechas = async (grupo) => {
   let array = [];
   let _l = [];
