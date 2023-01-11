@@ -105,8 +105,8 @@ const op1 = async (res) => {
   console.log((CalidadSonido = res));
 };
 onMounted(async () => {
-  let { Repertorios } = await PROCESOS(id);
-  console.log(Repertorios);
+  // let { Repertorios } = await PROCESOS(id);
+  console.log(await PROCESOS(id));
 
   // Repertorios = Repertorios.map((elem)=>elem.Fecha.);
   // res.value = Repertorios.map((elem) => {
@@ -126,17 +126,17 @@ onMounted(async () => {
    * 4. Si Repertorios[i].Fecha.split("-")[1] === Repertorios[i+1].Fecha.split("-")[1]
    * 5. Pushear las coincidencias en un array
    */
-  let MesArrays = [];
-  for (let i = 0; i < Repertorios.length; i++) {
-    if (
-      Repertorios[i].Fecha.split("-")[1] ===
-      Repertorios[i + 1].Fecha.split("-")[1]
-    ) {
-      MesArrays.push(Repertorios[i]);
-    }
-    console.log(MesArrays);
-  }
+  // let MesArrays = [];
+  // for (let i = 0; i < Repertorios.length; i++) {
+  //   if (
+  //     Repertorios[i].Fecha.split("-")[1] ===
+  //     Repertorios[i + 1].Fecha.split("-")[1]
+  //   ) {
+  //     MesArrays.push(Repertorios[i]);
+  //   }
+  //   console.log(MesArrays);
+  // }
 
-  return console.log(Repertorios);
+  // return console.log(Repertorios);
 });
 </script>

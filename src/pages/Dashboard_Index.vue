@@ -41,40 +41,67 @@
           </div>
         </div>
       </div>
-      <q-space></q-space>
     </q-toolbar>
     <q-toolbar>
-      <h6 class="text-weight-bolder">Dashboard</h6>
-      <q-space />
-      <q-icon name="fas fa-calendar-minus" size="" class="q-mr-sm" />
-      <div class="text-overline">{{ Fecha }}</div>
-    </q-toolbar>
-    <div class="col-auto">
-      <div class="text-overline">Los 5 Alumnos mas inasistentes del mes</div>
-      <q-card class="q-mx-md q-pa-md" bordered>
-        <q-card-section>
-          <div class="cols">
-            <q-item
-              clickable
-              v-ripple
-              v-for="lista of ObjetoGlobal.topInasistencias"
-              :key="lista.id"
-              class="'bg-red-4'"
-              @click="$router.push('/Detalles_Alumnos/' + lista.id)"
-            >
-              <q-item-section>
-                <q-item-label lines="1" class="text-red-3">
-                  {{ lista.nombre }}
-                  <q-badge rounded color="red" :label="lista.inasistencias">
-                  </q-badge>
-                </q-item-label>
-              </q-item-section>
-            </q-item>
+      <q-btn-toggle
+        v-model="model"
+        push
+        rounded
+        glossy
+        toggle-color="purple"
+        :options="[
+          { value: 'hoy', slot: 'hoy' },
+          { value: 'semanal', slot: 'semanal' },
+          { value: 'mensual', slot: 'mensual' },
+        ]"
+      >
+        <template v-slot:hoy>
+          <div class="row items-center no-wrap">
+            <div class="text-center">Hoy</div>
+            <q-icon right name="today" />
           </div>
-        </q-card-section>
-      </q-card>
-    </div>
-    <!-- <div class="col-auto">
+        </template>
+
+        <template v-slot:semanal>
+          <div class="row items-center no-wrap">
+            <div class="text-center">3 Semanas</div>
+            <q-icon right name="calendar_view_month" />
+          </div>
+        </template>
+
+        <template v-slot:mensual>
+          <div class="row items-center no-wrap">
+            <div class="text-center">3 Meses</div>
+            <q-icon right name="calendar_month" />
+          </div>
+        </template>
+      </q-btn-toggle>
+    </q-toolbar>
+
+    <div class="text-overline">Los 5 Alumnos mas asistencias del mes</div>
+    <q-card class="q-mx-md q-pa-md" bordered>
+      <q-card-section>
+        <div class="cols">
+          <q-item
+            clickable
+            v-ripple
+            v-for="lista of ObjetoGlobal"
+            :key="lista.id"
+            class="'bg-red-4'"
+            @click="$router.push('/Detalles_Alumnos/' + lista.id)"
+          >
+            <q-item-section>
+              <q-item-label lines="1" class="text-red-3">
+                {{ lista[0] }}
+                <q-badge rounded color="red" :label="lista[1]"> </q-badge>
+              </q-item-label>
+            </q-item-section>
+          </q-item>
+        </div>
+      </q-card-section>
+    </q-card>
+  </div>
+  <!-- <div class="col-auto">
       <q-card class="q-mx-md q-pa-md">
         <div class="text-overline">Horarios</div>
         <div class="flex justify-between no-wrap items-center">
@@ -87,36 +114,60 @@
         </div>
       </q-card>
     </div> -->
-    <div class="col-auto">
-      <q-card class="q-ma-md q-pa-md" bordered>
-        <div class="text-overline">
-          Cantidad de Alumnos en la Orquesta {{ TotalAlumnos_Orquesta.length }}
-        </div>
-        <div class="text-overline">
-          Cantidad de Alumnos en el Coro {{ TotalAlumnos_Coro.length }}
-        </div>
-        <div class="text-overline">
-          Cantidad de Alumnos en el Solfeo {{ TotalAlumnos_Solfeo.length }}
-        </div>
-        <div class="flex justify-between items-center">
-          <VueApexCharts
-            type="polarArea"
-            :options="pie.chartOptions"
-            :series="pie.series"
-          ></VueApexCharts>
-          <VueApexCharts
-            type="pie"
-            :options="generos.chartOptions"
-            :series="generos.series"
-          ></VueApexCharts>
-        </div>
+  <q-toolbar>
+    <div class="flex justify-between q-pa-xs">
+      <q-card flat bordered class="my-card">
+        <q-card-section>
+          <div class="text-h6">Orquesta</div>
+        </q-card-section>
+        <q-card-section class="q-pt-none">
+          {{ TotalAlumnos_Orquesta.length }} Alumnos
+        </q-card-section>
+      </q-card>
+      <q-card flat bordered class="my-card">
+        <q-card-section>
+          <div class="text-h6">Coro</div>
+        </q-card-section>
+        <q-card-section class="q-pt-none">
+          {{ TotalAlumnos_Coro.length }} Alumnos</q-card-section
+        >
+      </q-card>
+      <q-card flat bordered class="my-card">
+        <q-card-section>
+          <div class="text-h6">Solfeo</div>
+        </q-card-section>
+        <q-card-section class="q-pt-none">
+          {{ TotalAlumnos_Solfeo.length }} Alumnos</q-card-section
+        >
+      </q-card>
+      <q-card flat bordered class="my-card">
+        <q-card-section>
+          <div class="text-h6">Esperando</div>
+        </q-card-section>
+        <q-card-section class="q-pt-none"> 30 Alumnos</q-card-section>
       </q-card>
     </div>
-    <div class="col-auto">
-      <q-card class="q-ma-md q-pa-md" bordered>
-        <HistorialAsistencias />
-      </q-card>
-    </div>
+  </q-toolbar>
+  <div class="col-auto">
+    <q-card class="q-ma-md q-pa-md" bordered>
+      <div class="flex justify-between items-center">
+        <VueApexCharts
+          type="polarArea"
+          :options="pie.chartOptions"
+          :series="pie.series"
+        ></VueApexCharts>
+        <VueApexCharts
+          type="pie"
+          :options="generos.chartOptions"
+          :series="generos.series"
+        ></VueApexCharts>
+      </div>
+    </q-card>
+  </div>
+  <div class="col-auto">
+    <q-card class="q-ma-md q-pa-md" bordered>
+      <HistorialAsistencias />
+    </q-card>
   </div>
   <q-toolbar>
     <div class="text-overline">Eventos</div>
@@ -155,30 +206,38 @@
 </template>
 
 <script setup>
-import { ref, onMounted, provide } from "vue";
+import { ref, onMounted, provide, watchEffect } from "vue";
 import {
-  Leer_Alumnos,
-  Grupo_Porcentaje_Fechas,
   Clasificacion_Generos,
   Total_Orquesta,
   Total_Coro,
   Total_Solfeo,
+  Mostrar_todo,
+  Mostrar_Listado,
 } from "../firebase";
 
+import { useQuasar } from "quasar";
+import { useRouter } from "vue-router";
 import RightSideBar from "src/components/RightSideBar.vue";
 import moment from "moment";
 import VueApexCharts from "vue3-apexcharts";
-import { useQuasar } from "quasar";
 import HistorialAsistencias from "src/components/Historial-Asistencias.vue";
 import BuscarAlumnos from "src/components/Buscar-Alumnos.vue";
-import { useRouter } from "vue-router";
+//Variables
 const router = useRouter();
 const ObjetoGlobal = ref([]);
+const $q = useQuasar();
 let Resultado_Busqueda = ref([]);
 let TotalAlumnos_Orquesta = ref(0);
 let TotalAlumnos_Coro = ref(0);
 let TotalAlumnos_Solfeo = ref(0);
-const $q = useQuasar();
+let model = ref("hoy");
+let _l = ref([]);
+let Alumnos = ref([]);
+let Fecha = moment().format("LLLL");
+let text = "";
+let attendance = ref();
+
 let detalle = (id) => {
   return router.push(`/Detalles_Alumnos/${id}`);
 };
@@ -193,229 +252,9 @@ const eventEmittedFromChild = (res) => {
     Resultado_Busqueda.value.length = 0;
   }
 };
+
 //crear una variable global para usarlo en el dashboar
-
 provide(/* key */ "ObjetoGlobal", /* value */ ObjetoGlobal.value);
-
-console.log(ObjetoGlobal.value);
-const expanded = ref(["Evolucion del Alumno", "Repertorio"]);
-let simple = [
-  {
-    label: "Dias de Ensayos",
-    children: [
-      {
-        label: "Lunes",
-        children: [
-          {
-            label: "3:30pm-4:30pm",
-            children: [
-              {
-                label: "Iniciacion 1",
-              },
-              {
-                label: "Iniciacion 2",
-              },
-              {
-                label: "Taller De Chelos",
-              },
-            ],
-          },
-          {
-            label: "4:30pm-5:30pm",
-            children: [
-              {
-                label: "Taller de Violin",
-              },
-              {
-                label: "Taller de Violas",
-              },
-              {
-                label: "Coro",
-              },
-            ],
-          },
-          {
-            label: "5:30pm-6:30pm",
-            children: [
-              {
-                label: "Taller de Violin",
-              },
-            ],
-          },
-        ],
-      },
-      {
-        label: "Miercoles",
-        children: [
-          {
-            label: "3:30pm-4:30pm",
-            children: [
-              {
-                label: "Iniciacion 2",
-              },
-            ],
-          },
-          {
-            label: "4:30pm-5:30pm",
-            children: [
-              {
-                label: "Taller de Cuerdas Supervisados",
-              },
-            ],
-          },
-          {
-            label: "5:30pm-6:30pm",
-            children: [
-              {
-                label: "Coro",
-              },
-            ],
-          },
-        ],
-      },
-      {
-        label: "Jueves",
-        children: [
-          {
-            label: "3:30pm-4:30pm",
-            children: [
-              {
-                label: "Iniciacion de Cuerdas Grupo 1",
-              },
-            ],
-          },
-          {
-            label: "4:30pm-5:30pm",
-            children: [
-              {
-                label: "Iniciacion de Cuerdas Grupo 2",
-              },
-            ],
-          },
-          {
-            label: "5:30pm-6:30pm",
-            children: [
-              {
-                label: "Ensayo General de Orquesta",
-              },
-            ],
-          },
-        ],
-      },
-      {
-        label: "Sabados",
-        children: [
-          {
-            label: "10:00am-1:00pm",
-            children: [
-              {
-                label: "Ensayo General de Orquesta",
-              },
-            ],
-          },
-        ],
-      },
-    ],
-  },
-];
-let horarios = ref({
-  dias: [
-    {
-      lunes: [
-        {
-          id: 1,
-          clase: "Iniciacion 1",
-          horario: "3:30pm - 4:30pm",
-          profe: "Omar Suniaga",
-        },
-        {
-          id: 2,
-          clase: "Inicacion 2",
-          horario: "3:30pm - 4:30pm",
-          profe: "Jose M. Tavera",
-        },
-        {
-          id: 3,
-          clase: "Taller de Chelos",
-          horario: "3:30pm - 4:30pm",
-          profe: "Nathalie Mora",
-        },
-        {
-          id: 4,
-          clase: "Taller de Violin",
-          horario: "4:30pm - 5:30pm",
-          profe: "Jose M. Tavera",
-        },
-        {
-          id: 5,
-          clase: "Taller de Violas",
-          horario: "4:30pm - 5:30pm",
-          profe: "Omar Suniaga",
-        },
-        {
-          id: 6,
-          clase: "Coro",
-          horario: "4:30pm - 5:30pm",
-          profe: "Nathalie Mora",
-        },
-        {
-          id: 7,
-          clase: "Ensayo General de Orquesta",
-          horario: "5:30pm - 6:30pm",
-          profe: "Omar Suniaga",
-        },
-      ],
-      Miercoles: [
-        {
-          id: 1,
-          clase: "Iniciacion 2",
-          horario: "3:30pm - 4:30pm",
-          profe: "Omar Suniaga",
-        },
-        {
-          id: 2,
-          clase: "Coro",
-          horario: "4:30pm - 5:30pm",
-          profe: "Omar Suniaga",
-        },
-        {
-          id: 3,
-          clase: "Talleres de Cuerdas (Supervisados)",
-          horario: "5:30pm - 6:30pm",
-          profe: "Omar Suniaga",
-        },
-      ],
-      Jueves: [
-        {
-          id: 1,
-          clase: "Inicacion de Cuerdas grupo 1",
-          horario: "3:30pm - 4:30pm",
-          profe: "Omar Suniaga",
-        },
-        {
-          id: 2,
-          clase: "Inicacion de Cuerdas grupo 2",
-          horario: "4:30pm - 5:30pm",
-          profe: "Omar Suniaga",
-        },
-        {
-          id: 3,
-          clase: "Ensayo General de Orquesta ",
-          horario: "5:30pm - 6:30pm",
-          profe: "Omar Suniaga",
-        },
-      ],
-      Sabados: [
-        {
-          id: 1,
-          clase: "Ensayo General Orquesta",
-          horario: "10:00am - 1:00pm",
-          profe: "Omar Suniaga",
-        },
-      ],
-    },
-  ],
-});
 
 let generos = ref({
   series: [],
@@ -464,24 +303,134 @@ const pie = ref({
   },
 });
 
-let Fecha = moment().format("LLLL");
-let text = "";
+async function Generar_Asistencias_Global() {
+  let Obj = [];
+  let nom = "";
+
+  //Busca al alumnos segun su id
+  const Buscar = (id) => {
+    Alumnos.value.filter((elem) =>
+      elem.id === id ? (nom = elem.nombre + " " + elem.apellido) : null
+    );
+    return nom;
+  };
+
+  //Itera las fechas que existen
+  _l.value.filter((elem) => {
+    if (!!elem.Fecha) {
+      let { presentes } = elem.Data;
+      let { ausentes } = elem.Data;
+      //Selecciona aquellos items donde id este en presente
+      presentes.map((el) =>
+        Obj.push({ name: Buscar(el), date: elem.Fecha, attended: true })
+      );
+      //Selecciona aquellos items donde id este en presente
+      ausentes.map((el) =>
+        Obj.push({ name: Buscar(el), date: elem.Fecha, attended: false })
+      );
+      return { presentes, ausentes };
+    }
+    return (attendance.value = Obj);
+  });
+  return Obj;
+}
+
+const Semanal = () => {
+  let Semanas = attendance.value
+    .filter(({ date, attended }) => {
+      const attendenceDate = new Date(date);
+      const threeWeeksAgo = new Date();
+      threeWeeksAgo.setDate(threeWeeksAgo.getDate() - 21);
+      return attended && attendenceDate > threeWeeksAgo;
+    })
+    .reduce((attendees, { name }) => {
+      attendees[name] = (attendees[name] || 0) + 1;
+      return attendees;
+    }, {});
+  //convertir el Objeto Semanas.value en un array
+  let SemanasArray = ref([]);
+  SemanasArray.value = Object.entries(Semanas);
+  ObjetoGlobal.value = SemanasArray.value.sort((a, b) => b[1] - a[1]);
+  const topFiveEntries = ObjetoGlobal.value.slice(0, 5);
+  const topFiveKeys = topFiveEntries.map((entry) => entry);
+  ObjetoGlobal.value = topFiveKeys;
+
+  return ObjetoGlobal.value;
+};
+
+const Mensual = () => {
+  let meses = attendance.value
+    .filter(({ date, attended }) => {
+      const attendenceDate = new Date(date);
+      const threeMonthsAgo = new Date();
+      threeMonthsAgo.setMonth(threeMonthsAgo.getMonth() - 3);
+      return attended && attendenceDate > threeMonthsAgo;
+    })
+    .reduce((attendees, { name }) => {
+      attendees[name] = (attendees[name] || 0) + 1;
+      return attendees;
+    }, {});
+  let MesArray = ref([]);
+  MesArray.value = Object.entries(meses);
+  ObjetoGlobal.value = MesArray.value.sort((a, b) => b[1] - a[1]);
+  const topFiveEntries = ObjetoGlobal.value.slice(0, 5);
+  const topFiveKeys = topFiveEntries.map((entry) => entry);
+  ObjetoGlobal.value = topFiveKeys;
+
+  return ObjetoGlobal.value;
+};
+
+//Esta funcion intenta almacenar en un objeto a los alumnos fecha y asistencia
 onMounted(async () => {
+  //Obtener el total de alumnos segun el grupo
   TotalAlumnos_Coro.value = await Total_Coro();
   TotalAlumnos_Orquesta.value = await Total_Orquesta();
   TotalAlumnos_Solfeo.value = await Total_Solfeo();
+
+  //Clasificacion por generos de alumnos
   let femeninas = (await Clasificacion_Generos()).femenino;
   let masculinos = (await Clasificacion_Generos()).masculino;
+
+  //Graficar los valores de Femeninos y Masculinos
   generos.value.series.push(masculinos, femeninas);
 
+  //Obtetner listados de instrumentos
   let instrumentos = TotalAlumnos_Orquesta.value
     .map((e) => e.instrumento)
     .sort((a, b) => a - b)
     .reduce((prev, cur) => ((prev[cur] = prev[cur] + 1 || 1), prev), {});
 
+  //Iterar los instrumentos para obtener la grafica por instrumentos
   for (let clave in instrumentos) {
     pie.value.series.push(instrumentos[clave]);
     pie.value.chartOptions.labels.push(clave);
+  }
+  //Obtener listados de Asistencias
+  _l.value = await Mostrar_todo().then((elem) => elem.map((e) => e.data()));
+
+  //Obtener listados de Alumnos
+  Alumnos.value = await Mostrar_Listado().then((elem) =>
+    elem.map((e) => e.data())
+  );
+
+  //Funcion que permite crear una variable global segun la asistencias y fechas
+  attendance.value = await Generar_Asistencias_Global();
+});
+//crear observador watch efectt
+watchEffect(async () => {
+  switch (model.value) {
+    case "hoy":
+      break;
+    case "semanal":
+      Semanal();
+      break;
+    case "mensual":
+      Mensual();
+      break;
+
+    default:
+      console.log("Aqui Hoy");
+      break;
   }
 });
 </script>
@@ -506,4 +455,10 @@ onMounted(async () => {
 .colorCard {
   background: #f8f8f8;
 }
+</style>
+
+<style lang="sass" scoped>
+.my-card
+  width: 100%
+  max-width: 150px
 </style>

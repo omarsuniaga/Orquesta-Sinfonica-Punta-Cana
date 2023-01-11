@@ -2,41 +2,12 @@
   <div class="q-m-sm flex justify-center">
     <q-list bordered separator style="max-width: 550px; width: 100%">
       <q-item-label header
-        >Listado de Alumnos
+        >Listado de Alumnos Retirados
         <q-icon name="format_list_numbered" />
       </q-item-label>
-      <BuscarAlumnos
-        :text="text"
-        class="flex justify-center"
-        style="min-width: 360px; width: 100%"
-        @onFire="eventEmittedFromChild"
-      ></BuscarAlumnos>
+
       <!-- Filtro -->
-      <div
-        class="justify-center q-my-sm flex row"
-        style="min-width: 375px; width: 100%"
-      >
-        <q-btn-toggle
-          class="col-auto flex justify-around"
-          v-model="grupo"
-          rounded
-          spread
-          stack
-          no-caps
-          no-wrap
-          toggle-color="primary"
-          color="while"
-          text-color="primary"
-          :options="[
-            { label: 'Inicio 1', value: 'Ini1' },
-            { label: 'Inicio 2', value: 'Ini2' },
-            { label: 'Coro', value: 'Coro' },
-            { label: 'Orquesta', value: 'Orq' },
-            { label: 'Todos', value: 'All' },
-          ]"
-        >
-        </q-btn-toggle>
-      </div>
+
       <q-separator />
 
       <div v-for="(card, i) in Listado" :key="i" class="items">
@@ -57,7 +28,7 @@
               </q-item-label>
 
               <q-item-label>
-                <q-virtual-scroll
+                <!-- <q-virtual-scroll
                   :items="card.grupo"
                   virtual-scroll-horizontal
                   v-slot="{ item, index }"
@@ -65,7 +36,7 @@
                   <div :key="index" :class="item.class" class="q-pa-xs">
                     <q-badge top outline color="secondary" :label="item" />
                   </div>
-                </q-virtual-scroll>
+                </q-virtual-scroll> -->
               </q-item-label>
             </q-item-section>
             <q-circular-progress
@@ -91,7 +62,11 @@
 </template>
 <script setup>
 import { ref, onMounted, onBeforeUnmount, computed, watchEffect } from "vue";
-import { Mostrar_Listado, Mostrar_todo, ObtenerAsistencias } from "../firebase";
+import {
+  Mostrar_Listado_Inactivos,
+  Mostrar_todo,
+  ObtenerAsistencias,
+} from "../firebase";
 import { useQuasar } from "quasar";
 import BuscarAlumnos from "../components/Buscar-Alumnos.vue";
 import { useRouter } from "vue-router";
@@ -120,7 +95,7 @@ const cargar_alumnos = async () => {
     return { obj };
   };
 
-  Listado.value = await Mostrar_Listado().then((elem) =>
+  Listado.value = await Mostrar_Listado_Inactivos().then((elem) =>
     elem.map((e) => ({ ...e.data() }))
   );
   Listado.value.map((elem) =>
@@ -139,7 +114,7 @@ const cargar_alumnos = async () => {
 const Funcion_Switch = async (res) => {
   Listado.value.length = 0;
 
-  Alumnos.value = await Mostrar_Listado().then((elem) =>
+  Alumnos.value = await Mostrar_Listado_Inactivos().then((elem) =>
     elem.map((e) => e.data()).sort((a, b) => a.nombre.localeCompare(b.nombre))
   );
   Listado.value = await Alumnos.value
@@ -149,7 +124,7 @@ const Funcion_Switch = async (res) => {
 };
 
 const Filtrar = async (res) => {
-  Alumnos.value = await Mostrar_Listado().then((elem) =>
+  Alumnos.value = await Mostrar_Listado_Inactivos().then((elem) =>
     elem.map((e) => e.data()).sort((a, b) => a.nombre.localeCompare(b.nombre))
   );
   switch (res) {
@@ -168,7 +143,7 @@ const Filtrar = async (res) => {
     case "All":
       router.push(`/Perfil_Alumnos/All`);
       Listado.value.length = 0;
-      Listado.value = await Mostrar_Listado().then((elem) =>
+      Listado.value = await Mostrar_Listado_Inactivos().then((elem) =>
         elem
           .map((e) => e.data())
           .sort((a, b) => a.nombre.localeCompare(b.nombre))

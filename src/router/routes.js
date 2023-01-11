@@ -24,15 +24,15 @@ const routes = [
     ],
     // meta: { requiresAuth: true },
   },
-  // {
-  //   path: "/Perfil_Alumnos",
-  //   name: "Perfil_Alumnos",
-  //   component: () => import("layouts/MainLayout.vue"),
-  //   children: [
-  //     { path: "", component: () => import("pages/Perfil_Alumnos.vue") },
-  //   ],
-  //   // meta: { requiresAuth: true },
-  // },
+  {
+    path: "/Lista_Inactivos",
+    name: "Lista_Inactivos",
+    component: () => import("layouts/MainLayout.vue"),
+    children: [
+      { path: "", component: () => import("pages/Lista_Inactivos.vue") },
+    ],
+    // meta: { requiresAuth: true },
+  },
   {
     path: "/Perfil_Alumnos/:filter",
     name: "Perfil_Alumnos",

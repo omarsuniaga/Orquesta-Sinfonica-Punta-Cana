@@ -24,20 +24,34 @@
           @click="eliminar()"
         />
       </div>
-      <q-item-label header class="q-ma-xs">
-        <q-avatar>
-          <img src="https://cdn.quasar.dev/img/avatar2.jpg" />
-        </q-avatar>
-        <span class="text-h5 text-weight-bolder q-mx-md" style="width: 100%"
-          >{{ alumno.nombre }} {{ alumno.apellido }}</span
-        >
-        <q-toolbar>
-          <h6 class="text-weight-bolder">{{ alumno.instrumento }}</h6>
-          <q-space />
-        </q-toolbar>
+      <q-item-label header class="q-m-sm">
+        <q-card>
+          <q-card-section>
+            <q-avatar>
+              <img src="https://cdn.quasar.dev/img/avatar2.jpg" />
+            </q-avatar>
+            <span
+              class="text-h5 text-weight-bolder q-mx-md"
+              style="width: 100%"
+            >
+              {{ alumno.nombre }} {{ alumno.apellido }}
+            </span>
+            <q-card-section>
+              <span
+                class="flex justify-center text-subtitle2 q-mx-sm"
+                style="width: 100%"
+              >
+                {{ alumno.instrumento }}
+              </span>
+            </q-card-section>
+            <q-toolbar>{{ alumno.registro }} </q-toolbar>
+          </q-card-section>
+        </q-card>
+
+        <q-space />
 
         <div class="row q-col-md">
-          <div class="col-6">
+          <!-- <div class="col-6">
             <q-card class="card1 q-mx-md q-pa-sm bg-grey-2 text-white">
               <q-card-section>
                 <div class="text-h6 text-black">Semestre</div>
@@ -63,9 +77,9 @@
                 >
               </q-card-actions>
             </q-card>
-          </div>
+          </div> -->
 
-          <div class="col-6">
+          <!-- <div class="col-6">
             <q-card class="card1 q-mx-md q-pa-sm bg-grey-2 text-white">
               <q-card-section>
                 <div class="text-h6 text-black">Octubre</div>
@@ -90,13 +104,13 @@
                 >
               </q-card-actions>
             </q-card>
-          </div>
+          </div> -->
         </div>
       </q-item-label>
+      <ArbolHabilidades />
       <q-separator />
       <LineaTiempo :editable="editable" />
       <q-separator />
-      <ArbolHabilidades />
       <q-separator />
       <div class="row q-mx-lg">
         <div class="col-5">
@@ -355,8 +369,6 @@ onMounted(() => {
     alumno.instrumento = elem.instrumento || "Vacio";
   });
 });
-const body = `Aqui va una breve descripcion del progreso del alumno, aun esta deshabilitada y esta en etapa de desarrollo`;
-
 const guardar = async (alumno) => {
   await Actualizar_Alumno(alumno)
     .then(() => {

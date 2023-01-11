@@ -309,6 +309,16 @@ export const Mostrar_Listado = async () => {
     console.log(error);
   }
 };
+export const Mostrar_Listado_Inactivos = async () => {
+  try {
+    let listadoRef = collection(db, "INACTIVOS");
+    let q = query(listadoRef);
+    let querySnapshot = await getDocs(q);
+    return querySnapshot.docs;
+  } catch (error) {
+    console.log(error);
+  }
+};
 export const Mostrar_todo = async () => {
   try {
     let asistenciasRef = collection(db, "ASISTENCIAS");
@@ -318,6 +328,119 @@ export const Mostrar_todo = async () => {
   } catch (error) {
     console.log(error);
   }
+};
+export const Buscar_Asistencias_id = async (id, mes) => {
+  let RESULTADO = {};
+  let PRESENTES = 0;
+  let AUSENTES = 0;
+  let _l = await Mostrar_todo().then((elem) => elem.map((e) => e.data()));
+  //Filtrar todos los registros donde el mes sea igual al seleccionado
+  _l.filter((elem) =>
+    !!elem.Fecha
+      ? elem.Fecha.split("-")[1] === mes.toString()
+        ? elem.Data.presentes.filter((el) =>
+            el === id ? PRESENTES++ : null
+          ) &&
+          elem.Data.ausentes.filter((el) => (el === id ? AUSENTES++ : null))
+        : null
+      : null
+  );
+
+  RESULTADO.Nombre = await Buscar_Alumno(id).then(
+    (e) => e.nombre + " " + e.apellido
+  );
+  RESULTADO.Asistencia = PRESENTES;
+  RESULTADO.Inasistencia = AUSENTES;
+  RESULTADO.Mes = mes;
+  //insertar la asistencia de cada uno en el listado mensual
+  // DatosColumna(ListadoMes);
+  return console.log(RESULTADO);
+};
+export const Buscar_Asistencias_mes = async (mes) => {
+  let Listado = [];
+  let ListadoAusentes = [];
+  let PRESENTES = [];
+  let AUSENTES = [];
+  let _l = await Mostrar_todo().then((elem) => elem.map((e) => e.data()));
+
+  _l.filter((elem) => {
+    if (elem.Fecha === null) {
+      return null;
+    } else {
+      if (elem.Fecha.split("-")[1] === mes.toString()) {
+        let { ausentes, presentes } = elem.Data;
+        presentes.map((elem) => PRESENTES.push(elem));
+        ausentes.map((elem) => AUSENTES.push(elem));
+        return ausentes, presentes;
+      } else {
+        return null;
+      }
+    }
+  });
+  //Ordenan los registros
+  Listado = PRESENTES.reduce(
+    (prev, cur) => ((prev[cur] = prev[cur] + 1 || 1), prev),
+    {}
+  );
+  ListadoAusentes = AUSENTES.sort((a, b) => a + b).reduce(
+    (prev, cur) => ((prev[cur] = prev[cur] + 1 || 1), prev),
+    {}
+  );
+  for (let id in ListadoAusentes) {
+    ListadoAusentes[id] = {
+      id: id,
+      Inasistencias: ListadoAusentes[id],
+    };
+  }
+  // //crea objeto de los registros
+  for (let clave in Listado) {
+    Listado[clave] = {
+      nombre: await Buscar_Alumno(clave).then(
+        (e) => e.nombre + " " + e.apellido
+      ),
+      asistencias: Listado[clave],
+    };
+    Object.entries(ListadoAusentes).forEach(([key, value]) =>
+      key === clave
+        ? (Listado[clave].inasistencias = value.Inasistencias)
+        : null
+    );
+  }
+  //Filtrar todos los registros donde el mes sea igual al seleccionado
+  // _l.filter((elem) =>
+  //   !!elem.Fecha
+  //     ? elem.Fecha.split("-")[1] === mes.toString()
+  //       ? elem.Data.presentes.filter((el) =>
+  //           !!el
+  //             ? Buscar_Alumno(el).then((e) =>
+  //                 !!e.nombre && !!e.apellido
+  //                   ? (NOMBRE = e.nombre + " " + e.apellido)
+  //                   : null
+  //               ) && PRESENTES++
+  //             : null
+  //         ) &&
+  //         elem.Data.ausentes.filter((el) =>
+  //           !!el
+  //             ? Buscar_Alumno(el).then((e) => {
+  //                 !!e.nombre && !!e.apellido
+  //                   ? (NOMBRE = e.nombre + " " + e.apellido)
+  //                   : null;
+  //               }) && AUSENTES++
+  //             : null
+  //         ) &&
+  //         RESULTADO.push({
+  //           nombre: NOMBRE,
+  //           inasistencias: AUSENTES,
+  //           asistencias: PRESENTES,
+  //           mes: mes,
+  //         }) &&
+  //         ((NOMBRE = ""), (PRESENTES = 0), (AUSENTES = 0))
+  //       : null
+  //     : null
+  // );
+
+  // return console.log("Resultados", RESULTADO);
+  return Listado;
 };
 
 //Obtener asistencias
@@ -383,8 +506,8 @@ export const Total_Solfeo = async () => {
 export const Grupo_Porcentaje_Fechas = async (grupo) => {
   let array = [];
   let _l = [];
-  _l.value = await Mostrar_todo().then((elem) => elem.map((e) => e.data())); //Jalando asistencias
-  _l.value.filter((elem) => {
+  _l = await Mostrar_todo().then((elem) => elem.map((e) => e.data())); //Jalando asistencias
+  _l.filter((elem) => {
     if (elem.grupo === grupo) {
       array.push({
         fecha: elem.Fecha,

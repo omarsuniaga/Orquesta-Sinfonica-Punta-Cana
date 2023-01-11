@@ -1,7 +1,7 @@
 <script setup>
 import moment from "moment";
 import { ref, inject, onMounted, watchEffect } from "vue";
-import { Mostrar_todo, Mostrar_Listado, Contar_Ausentes } from "../firebase";
+import { Mostrar_todo, Mostrar_Listado, Buscar_Alumno } from "../firebase";
 import VueApexCharts from "vue3-apexcharts";
 const linea = ref({
   // series: [],
@@ -187,6 +187,8 @@ const DatosColumna = (listado) => {
     (a, b) => a.Fecha.split("-")[2] - b.Fecha.split("-")[2]
   );
 };
+
+//Segun el mes, se crea un objeto con los alumnos presentes y ausentes.
 const _a = (mes) => {
   let ListadoMes = [];
   let Listado = [];
@@ -245,12 +247,10 @@ const _a = (mes) => {
   return DatosColumna(ListadoMes);
 };
 
+//Filtrar todos los registros donde el mes sea igual al seleccionado
 const _B = (mes) => {
   let ListadoAusentes = [];
   let AUSENTES = [];
-
-  //Filtrar todos los registros donde el mes sea igual al seleccionado
-
   let ListadoMes = _l.value.filter((elem) => {
     if (!!elem.Fecha) {
       if (elem.Fecha.split("-")[1] === mes.toString()) {
@@ -261,7 +261,6 @@ const _B = (mes) => {
       return;
     }
   });
-  // //Ordenan los registros
 
   ListadoAusentes = AUSENTES.sort((a, b) => a + b).reduce(
     (prev, cur) => ((prev[cur] = prev[cur] + 1 || 1), prev),
@@ -280,7 +279,9 @@ const _B = (mes) => {
       inasistencias: topFiveKeys[clave][1],
     };
   }
-  return (ObjetoGlobal.topInasistencias = topFiveKeys);
+  ObjetoGlobal.topInasistencias = topFiveKeys;
+
+  return ObjetoGlobal.topInasistencias;
 };
 
 let pagination = ref({
@@ -289,11 +290,14 @@ let pagination = ref({
 
 onMounted(async () => {
   _l.value = await Mostrar_todo().then((elem) => elem.map((e) => e.data()));
-
+  Alumnos.value = await Mostrar_Listado().then((elem) =>
+    elem.map((e) => e.data())
+  );
   //Iniciar meses registrados
   _l.value.filter((elem) =>
     elem.Fecha === null ? null : arr.value.push(elem.Fecha.split("-")[1])
   );
+
   // Meses Registrados
   MesesRegistrados.value = arr.value.reduce(
     (prev, cur) => ((prev[cur] = prev[cur] + 1 || 1), prev),
@@ -313,10 +317,6 @@ onMounted(async () => {
   let presentesCoro = [];
   // let ausentesOrquesta = [];
   let presentesOrquesta = [];
-
-  Alumnos.value = await Mostrar_Listado().then((elem) =>
-    elem.map((e) => e.data())
-  );
 
   //Jalando asistencias
 
@@ -352,7 +352,7 @@ onMounted(async () => {
   nuevoArrayPresentes.value.map((elem) =>
     linea.value.chartOptions.xaxis.categories.push(elem.fecha.toString())
   );
-  console.log(linea.value.series);
+
   linea.value.series.push({
     name: "Orquesta",
     data: nuevoArrayPresentes.value.map((elem) =>
