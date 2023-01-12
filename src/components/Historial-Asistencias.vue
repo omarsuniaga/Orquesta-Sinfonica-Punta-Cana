@@ -85,7 +85,8 @@ let Dia = [
 let MesesRegistrados = ref({});
 let separator = ref("cell");
 let rows = ref([]);
-let ObjetoGlobal = inject("ObjetoGlobal");
+let Global = ref([]);
+Global.value = inject("Global");
 const columns = [
   {
     name: "Fecha",
@@ -169,6 +170,7 @@ const BuscarGrupo = (id) => {
   return grupo;
 };
 const DatosColumna = (listado) => {
+  console.log(listado);
   rows.value = [];
   rows.value = listado.map((el, i) => {
     let Xmas95 = new Date(el.Fecha);
@@ -189,99 +191,85 @@ const DatosColumna = (listado) => {
 };
 
 //Segun el mes, se crea un objeto con los alumnos presentes y ausentes.
-const _a = (mes) => {
-  let ListadoMes = [];
-  let Listado = [];
-  let ListadoAusentes = [];
-  let PRESENTES = [];
-  let AUSENTES = [];
-  //Filtrar todos los registros donde el mes sea igual al seleccionado
-  ListadoMes = _l.value.filter((elem) => {
-    if (elem.Fecha === null) {
-      return null;
-    } else {
-      if (elem.Fecha.split("-")[1] === mes.toString()) {
-        let { ausentes, presentes } = elem.Data;
-        presentes.map((elem) => PRESENTES.push(elem));
-        ausentes.map((elem) => AUSENTES.push(elem));
-        return ausentes, presentes;
+const _a = (mes = mes + 1) => {
+  const filteredArray = [];
+  Global.value
+    .filter((el) =>
+      el.map((e) =>
+        e.date.split("-")[1] === mes.toString() ? filteredArray.push(e) : null
+      )
+    )
+    .sort((a, b) => new Date(a.date) - new Date(b.date));
+
+  const counters = filteredArray.reduce((acc, curr) => {
+    if (curr.attended === true) {
+      if (!acc[curr.id]) {
+        acc[curr.id] = { ...curr, asistio: 1, falto: 0 };
       } else {
-        return null;
+        acc[curr.id].asistio += 1;
       }
     }
-  });
-  //Ordenan los registros
-  Listado = PRESENTES.reduce(
-    (prev, cur) => ((prev[cur] = prev[cur] + 1 || 1), prev),
-    {}
-  );
-  ListadoAusentes = AUSENTES.sort((a, b) => a + b).reduce(
-    (prev, cur) => ((prev[cur] = prev[cur] + 1 || 1), prev),
-    {}
-  );
-  for (let id in ListadoAusentes) {
-    ListadoAusentes[id] = {
-      id: id,
-      Inasistencias: ListadoAusentes[id],
-    };
-  }
+    if (curr.attended === false) {
+      if (!acc[curr.id]) {
+        acc[curr.id] = { ...curr, asistio: 0, falto: 1 };
+      } else {
+        acc[curr.id].falto += 1;
+      }
+    }
+    return acc;
+  }, {});
+  console.log(counters);
+  // console.log("filteredArray", filteredArray);
+  //Filtrar todos los registros donde el mes sea igual al seleccionado
+  // ListadoMes = _l.value.filter((elem) => {
+  //   if (elem.Fecha === null) {
+  //     return null;
+  //   } else {
+  //     if (elem.Fecha.split("-")[1] === mes.toString()) {
+  //       let { ausentes, presentes } = elem.Data;
+  //       presentes.map((elem) => PRESENTES.push(elem));
+  //       ausentes.map((elem) => AUSENTES.push(elem));
+  //       return ausentes, presentes;
+  //     } else {
+  //       return null;
+  //     }
+  //   }
+  // });
 
-  //crea objeto de los registros
-  for (let clave in Listado) {
-    Listado[clave] = {
-      id: clave,
-      nombre: BuscarAlumno(clave),
-      asistencias: Listado[clave],
-      grupo: BuscarGrupo(clave),
-    };
-    Object.entries(ListadoAusentes).forEach(([key, value]) =>
-      key === clave
-        ? (Listado[clave].inasistencias = value.Inasistencias)
-        : null
-    );
-  }
+  //Ordenan los registros
+  // Listado = PRESENTES.reduce(
+  //   (prev, cur) => ((prev[cur] = prev[cur] + 1 || 1), prev),
+  //   {}
+  // );
+  // ListadoAusentes = AUSENTES.sort((a, b) => a + b).reduce(
+  //   (prev, cur) => ((prev[cur] = prev[cur] + 1 || 1), prev),
+  //   {}
+  // );
+  // for (let id in ListadoAusentes) {
+  //   ListadoAusentes[id] = {
+  //     id: id,
+  //     Inasistencias: ListadoAusentes[id],
+  //   };
+  // }
+
+  // //crea objeto de los registros
+  // for (let clave in Listado) {
+  //   Listado[clave] = {
+  //     id: clave,
+  //     nombre: BuscarAlumno(clave),
+  //     asistencias: Listado[clave],
+  //     grupo: BuscarGrupo(clave),
+  //   };
+  //   Object.entries(ListadoAusentes).forEach(([key, value]) =>
+  //     key === clave
+  //       ? (Listado[clave].inasistencias = value.Inasistencias)
+  //       : null
+  //   );
+  // }
 
   //insertar la asistencia de cada uno en el listado mensual
-  MesesRegistrados.value[mes].Listado = Listado;
-
-  return DatosColumna(ListadoMes);
-};
-
-//Filtrar todos los registros donde el mes sea igual al seleccionado
-const _B = (mes) => {
-  let ListadoAusentes = [];
-  let AUSENTES = [];
-  let ListadoMes = _l.value.filter((elem) => {
-    if (!!elem.Fecha) {
-      if (elem.Fecha.split("-")[1] === mes.toString()) {
-        let { ausentes } = elem.Data;
-        ausentes.map((elem) => AUSENTES.push(elem));
-        return ausentes;
-      }
-      return;
-    }
-  });
-
-  ListadoAusentes = AUSENTES.sort((a, b) => a + b).reduce(
-    (prev, cur) => ((prev[cur] = prev[cur] + 1 || 1), prev),
-    {}
-  );
-
-  const entries = Object.entries(ListadoAusentes);
-  const sortedEntries = entries.sort((a, b) => b[1] - a[1]);
-  const topFiveEntries = sortedEntries.slice(0, 5);
-  const topFiveKeys = topFiveEntries.map((entry) => entry);
-
-  for (let clave in topFiveKeys) {
-    topFiveKeys[clave] = {
-      id: topFiveKeys[clave][0],
-      nombre: BuscarAlumno(topFiveKeys[clave][0]),
-      inasistencias: topFiveKeys[clave][1],
-    };
-  }
-  ObjetoGlobal.topInasistencias = topFiveKeys;
-
-  return ObjetoGlobal.topInasistencias;
+  MesesRegistrados.value[mes].Listado = counters;
+  return DatosColumna(_l.value);
 };
 
 let pagination = ref({
@@ -293,11 +281,11 @@ onMounted(async () => {
   Alumnos.value = await Mostrar_Listado().then((elem) =>
     elem.map((e) => e.data())
   );
+
   //Iniciar meses registrados
   _l.value.filter((elem) =>
     elem.Fecha === null ? null : arr.value.push(elem.Fecha.split("-")[1])
   );
-
   // Meses Registrados
   MesesRegistrados.value = arr.value.reduce(
     (prev, cur) => ((prev[cur] = prev[cur] + 1 || 1), prev),
@@ -307,7 +295,7 @@ onMounted(async () => {
   for (let clave in MesesRegistrados.value) {
     MesesRegistrados.value[clave] = {
       id: clave,
-      mes: meses[parseInt(clave)],
+      mes: meses[parseInt(clave) - 1],
       registros: MesesRegistrados.value[clave],
     };
   }
@@ -367,8 +355,6 @@ onMounted(async () => {
     ),
     color: "#633974",
   });
-
-  _B(mesHoy - 1);
 });
 watchEffect(async () => {});
 </script>
@@ -417,9 +403,9 @@ watchEffect(async () => {});
                         v-for="user of item.Listado"
                         :key="user.id"
                         :class="[
-                          user.asistencias < user.inasistencias
+                          user.asistio < user.falto
                             ? 'bg-red-2'
-                            : user.asistencias === user.inasistencias
+                            : user.asistio === user.falto
                             ? 'bg-orange-2'
                             : 'bg-green-1',
                         ]"
@@ -432,20 +418,20 @@ watchEffect(async () => {});
 
                         <q-item-section>
                           <q-item-label lines="1"
-                            >{{ user.nombre }}
+                            >{{ user.name }}
                           </q-item-label>
                           <q-item-label caption lines="2">
                             <q-badge
                               rounded
                               color="green"
-                              :label="user.asistencias"
+                              :label="user.asistio"
                             >
                             </q-badge>
                             <q-badge
-                              v-if="user.inasistencias != null"
+                              v-if="user.falto != null"
                               rounded
                               color="red"
-                              :label="user.inasistencias"
+                              :label="user.falto"
                             >
                             </q-badge>
                           </q-item-label>

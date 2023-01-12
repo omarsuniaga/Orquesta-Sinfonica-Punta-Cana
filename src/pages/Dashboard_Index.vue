@@ -42,58 +42,83 @@
         </div>
       </div>
     </q-toolbar>
-    <q-toolbar>
-      <q-btn-toggle
-        v-model="model"
-        push
-        rounded
-        glossy
-        toggle-color="purple"
-        :options="[
-          { value: 'hoy', slot: 'hoy' },
-          { value: 'semanal', slot: 'semanal' },
-          { value: 'mensual', slot: 'mensual' },
-        ]"
+    <div>
+      <q-toolbar
+        class="justify-center flex row"
+        style="min-width: 375px; width: 100%"
       >
-        <template v-slot:hoy>
-          <div class="row items-center no-wrap">
-            <div class="text-center">Hoy</div>
-            <q-icon right name="today" />
-          </div>
-        </template>
+        <q-btn-toggle
+          v-model="model"
+          class="col-auto flex justify-around"
+          rounded
+          spread
+          stack
+          no-caps
+          no-wrap
+          toggle-color="primary"
+          color="while"
+          text-color="primary"
+          :options="[
+            { value: 'hoy', slot: 'hoy' },
+            { value: 'semanal', slot: 'semanal' },
+            { value: 'mensual', slot: 'mensual' },
+          ]"
+        >
+          <template v-slot:hoy>
+            <div class="row items-center no-wrap">
+              <div class="text-center">Esta Semana</div>
+            </div>
+          </template>
 
-        <template v-slot:semanal>
-          <div class="row items-center no-wrap">
-            <div class="text-center">3 Semanas</div>
-            <q-icon right name="calendar_view_month" />
-          </div>
-        </template>
+          <template v-slot:semanal>
+            <div class="row items-center no-wrap">
+              <div class="text-center">Hace 3 Semanas</div>
+            </div>
+          </template>
 
-        <template v-slot:mensual>
-          <div class="row items-center no-wrap">
-            <div class="text-center">3 Meses</div>
-            <q-icon right name="calendar_month" />
-          </div>
-        </template>
-      </q-btn-toggle>
-    </q-toolbar>
-
-    <div class="text-overline">Los 5 Alumnos mas asistencias del mes</div>
-    <q-card class="q-mx-md q-pa-md" bordered>
+          <template v-slot:mensual>
+            <div class="row items-center no-wrap">
+              <div class="text-center">Hace 3 Meses</div>
+            </div>
+          </template>
+        </q-btn-toggle>
+      </q-toolbar>
+    </div>
+    <q-card
+      class="full-width row wrap justify-around items-center content-center"
+      bordered
+    >
       <q-card-section>
         <div class="cols">
+          <div class="text-overline">Los 5 Alumnos de Mayor Asistencias</div>
           <q-item
-            clickable
             v-ripple
-            v-for="lista of ObjetoGlobal"
+            v-for="lista of ObjetoGlobal.PrimerosCinco"
+            :key="lista.id"
+            class="'bg-green-4'"
+          >
+            <q-item-section>
+              <q-item-label lines="1" class="text-green-3">
+                <q-badge rounded color="green" :label="lista[1]"> </q-badge>
+                {{ lista[0] }}
+              </q-item-label>
+            </q-item-section>
+          </q-item>
+        </div>
+      </q-card-section>
+      <q-card-section>
+        <div class="cols">
+          <div class="text-overline">Los 5 Alumnos de Menor Asistencias</div>
+          <q-item
+            v-ripple
+            v-for="lista of ObjetoGlobal.UltimosCinco"
             :key="lista.id"
             class="'bg-red-4'"
-            @click="$router.push('/Detalles_Alumnos/' + lista.id)"
           >
             <q-item-section>
               <q-item-label lines="1" class="text-red-3">
-                {{ lista[0] }}
                 <q-badge rounded color="red" :label="lista[1]"> </q-badge>
+                {{ lista[0] }}
               </q-item-label>
             </q-item-section>
           </q-item>
@@ -101,22 +126,16 @@
       </q-card-section>
     </q-card>
   </div>
-  <!-- <div class="col-auto">
-      <q-card class="q-mx-md q-pa-md">
-        <div class="text-overline">Horarios</div>
-        <div class="flex justify-between no-wrap items-center">
-          <q-tree
-            :nodes="simple"
-            dense
-            node-key="label"
-            v-model:expanded="expanded"
-          />
-        </div>
-      </q-card>
-    </div> -->
+
+  <div v-if="!loading" class="loading-container">
+    <div class="loading"></div>
+  </div>
+
   <q-toolbar>
-    <div class="flex justify-between q-pa-xs">
-      <q-card flat bordered class="my-card">
+    <div
+      class="full-width row inline wrap justify-between items-center content-center"
+    >
+      <q-card bordered class="my-card">
         <q-card-section>
           <div class="text-h6">Orquesta</div>
         </q-card-section>
@@ -124,7 +143,8 @@
           {{ TotalAlumnos_Orquesta.length }} Alumnos
         </q-card-section>
       </q-card>
-      <q-card flat bordered class="my-card">
+
+      <q-card bordered class="my-card">
         <q-card-section>
           <div class="text-h6">Coro</div>
         </q-card-section>
@@ -132,7 +152,8 @@
           {{ TotalAlumnos_Coro.length }} Alumnos</q-card-section
         >
       </q-card>
-      <q-card flat bordered class="my-card">
+
+      <q-card bordered class="my-card">
         <q-card-section>
           <div class="text-h6">Solfeo</div>
         </q-card-section>
@@ -140,7 +161,8 @@
           {{ TotalAlumnos_Solfeo.length }} Alumnos</q-card-section
         >
       </q-card>
-      <q-card flat bordered class="my-card">
+
+      <q-card bordered class="my-card">
         <q-card-section>
           <div class="text-h6">Esperando</div>
         </q-card-section>
@@ -227,6 +249,7 @@ import BuscarAlumnos from "src/components/Buscar-Alumnos.vue";
 const router = useRouter();
 const ObjetoGlobal = ref([]);
 const $q = useQuasar();
+let Global = ref([]);
 let Resultado_Busqueda = ref([]);
 let TotalAlumnos_Orquesta = ref(0);
 let TotalAlumnos_Coro = ref(0);
@@ -236,7 +259,10 @@ let _l = ref([]);
 let Alumnos = ref([]);
 let Fecha = moment().format("LLLL");
 let text = "";
-let attendance = ref();
+let attendance = ref([]);
+let loading = ref(false);
+//crear una variable global para usarlo en el dashboar
+provide(/* key */ "Global", /* value */ Global.value);
 
 let detalle = (id) => {
   return router.push(`/Detalles_Alumnos/${id}`);
@@ -252,9 +278,6 @@ const eventEmittedFromChild = (res) => {
     Resultado_Busqueda.value.length = 0;
   }
 };
-
-//crear una variable global para usarlo en el dashboar
-provide(/* key */ "ObjetoGlobal", /* value */ ObjetoGlobal.value);
 
 let generos = ref({
   series: [],
@@ -308,11 +331,18 @@ async function Generar_Asistencias_Global() {
   let nom = "";
 
   //Busca al alumnos segun su id
-  const Buscar = (id) => {
+  const BuscarNombre = (id) => {
     Alumnos.value.filter((elem) =>
       elem.id === id ? (nom = elem.nombre + " " + elem.apellido) : null
     );
     return nom;
+  };
+  const BuscarGrupo = (id) => {
+    let grupo = "";
+    Alumnos.value.filter((elem) =>
+      elem.id === id ? (grupo = elem.grupo) : null
+    );
+    return grupo;
   };
 
   //Itera las fechas que existen
@@ -320,22 +350,78 @@ async function Generar_Asistencias_Global() {
     if (!!elem.Fecha) {
       let { presentes } = elem.Data;
       let { ausentes } = elem.Data;
-      //Selecciona aquellos items donde id este en presente
       presentes.map((el) =>
-        Obj.push({ name: Buscar(el), date: elem.Fecha, attended: true })
+        Obj.push({
+          id: el,
+          name: BuscarNombre(el),
+          date: elem.Fecha,
+          grupo: BuscarGrupo(el),
+          attended: true,
+        })
       );
-      //Selecciona aquellos items donde id este en presente
       ausentes.map((el) =>
-        Obj.push({ name: Buscar(el), date: elem.Fecha, attended: false })
+        Obj.push({
+          id: el,
+          name: BuscarNombre(el),
+          date: elem.Fecha,
+          grupo: BuscarGrupo(el),
+          attended: false,
+        })
       );
+
       return { presentes, ausentes };
     }
     return (attendance.value = Obj);
   });
+  //Function to compare two objects
+  function compare(a, b) {
+    if (a.date < b.date) return -1;
+    if (a.date > b.date) return 1;
+    return 0;
+  }
+
+  Obj.sort(compare);
+
+  //Use reduce to group objects with the same name and date
+  const result = Obj.reduce((acc, curr) => {
+    const existing = acc.find(
+      ({ name, date }) => name === curr.name && date === curr.date
+    );
+    if (existing) {
+      return acc;
+    }
+    return [...acc, curr];
+  }, []);
+  Obj = result;
   return Obj;
 }
 
-const Semanal = () => {
+const UltimaSemana = async () => {
+  let Hoy = await attendance.value
+    .filter(({ date, attended }) => {
+      const attendenceDate = new Date(date);
+      const threeWeeksAgo = new Date();
+      threeWeeksAgo.setDate(threeWeeksAgo.getDate() - 7);
+      return attended && attendenceDate > threeWeeksAgo;
+    })
+    .reduce((attendees, { name }) => {
+      attendees[name] = (attendees[name] || 0) + 1;
+      return attendees;
+    }, {});
+  //convertir el Objeto Semanas.value en un array
+  let HoyArray = ref([]);
+  HoyArray.value = Object.entries(Hoy);
+  ObjetoGlobal.value = HoyArray.value.sort((a, b) => b[1] - a[1]);
+
+  const SeleccionaPrimerosCinco = ObjetoGlobal.value.slice(0, 5);
+  const SeleccionaUltimosCinco = ObjetoGlobal.value.slice(-5);
+  const PrimerosCinco = SeleccionaPrimerosCinco.map((entry) => entry);
+  const UltimosCinco = SeleccionaUltimosCinco.map((entry) => entry);
+  ObjetoGlobal.value.PrimerosCinco = PrimerosCinco;
+  ObjetoGlobal.value.UltimosCinco = UltimosCinco;
+  return ObjetoGlobal.value;
+};
+const TresSemanas = () => {
   let Semanas = attendance.value
     .filter(({ date, attended }) => {
       const attendenceDate = new Date(date);
@@ -351,14 +437,16 @@ const Semanal = () => {
   let SemanasArray = ref([]);
   SemanasArray.value = Object.entries(Semanas);
   ObjetoGlobal.value = SemanasArray.value.sort((a, b) => b[1] - a[1]);
-  const topFiveEntries = ObjetoGlobal.value.slice(0, 5);
-  const topFiveKeys = topFiveEntries.map((entry) => entry);
-  ObjetoGlobal.value = topFiveKeys;
-
+  const SeleccionaPrimerosCinco = ObjetoGlobal.value.slice(0, 5);
+  const SeleccionaUltimosCinco = ObjetoGlobal.value.slice(-5);
+  const PrimerosCinco = SeleccionaPrimerosCinco.map((entry) => entry);
+  const UltimosCinco = SeleccionaUltimosCinco.map((entry) => entry);
+  ObjetoGlobal.value.PrimerosCinco = PrimerosCinco;
+  ObjetoGlobal.value.UltimosCinco = UltimosCinco;
   return ObjetoGlobal.value;
 };
 
-const Mensual = () => {
+const TresMeses = () => {
   let meses = attendance.value
     .filter(({ date, attended }) => {
       const attendenceDate = new Date(date);
@@ -373,9 +461,12 @@ const Mensual = () => {
   let MesArray = ref([]);
   MesArray.value = Object.entries(meses);
   ObjetoGlobal.value = MesArray.value.sort((a, b) => b[1] - a[1]);
-  const topFiveEntries = ObjetoGlobal.value.slice(0, 5);
-  const topFiveKeys = topFiveEntries.map((entry) => entry);
-  ObjetoGlobal.value = topFiveKeys;
+  const SeleccionaPrimerosCinco = ObjetoGlobal.value.slice(0, 5);
+  const SeleccionaUltimosCinco = ObjetoGlobal.value.slice(-5);
+  const PrimerosCinco = SeleccionaPrimerosCinco.map((entry) => entry);
+  const UltimosCinco = SeleccionaUltimosCinco.map((entry) => entry);
+  ObjetoGlobal.value.PrimerosCinco = PrimerosCinco;
+  ObjetoGlobal.value.UltimosCinco = UltimosCinco;
 
   return ObjetoGlobal.value;
 };
@@ -415,50 +506,73 @@ onMounted(async () => {
 
   //Funcion que permite crear una variable global segun la asistencias y fechas
   attendance.value = await Generar_Asistencias_Global();
+  Global.value.push(attendance.value);
+
+  //si attendance.value es distinto de 0 entonces cambiar el estado de loading
+  if (attendance.value.length !== 0) {
+    loading.value = true;
+  }
 });
 //crear observador watch efectt
 watchEffect(async () => {
   switch (model.value) {
     case "hoy":
+      UltimaSemana();
       break;
     case "semanal":
-      Semanal();
+      TresSemanas();
       break;
     case "mensual":
-      Mensual();
+      TresMeses();
       break;
 
     default:
-      console.log("Aqui Hoy");
+      UltimaSemana();
       break;
   }
 });
 </script>
 <style scoped>
-.search {
-  width: 700px;
+/* Define el contenedor de la animación de carga */
+.loading-container {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background-color: rgba(0, 0, 0, 0.5);
+  z-index: 9999;
 }
-.doctors {
-  height: 220px;
+
+/* Define la animación de carga */
+.loading-container .loading {
+  border: 4px solid #f3f3f3;
+  border-top: 4px solid #3498db;
+  border-radius: 50%;
+  width: 40px;
+  height: 40px;
+  animation: spin 2s linear infinite;
 }
-.overlapping {
-  border: 2px solid white;
-  position: absolute;
-  margin-left: -20px;
-}
-.card1 {
-  height: 100px;
-}
-.top {
-  margin-top: -40px;
-}
-.colorCard {
-  background: #f8f8f8;
+
+/* Define la keyframe de la animación */
+@keyframes spin {
+  0% {
+    transform: rotate(0deg);
+  }
+  100% {
+    transform: rotate(360deg);
+  }
 }
 </style>
 
 <style lang="sass" scoped>
 .my-card
-  width: 100%
+  width: 150px
+  height: 100px
+  margin: 4px
   max-width: 150px
+  max-height: 150px
 </style>

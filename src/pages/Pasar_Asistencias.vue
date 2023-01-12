@@ -408,7 +408,7 @@ const Buscar = async () => {
   );
   Buscar_Por_Fecha(date.value).then((Data) => {
     Data !== null
-      ? resetear() && (visible.value = false) && console.log(Data)
+      ? resetear() && (visible.value = false)
       : date.value === hoy.value
       ? (visible.value = false)
       : null;

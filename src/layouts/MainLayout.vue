@@ -25,19 +25,15 @@
         <q-space />
 
         <div class="q-gutter-sm row items-center no-wrap">
-          <q-btn
-            round
-            dense
-            flat
-            color="grey-8"
-            icon="language"
-            v-if="$q.screen.gt.sm"
-          >
+          <q-btn round dense flat color="grey-8" icon="language">
             <q-tooltip>Ingles</q-tooltip>
           </q-btn>
+          <q-btn round dense flat color="grey-8" icon="volunteer_activism">
+            <q-tooltip>Donar</q-tooltip>
+          </q-btn>
           <q-btn v-if="sesion" to="/" @click="Salir()" round flat>
-            <q-avatar size="26px" icon="home"> </q-avatar>
-            <q-tooltip> Salir </q-tooltip>
+            <q-avatar size="26px" icon="input"> </q-avatar>
+            <q-tooltip> Iniciar Sesion </q-tooltip>
           </q-btn>
           <q-btn v-else round flat to="/Login">
             <q-avatar size="26px" icon="login"> </q-avatar>
@@ -47,72 +43,6 @@
       </q-toolbar>
     </q-header>
 
-    <q-drawer
-      v-model="leftDrawerOpen"
-      show-if-above
-      bordered
-      class="bg-grey-2"
-      :width="240"
-    >
-      <q-separator class="q-mt-md q-mb-xs" />
-      <q-item-label header class="text-weight-bold text-uppercase">
-        Lista de Alumnos
-      </q-item-label>
-      <q-scroll-area class="fit">
-        <q-list padding>
-          <q-item
-            v-for="link in links2"
-            :key="link.text"
-            v-ripple
-            :to="link.to"
-            clickable
-          >
-            <q-item-section avatar>
-              <q-icon color="grey" :name="link.icon" />
-            </q-item-section>
-            <q-item-section>
-              <q-item-label>{{ link.text }}</q-item-label>
-            </q-item-section>
-          </q-item>
-          <q-separator class="q-my-md" />
-
-          <!-- <q-item v-for="link in links2" :key="link.text" v-ripple clickable>
-            <q-item-section avatar>
-              <q-icon color="grey" :name="link.icon" />
-            </q-item-section>
-            <q-item-section>
-              <q-item-label>{{ link.text }}</q-item-label>
-            </q-item-section>
-          </q-item> -->
-
-          <!--
-          <q-item v-for="link in links3" :key="link.text" v-ripple clickable>
-            <q-item-section avatar>
-              <q-icon color="grey" :name="link.icon" />
-            </q-item-section>
-            <q-item-section>
-              <q-item-label>{{ link.text }}</q-item-label>
-            </q-item-section>
-          </q-item> -->
-
-          <!-- <q-separator class="q-my-md" /> -->
-
-          <!-- <div class="q-px-md text-grey-9">
-            <div class="row items-center q-gutter-x-sm q-gutter-y-xs">
-              <a
-                v-for="button in buttons1"
-                :key="button.text"
-                class="YL__drawer-footer-link"
-                href="javascript:void(0)"
-              >
-                {{ button.text }}
-              </a>
-            </div> -->
-          <!-- </div> -->
-        </q-list>
-      </q-scroll-area>
-    </q-drawer>
-
     <q-footer
       reveal
       elevated
@@ -120,13 +50,13 @@
       style="min-width: 360px; width: 100%"
     >
       <!-- <q-btn
-          flat
-          round
-          dense
-          icon="menu"
-          aria-label="Menu"
-          @click="toggleLeftDrawer"
-        /> -->
+        flat
+        round
+        dense
+        icon="menu"
+        aria-label="Menu"
+        @click="toggleLeftDrawer"
+      /> -->
       <q-item v-for="link in links1" :key="link.text" :to="link.to">
         <q-btn flat :icon="link.icon" color="primary" :aria-label="link.text">
         </q-btn>

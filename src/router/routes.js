@@ -61,6 +61,15 @@ const routes = [
       { path: "", component: () => import("pages/Iniciar_Sesion.vue") },
     ],
   },
+  //agregar una pagina index que este vinculada al archivo Index_OutSession
+  {
+    path: "/Index_OutSession",
+    name: "Index_OutSession",
+    component: () => import("layouts/MainLayout.vue"),
+    children: [
+      { path: "", component: () => import("pages/Index_OutSession.vue") },
+    ],
+  },
   {
     path: "/:catchAll(.*)*",
     component: () => import("pages/ErrorNotFound.vue"),
