@@ -70,6 +70,15 @@ const routes = [
       { path: "", component: () => import("pages/Index_OutSession.vue") },
     ],
   },
+
+  //agregar la pagina SoloCara para que se muestre al iniciar la pagina
+  {
+    path: "/SoloCara",
+    name: "SoloCara",
+    component: () => import("layouts/MainLayout.vue"),
+    children: [{ path: "", component: () => import("pages/SoloCara.vue") }],
+  },
+
   {
     path: "/:catchAll(.*)*",
     component: () => import("pages/ErrorNotFound.vue"),

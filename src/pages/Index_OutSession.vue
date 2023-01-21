@@ -127,12 +127,12 @@
             personas en el Este del Pais y en todo el mundo.
           </div>
         </q-card-section>
-        <q-card-actions>
-          <q-btn flat color="dark" label="Share">
-            CONVIÉRTETE EN UN HÉROE DE LAS ARTES
-          </q-btn>
-
+        <q-card-actions class="align-horizontal">
+          <q-btn flat color="dark" label="Share"
+            >CONVIÉRTETE EN UN HÉROE DE LAS ARTES</q-btn
+          >
           <q-space />
+          <q-btn flat color="dark" label="Donar">DONAR</q-btn>
         </q-card-actions>
       </q-card>
     </div>
@@ -149,4 +149,26 @@ import { ref } from "vue";
 
 const slide = ref(1);
 </script>
-<style scoped></style>
+<style scoped>
+/* Establece la posición flotante y el tamaño */
+.row {
+  position: fixed;
+  top: 80%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  width: 30%;
+  height: auto;
+}
+
+/* Centra los elementos dentro del contenedor */
+.row.justify-center {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+/* Alinea los botones horizontalmente */
+.align-horizontal {
+  display: flex;
+  justify-content: space-between;
+}
+</style>

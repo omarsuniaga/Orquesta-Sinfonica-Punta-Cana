@@ -42,48 +42,42 @@
         </div>
       </div>
     </q-toolbar>
-    <div>
-      <q-toolbar
-        class="justify-center flex row"
-        style="min-width: 375px; width: 100%"
+    <q-toolbar class="justify-center flex row" style="min-width: 375px; width: 100%">
+      <q-btn-toggle
+        v-model="model"
+        rounded
+        spread
+        stack
+        no-caps
+        no-wrap
+        toggle-color="primary"
+        color="while"
+        text-color="primary"
+        :options="[
+          { value: 'Semanal', slot: 'semanal' },
+          { value: 'Mensual', slot: 'mensual' },
+          { value: 'Semestral', slot: 'semestral' },
+        ]"
       >
-        <q-btn-toggle
-          v-model="model"
-          class="col-auto flex justify-around"
-          rounded
-          spread
-          stack
-          no-caps
-          no-wrap
-          toggle-color="primary"
-          color="while"
-          text-color="primary"
-          :options="[
-            { value: 'hoy', slot: 'hoy' },
-            { value: 'semanal', slot: 'semanal' },
-            { value: 'mensual', slot: 'mensual' },
-          ]"
-        >
-          <template v-slot:hoy>
-            <div class="row items-center no-wrap">
-              <div class="text-center">Esta Semana</div>
-            </div>
-          </template>
+        <template v-slot:semanal>
+          <div class="row items-center no-wrap">
+            <div class="text-center">Semanal</div>
+          </div>
+        </template>
 
-          <template v-slot:semanal>
-            <div class="row items-center no-wrap">
-              <div class="text-center">Hace 3 Semanas</div>
-            </div>
-          </template>
+        <template v-slot:mensual>
+          <div class="row items-center no-wrap">
+            <div class="text-center">Mensual</div>
+          </div>
+        </template>
 
-          <template v-slot:mensual>
-            <div class="row items-center no-wrap">
-              <div class="text-center">Hace 3 Meses</div>
-            </div>
-          </template>
-        </q-btn-toggle>
-      </q-toolbar>
-    </div>
+        <template v-slot:semestral>
+          <div class="row items-center no-wrap">
+            <div class="text-center">Semestral</div>
+          </div>
+        </template>
+      </q-btn-toggle>
+    </q-toolbar>
     <q-card
       class="full-width row wrap justify-around items-center content-center"
       bordered
@@ -132,9 +126,7 @@
   </div>
 
   <q-toolbar>
-    <div
-      class="full-width row inline wrap justify-between items-center content-center"
-    >
+    <div class="full-width row inline wrap justify-between items-center content-center">
       <q-card bordered class="my-card">
         <q-card-section>
           <div class="text-h6">Orquesta</div>
@@ -236,6 +228,9 @@ import {
   Total_Solfeo,
   Mostrar_todo,
   Mostrar_Listado,
+  getAlumnos,
+  classificationByGenre,
+  Generar_Asistencias_Global,
 } from "../firebase";
 
 import { useQuasar } from "quasar";
@@ -245,6 +240,7 @@ import moment from "moment";
 import VueApexCharts from "vue3-apexcharts";
 import HistorialAsistencias from "src/components/Historial-Asistencias.vue";
 import BuscarAlumnos from "src/components/Buscar-Alumnos.vue";
+
 //Variables
 const router = useRouter();
 const ObjetoGlobal = ref([]);
@@ -254,7 +250,7 @@ let Resultado_Busqueda = ref([]);
 let TotalAlumnos_Orquesta = ref(0);
 let TotalAlumnos_Coro = ref(0);
 let TotalAlumnos_Solfeo = ref(0);
-let model = ref("hoy");
+let model = ref("Semanal");
 let _l = ref([]);
 let Alumnos = ref([]);
 let Fecha = moment().format("LLLL");
@@ -286,7 +282,7 @@ let generos = ref({
       width: 580,
       type: "pie",
     },
-    labels: ["Masculinos", "Femeninas"],
+    labels: ["Masculinos", "Femeninos", "Vacio", "undefined"],
     responsive: [
       {
         breakpoint: 280,
@@ -325,76 +321,6 @@ const pie = ref({
     ],
   },
 });
-
-async function Generar_Asistencias_Global() {
-  let Obj = [];
-  let nom = "";
-
-  //Busca al alumnos segun su id
-  const BuscarNombre = (id) => {
-    Alumnos.value.filter((elem) =>
-      elem.id === id ? (nom = elem.nombre + " " + elem.apellido) : null
-    );
-    return nom;
-  };
-  const BuscarGrupo = (id) => {
-    let grupo = "";
-    Alumnos.value.filter((elem) =>
-      elem.id === id ? (grupo = elem.grupo) : null
-    );
-    return grupo;
-  };
-
-  //Itera las fechas que existen
-  _l.value.filter((elem) => {
-    if (!!elem.Fecha) {
-      let { presentes } = elem.Data;
-      let { ausentes } = elem.Data;
-      presentes.map((el) =>
-        Obj.push({
-          id: el,
-          name: BuscarNombre(el),
-          date: elem.Fecha,
-          grupo: BuscarGrupo(el),
-          attended: true,
-        })
-      );
-      ausentes.map((el) =>
-        Obj.push({
-          id: el,
-          name: BuscarNombre(el),
-          date: elem.Fecha,
-          grupo: BuscarGrupo(el),
-          attended: false,
-        })
-      );
-
-      return { presentes, ausentes };
-    }
-    return (attendance.value = Obj);
-  });
-  //Function to compare two objects
-  function compare(a, b) {
-    if (a.date < b.date) return -1;
-    if (a.date > b.date) return 1;
-    return 0;
-  }
-
-  Obj.sort(compare);
-
-  //Use reduce to group objects with the same name and date
-  const result = Obj.reduce((acc, curr) => {
-    const existing = acc.find(
-      ({ name, date }) => name === curr.name && date === curr.date
-    );
-    if (existing) {
-      return acc;
-    }
-    return [...acc, curr];
-  }, []);
-  Obj = result;
-  return Obj;
-}
 
 const UltimaSemana = async () => {
   let Hoy = await attendance.value
@@ -474,16 +400,21 @@ const TresMeses = () => {
 //Esta funcion intenta almacenar en un objeto a los alumnos fecha y asistencia
 onMounted(async () => {
   //Obtener el total de alumnos segun el grupo
+  let genre = await classificationByGenre();
+  //convertir genre en un array
+
   TotalAlumnos_Coro.value = await Total_Coro();
   TotalAlumnos_Orquesta.value = await Total_Orquesta();
   TotalAlumnos_Solfeo.value = await Total_Solfeo();
-
-  //Clasificacion por generos de alumnos
-  let femeninas = (await Clasificacion_Generos()).femenino;
-  let masculinos = (await Clasificacion_Generos()).masculino;
+  console.log("Generar_Asistencias_Global", await Generar_Asistencias_Global());
 
   //Graficar los valores de Femeninos y Masculinos
-  generos.value.series.push(masculinos, femeninas);
+  generos.value.series.push(
+    genre.Femenino,
+    genre.Masculino,
+    genre.Vacio,
+    genre.undefined
+  );
 
   //Obtetner listados de instrumentos
   let instrumentos = TotalAlumnos_Orquesta.value
@@ -500,9 +431,7 @@ onMounted(async () => {
   _l.value = await Mostrar_todo().then((elem) => elem.map((e) => e.data()));
 
   //Obtener listados de Alumnos
-  Alumnos.value = await Mostrar_Listado().then((elem) =>
-    elem.map((e) => e.data())
-  );
+  Alumnos.value = await Mostrar_Listado().then((elem) => elem.map((e) => e.data()));
 
   //Funcion que permite crear una variable global segun la asistencias y fechas
   attendance.value = await Generar_Asistencias_Global();

@@ -3,9 +3,12 @@
     <q-input
       outlined
       bottom-slots
+      color="primary"
       v-model.trim="text"
       label="Buscar Alumnos"
+      bg-color="white"
       dense
+      background-color="#ff0000"
       @keyup.enter="$emit('onFire', res)"
     >
       <template v-slot:append>

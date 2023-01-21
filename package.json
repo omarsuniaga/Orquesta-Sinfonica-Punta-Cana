@@ -16,6 +16,7 @@
     "apexcharts": "^3.35.5",
     "axios": "^0.21.1",
     "chart.js": "^3.9.1",
+    "face-api.js": "^0.22.2",
     "firebase": "^9.8.4",
     "gh-pages": "^4.0.0",
     "moment": "^2.29.4",

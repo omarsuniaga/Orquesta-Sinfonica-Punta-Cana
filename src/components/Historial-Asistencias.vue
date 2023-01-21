@@ -73,15 +73,7 @@ let meses = [
 let Fecha = moment().format("LLLL");
 let mesHoy = new Date(Fecha).getMonth() + 1;
 let arr = ref([]);
-let Dia = [
-  "Lunes",
-  "Martes",
-  "Miercoles",
-  "Jueves",
-  "Viernes",
-  "Sabado",
-  "Domingo",
-];
+let Dia = ["Lunes", "Martes", "Miercoles", "Jueves", "Viernes", "Sabado", "Domingo"];
 let MesesRegistrados = ref({});
 let separator = ref("cell");
 let rows = ref([]);
@@ -143,15 +135,7 @@ const columns = [
 ];
 const ObtenerDia = (dia) => {
   let f = moment(dia).day();
-  let Semana = [
-    "Domingo",
-    "Lunes",
-    "Martes",
-    "Miercoles",
-    "Jueves",
-    "Viernes",
-    "Sabado",
-  ];
+  let Semana = ["Domingo", "Lunes", "Martes", "Miercoles", "Jueves", "Viernes", "Sabado"];
   f = Semana.filter((e, i) => (i === f ? e : null));
   return f;
 };
@@ -164,9 +148,7 @@ const BuscarAlumno = (id) => {
 };
 const BuscarGrupo = (id) => {
   let grupo = "";
-  Alumnos.value.filter((elem) =>
-    elem.id === id ? (grupo = elem.grupo) : null
-  );
+  Alumnos.value.filter((elem) => (elem.id === id ? (grupo = elem.grupo) : null));
   return grupo;
 };
 const DatosColumna = (listado) => {
@@ -185,9 +167,7 @@ const DatosColumna = (listado) => {
       Dia: Dia[weekday],
     };
   });
-  return rows.value.sort(
-    (a, b) => a.Fecha.split("-")[2] - b.Fecha.split("-")[2]
-  );
+  return rows.value.sort((a, b) => a.Fecha.split("-")[2] - b.Fecha.split("-")[2]);
 };
 
 //Segun el mes, se crea un objeto con los alumnos presentes y ausentes.
@@ -278,9 +258,7 @@ let pagination = ref({
 
 onMounted(async () => {
   _l.value = await Mostrar_todo().then((elem) => elem.map((e) => e.data()));
-  Alumnos.value = await Mostrar_Listado().then((elem) =>
-    elem.map((e) => e.data())
-  );
+  Alumnos.value = await Mostrar_Listado().then((elem) => elem.map((e) => e.data()));
 
   //Iniciar meses registrados
   _l.value.filter((elem) =>
@@ -331,29 +309,26 @@ onMounted(async () => {
       });
       return presentesOrquesta;
     }
+    return;
   });
 
-  let nuevoArrayPresentes = ref(presentesOrquesta.concat(presentesCoro));
-  nuevoArrayPresentes.value = nuevoArrayPresentes.value.sort(
-    (a, b) => a.fecha - b.fecha
-  );
+  let nuevoArrayPresentes = ref([...presentesCoro, ...presentesOrquesta]);
+  nuevoArrayPresentes.value = nuevoArrayPresentes.value.sort((a, b) => a.fecha - b.fecha);
   nuevoArrayPresentes.value.map((elem) =>
     linea.value.chartOptions.xaxis.categories.push(elem.fecha.toString())
   );
 
-  linea.value.series.push({
-    name: "Orquesta",
-    data: nuevoArrayPresentes.value.map((elem) =>
-      elem.grupo === "Orquesta" ? elem.data : 0
-    ),
-    color: "#76D7C4",
-  });
-  linea.value.series.push({
-    name: "Coro",
-    data: nuevoArrayPresentes.value.map((elem) =>
-      elem.grupo === "Coro" ? elem.data : 0
-    ),
-    color: "#633974",
+  const groups = ["Orquesta", "Coro"];
+  const colors = ["#76D7C4", "#633974"];
+
+  groups.forEach((group, index) => {
+    linea.value.series.push({
+      name: group,
+      data: nuevoArrayPresentes.value.map((elem) =>
+        elem.grupo === group ? elem.data : 0
+      ),
+      color: colors[index],
+    });
   });
 });
 watchEffect(async () => {});
@@ -368,11 +343,7 @@ watchEffect(async () => {});
         caption="Meses Registrados"
         default-opened
       >
-        <div
-          v-for="(item, i) of MesesRegistrados"
-          :key="item.id"
-          @click="_a(i)"
-        >
+        <div v-for="(item, i) of MesesRegistrados" :key="item.id" @click="_a(i)">
           <q-expansion-item>
             <template v-slot:header>
               <q-item-section avatar>
@@ -383,11 +354,7 @@ watchEffect(async () => {});
 
               <q-item-section side>
                 <div class="row items-center">
-                  <q-badge
-                    rounded
-                    color="primary"
-                    :label="item.registros"
-                  ></q-badge>
+                  <q-badge rounded color="primary" :label="item.registros"></q-badge>
                 </div>
               </q-item-section>
             </template>
@@ -417,15 +384,9 @@ watchEffect(async () => {});
                         </q-item-section>
 
                         <q-item-section>
-                          <q-item-label lines="1"
-                            >{{ user.name }}
-                          </q-item-label>
+                          <q-item-label lines="1">{{ user.name }} </q-item-label>
                           <q-item-label caption lines="2">
-                            <q-badge
-                              rounded
-                              color="green"
-                              :label="user.asistio"
-                            >
+                            <q-badge rounded color="green" :label="user.asistio">
                             </q-badge>
                             <q-badge
                               v-if="user.falto != null"
@@ -436,9 +397,7 @@ watchEffect(async () => {});
                             </q-badge>
                           </q-item-label>
                           <q-item-label caption lines="3">
-                            <span class="text-weight-bold">{{
-                              user.grupo
-                            }}</span>
+                            <span class="text-weight-bold">{{ user.grupo }}</span>
                           </q-item-label>
                         </q-item-section>
                       </q-item>

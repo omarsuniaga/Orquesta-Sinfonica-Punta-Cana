@@ -30,10 +30,7 @@
             <q-avatar>
               <img src="https://cdn.quasar.dev/img/avatar2.jpg" />
             </q-avatar>
-            <span
-              class="text-h5 text-weight-bolder q-mx-md"
-              style="width: 100%"
-            >
+            <span class="text-h5 text-weight-bolder q-mx-md" style="width: 100%">
               {{ alumno.nombre }} {{ alumno.apellido }}
             </span>
             <q-card-section>
@@ -114,12 +111,7 @@
       <q-separator />
       <div class="row q-mx-lg">
         <div class="col-5">
-          <q-input
-            v-model="alumno.edad"
-            :disable="editable"
-            label="Edad"
-            stack-label
-          />
+          <q-input v-model="alumno.edad" :disable="editable" label="Edad" stack-label />
           <q-select
             v-model="alumno.sexo"
             label="sexo"
@@ -154,12 +146,7 @@
         </div>
 
         <div class="col-5 offset-md-1">
-          <q-input
-            v-model="alumno.email"
-            :disable="editable"
-            label="Email"
-            stack-label
-          />
+          <q-input v-model="alumno.email" :disable="editable" label="Email" stack-label />
           <q-input
             v-model="alumno.emergencia"
             :disable="editable"
@@ -283,12 +270,13 @@
         </div>
       </div>
       <div class="col-12 q-m-sm">
+        <SubiFotografia />
         <q-file
           :disable="editable"
           filled
           bottom-slots
           v-model="model"
-          label="Label"
+          label="Label-a"
           counter
           max-files="12"
         >
@@ -319,6 +307,7 @@
 <script setup>
 import { ref, reactive, onMounted } from "vue";
 import ArbolHabilidadesVue from "src/components/Arbol-Habilidades.vue";
+import SubiFotografia from "src/components/Subi-Fotografia.vue";
 import LineaTiempo from "src/components/Linea-Tiempo.vue";
 import {
   Buscar_Alumno,
@@ -352,8 +341,7 @@ onMounted(() => {
     alumno.tlf = elem.tlf || "Vacio";
     alumno.emergencia = elem.emergencia || "Vacio";
     alumno.colegio_trabajo = elem.colegio_trabajo || "Vacio";
-    alumno.direccion_colegio_trabajo =
-      elem.direccion_colegio_trabajo || "Vacio";
+    alumno.direccion_colegio_trabajo = elem.direccion_colegio_trabajo || "Vacio";
     alumno.horario_colegio_trabajo = elem.horario_colegio_trabajo || "Vacio";
     alumno.registro = elem.registro;
     alumno.direccion = elem.direccion || "Vacio";

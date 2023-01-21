@@ -1,5 +1,6 @@
 import { onMounted, onUnmounted } from "vue";
 import { initializeApp } from "firebase/app";
+
 import {
   getAuth,
   onAuthStateChanged,
@@ -24,7 +25,6 @@ import {
   disableNetwork,
   enableNetwork,
 } from "firebase/firestore";
-// import { algo } from "./data";
 // Subsequent
 import moment from "moment";
 export const firebaseConfig = {
@@ -36,13 +36,25 @@ export const firebaseConfig = {
   messagingSenderId: import.meta.env.VITE_APP_MESSAGING_SENDER_ID,
   appId: import.meta.env.VITE_APP_APP_ID,
 };
+import { getStorage, ref } from "firebase/storage";
 const app = initializeApp(firebaseConfig);
 const auth = getAuth(app);
 const db = getFirestore(app);
+const storage = getStorage(app);
 const Fecha = moment().format("YYYY/MM/DD");
 let Lista_Ausentes = [];
 let Lista_Presentes = [];
-export { auth, db, Fecha, Lista_Presentes, Lista_Ausentes };
+const ALUMNOS = [];
+export {
+  auth,
+  db,
+  storage,
+  ref,
+  Fecha,
+  Lista_Presentes,
+  Lista_Ausentes,
+  ALUMNOS,
+};
 export const useAuthState = () => {
   const user = ref(null);
   const error = ref(null);
@@ -129,8 +141,209 @@ export const Mover_Alumnos = async (alumno) => {
   }
   console.log(alumno);
 };
+/** NUEVAS FUNCIONES REFACTORIZADAS PARA HACER UN SOLO LLAMADO A LA API, ESTAN EN INGLES PARA DIFERENCIARLAS*/
+/**ALUMNOS */
+//getAlumnos
+export const getAlumnos = async () => {
+  try {
+    let listadoRef = collection(db, "ALUMNOS");
+    let q = query(listadoRef);
+    let querySnapshot = await getDocs(q);
+    let res = querySnapshot.docs.map((e) => e.data());
+    return res;
+  } catch (error) {
+    console.log(error);
+  }
+};
+//searchAlumnoId
+export const searchAlumno = async (id) => {
+  try {
+    let alumnos = await getAlumnos();
+    let res = alumnos.filter((e) => e.id == id);
+    return res;
+  } catch (error) {
+    console.log(error);
+  }
+};
+
+//classification by genres
+export const classificationByGenre = async () => {
+  try {
+    const alumnos = await getAlumnos();
+    return alumnos.reduce((acc, alumno) => {
+      acc[alumno.sexo] = (acc[alumno.sexo] || 0) + 1;
+      return acc;
+    }, {});
+  } catch (error) {
+    console.log(error);
+  }
+};
+
+/**ASISTENCIAS */
+//getAsistencias
+export const getAsistencias = async () => {
+  try {
+    let listadoRef = collection(db, "ASISTENCIAS");
+    let q = query(listadoRef);
+    let querySnapshot = await getDocs(q);
+    let res = querySnapshot.docs.map((e) => e.data());
+    return res;
+  } catch (error) {
+    console.log(error);
+  }
+};
+
+export const Generar_Asistencias_Global = async () => {
+  let Obj = [];
+  let nom = "";
+  let Alumnos = await getAlumnos();
+  let _l = await getAsistencias();
+
+  //Busca al alumnos segun su id
+  const BuscarNombre = (id) => {
+    Alumnos.filter((elem) =>
+      elem.id === id ? (nom = elem.nombre + " " + elem.apellido) : null
+    );
+    return nom;
+  };
+
+  const BuscarGrupo = (id) => {
+    let grupo = "";
+    Alumnos.filter((elem) => (elem.id === id ? (grupo = elem.grupo) : []));
+    return grupo;
+  };
+
+  //Itera las fechas que existen
+  _l.filter((elem) => {
+    if (!!elem.Fecha) {
+      let { presentes } = elem.Data;
+      let { ausentes } = elem.Data;
+      presentes.map((el) =>
+        Obj.push({
+          id: el,
+          name: BuscarNombre(el),
+          date: elem.Fecha,
+          grupo: BuscarGrupo(el),
+          attended: true,
+        })
+      );
+      ausentes.map((el) =>
+        Obj.push({
+          id: el,
+          name: BuscarNombre(el),
+          date: elem.Fecha,
+          grupo: BuscarGrupo(el),
+          attended: false,
+        })
+      );
+
+      return { presentes, ausentes };
+    }
+    return Obj;
+  });
+
+  //Function to compare two objects
+  function compare(a, b) {
+    if (a.date < b.date) return -1;
+    if (a.date > b.date) return 1;
+    return 0;
+  }
+
+  Obj.sort(compare);
+
+  //Use reduce to group objects with the same name and date
+  const result = Obj.reduce((acc, curr) => {
+    const existing = acc.find(
+      ({ name, date }) => name === curr.name && date === curr.date
+    );
+    if (existing) {
+      return acc;
+    }
+    return [...acc, curr];
+  }, []);
+  Obj = result;
+  return Obj;
+};
+
+/***Clasificaciones por meses */
+export const UltimaSemana = async () => {
+  let Hoy = await Generar_Asistencias_Global();
+  Hoy.filter(({ date, attended }) => {
+    const attendenceDate = new Date(date);
+    const threeWeeksAgo = new Date();
+    threeWeeksAgo.setDate(threeWeeksAgo.getDate() - 7);
+    return attended && attendenceDate > threeWeeksAgo;
+  }).reduce((attendees, { name }) => {
+    attendees[name] = (attendees[name] || 0) + 1;
+    return attendees;
+  }, {});
+  return Hoy;
+  // //convertir el Objeto Semanas.value en un array
+  // let HoyArray = [];
+  // HoyArray = Object.entries(Hoy);
+  // let ObjetoGlobal = HoyArray.sort((a, b) => b[1] - a[1]);
+
+  // const SeleccionaPrimerosCinco = ObjetoGlobal.slice(0, 5);
+  // const SeleccionaUltimosCinco = ObjetoGlobal.slice(-5);
+  // const PrimerosCinco = SeleccionaPrimerosCinco.map((entry) => entry);
+  // const UltimosCinco = SeleccionaUltimosCinco.map((entry) => entry);
+  // ObjetoGlobal.PrimerosCinco = PrimerosCinco;
+  // ObjetoGlobal.UltimosCinco = UltimosCinco;
+  return ObjetoGlobal;
+};
+
+export const TresSemanas = () => {
+  let Semanas = attendance.value
+    .filter(({ date, attended }) => {
+      const attendenceDate = new Date(date);
+      const threeWeeksAgo = new Date();
+      threeWeeksAgo.setDate(threeWeeksAgo.getDate() - 21);
+      return attended && attendenceDate > threeWeeksAgo;
+    })
+    .reduce((attendees, { name }) => {
+      attendees[name] = (attendees[name] || 0) + 1;
+      return attendees;
+    }, {});
+  //convertir el Objeto Semanas.value en un array
+  let SemanasArray = ref([]);
+  SemanasArray.value = Object.entries(Semanas);
+  ObjetoGlobal.value = SemanasArray.value.sort((a, b) => b[1] - a[1]);
+  const SeleccionaPrimerosCinco = ObjetoGlobal.value.slice(0, 5);
+  const SeleccionaUltimosCinco = ObjetoGlobal.value.slice(-5);
+  const PrimerosCinco = SeleccionaPrimerosCinco.map((entry) => entry);
+  const UltimosCinco = SeleccionaUltimosCinco.map((entry) => entry);
+  ObjetoGlobal.value.PrimerosCinco = PrimerosCinco;
+  ObjetoGlobal.value.UltimosCinco = UltimosCinco;
+  return ObjetoGlobal.value;
+};
+
+const TresMeses = () => {
+  let meses = attendance.value
+    .filter(({ date, attended }) => {
+      const attendenceDate = new Date(date);
+      const threeMonthsAgo = new Date();
+      threeMonthsAgo.setMonth(threeMonthsAgo.getMonth() - 3);
+      return attended && attendenceDate > threeMonthsAgo;
+    })
+    .reduce((attendees, { name }) => {
+      attendees[name] = (attendees[name] || 0) + 1;
+      return attendees;
+    }, {});
+  let MesArray = ref([]);
+  MesArray.value = Object.entries(meses);
+  ObjetoGlobal.value = MesArray.value.sort((a, b) => b[1] - a[1]);
+  const SeleccionaPrimerosCinco = ObjetoGlobal.value.slice(0, 5);
+  const SeleccionaUltimosCinco = ObjetoGlobal.value.slice(-5);
+  const PrimerosCinco = SeleccionaPrimerosCinco.map((entry) => entry);
+  const UltimosCinco = SeleccionaUltimosCinco.map((entry) => entry);
+  ObjetoGlobal.value.PrimerosCinco = PrimerosCinco;
+  ObjetoGlobal.value.UltimosCinco = UltimosCinco;
+
+  return ObjetoGlobal.value;
+};
+
 /*
- ****** BUSCAR ALUMNO POR ID ******
+ ****** BUSCAR ALUMNO ******
  */
 export const Buscar_Alumno = async (id) => {
   try {
@@ -182,6 +395,7 @@ export const Buscar_Por_Fecha = async (Fecha) => {
     return querySnapshot.docs[0].data();
   }
 };
+
 /*
  ****** CRUD USER SESION ******
  */
@@ -228,7 +442,7 @@ export const Eliminar_User_Sesion = async (user) => {
  */
 export const Entrar = async (email, password) => {
   try {
-    await signInWithEmailAndPassword(auth, email, password).then((e) =>
+    return await signInWithEmailAndPassword(auth, email, password).then((e) =>
       console.log("user logged", e.user)
     );
   } catch (error) {
@@ -236,11 +450,17 @@ export const Entrar = async (email, password) => {
   }
 };
 export const Salir = async () => {
-  try {
-    await signOut(auth).then(() => console.log("Sesion Cerrada!"));
-  } catch (e) {
-    alert(e.message);
-  }
+  firebase
+    .auth()
+    .signOut()
+    .then(function () {
+      // Sesión cerrada con éxito
+      console.log("Sesión cerrada");
+    })
+    .catch(function (error) {
+      // Error al cerrar sesión
+      console.log(error);
+    });
 };
 export const Iniciar_Automaticamente = () => {
   new Promise((resolve, reject) => onAuthStateChanged(auth, resolve, reject));
@@ -304,6 +524,7 @@ export const Mostrar_Listado = async () => {
     let listadoRef = collection(db, "ALUMNOS");
     let q = query(listadoRef);
     let querySnapshot = await getDocs(q);
+    let res = querySnapshot.docs.map((e) => e.data());
     return querySnapshot.docs;
   } catch (error) {
     console.log(error);
@@ -470,9 +691,6 @@ export const Contar_Ausentes = async (mes = "09") => {
   let Listado_Fechas = await getDocs(Ref);
   return Listado_Fechas;
 };
-/**
- * Data para graficas del Dashboard
- */
 
 // Contar alumnos de la orquesta
 export const Total_Orquesta = async () => {
@@ -543,14 +761,14 @@ export const Clasificacion_Generos = async () => {
   return generos;
 };
 export const PROCESOS = async (id) => {
-  try {
-    let RefColeccion = collection(db, "PROGRESOS");
-    let q = query(RefColeccion, where("id", "==", id));
-    const querySnapshot = await getDocs(q);
-    return querySnapshot.docs[0].data();
-  } catch (error) {
-    console.log(error);
-  }
-  return null;
+  // try {
+  //   let RefColeccion = collection(db, "PROGRESOS");
+  //   let q = query(RefColeccion, where("id", "==", id));
+  //   const querySnapshot = await getDocs(q);
+  //   return querySnapshot.docs[0].data();
+  // } catch (error) {
+  //   console.log(error);
+  // }
+  // return null;
 };
 Clasificacion_Generos();
