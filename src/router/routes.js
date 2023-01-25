@@ -2,9 +2,7 @@ const routes = [
   {
     path: "/",
     component: () => import("layouts/MainLayout.vue"),
-    children: [
-      { path: "", component: () => import("pages/Dashboard_Index.vue") },
-    ],
+    children: [{ path: "", component: () => import("pages/Home-App.vue") }],
   },
   {
     path: "/Pasar_Asistencias",
@@ -34,12 +32,12 @@ const routes = [
     // meta: { requiresAuth: true },
   },
   {
-    path: "/Perfil_Alumnos/:filter",
-    name: "Perfil_Alumnos",
+    path: "/Buscar",
+    name: "Buscar",
     props: true,
     component: () => import("layouts/MainLayout.vue"),
     children: [
-      { path: "", component: () => import("pages/Perfil_Alumnos.vue") },
+      { path: "", component: () => import("pages/Buscar-Alumnos.vue") },
     ],
     // meta: { requiresAuth: true },
   },
@@ -63,12 +61,10 @@ const routes = [
   },
   //agregar una pagina index que este vinculada al archivo Index_OutSession
   {
-    path: "/Index_OutSession",
-    name: "Index_OutSession",
+    path: "/Home",
+    name: "Home",
     component: () => import("layouts/MainLayout.vue"),
-    children: [
-      { path: "", component: () => import("pages/Index_OutSession.vue") },
-    ],
+    children: [{ path: "", component: () => import("src/pages/Home-App.vue") }],
   },
 
   //agregar la pagina SoloCara para que se muestre al iniciar la pagina

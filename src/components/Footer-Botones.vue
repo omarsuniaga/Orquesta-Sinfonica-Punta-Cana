@@ -33,7 +33,8 @@ const Botones = ref([
   },
   {
     icon: "search",
-    to: "/Perfil_Alumnos/filter:All",
+    // to: "/Buscar/filter:All",
+    to: "/Buscar/",
     value: "buscar",
   },
   {

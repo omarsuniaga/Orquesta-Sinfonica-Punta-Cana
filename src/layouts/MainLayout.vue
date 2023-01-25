@@ -1,15 +1,12 @@
 <template>
-  <q-layout view="hHh lpR fFf" class="fondo">
-    <q-header elevated reveal class="bg-dark q-py-xs">
+  <q-layout view="hHh lpR fFf" class="">
+    <q-header reveal class="fondo q-py-xs">
       <q-toolbar>
         <q-space />
 
-        <div class="no-wrap bg-dark">
+        <div class="no-wrap">
           <q-btn flat no-wrap class="flex justify-center" @click="$router.push('/')">
-            <img
-              src="~assets/favicon-96x96-orquesta.jpg"
-              style="width: 60px; height: 60px"
-            />
+            <img src="~assets/funeyca.png" style="width: 60px; height: 60px" />
           </q-btn>
         </div>
 
@@ -29,8 +26,6 @@
 <script setup>
 // import { inject, ref } from "vue";
 import { ref, reactive } from "vue";
-
-import { fabYoutube } from "@quasar/extras/fontawesome-v6";
 import FooterBotones from "src/components/Footer-Botones.vue";
 const leftDrawerOpen = ref(false);
 const toggleLeftDrawer = () => (leftDrawerOpen.value = !leftDrawerOpen.value);
@@ -71,9 +66,20 @@ const buttons1 = ref([
 ]);
 </script>
 
-<style lang="sass">
-.fondo
-  background-color: #262a3a
-  border-radius: 5px
-  box-shadow: 0px -5px 5px rgba(0, 0, 0, 0.5), 0px 5px 5px rgba(0, 0, 0, 0.5)
+<style>
+.fondo {
+  background: #0f0c29; /* fallback for old browsers */
+  background: -webkit-linear-gradient(
+    to right,
+    #1b1b29,
+    #134255,
+    #1b1b29
+  ); /* Chrome 10-25, Safari 5.1-6 */
+  background: linear-gradient(
+    to right,
+    #1b1b29,
+    #134255,
+    #1b1b29
+  ); /* W3C, IE 10+/ Edge, Firefox 16+, Chrome 26+, Opera 12+, Safari 7+ */
+}
 </style>

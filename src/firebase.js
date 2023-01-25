@@ -697,9 +697,9 @@ export const Total_Orquesta = async () => {
   let Alumnos = await Mostrar_Listado().then((elem) =>
     elem.map((e) => e.data()).sort((a, b) => a.nombre.localeCompare(b.nombre))
   );
-  Alumnos = await Alumnos.filter((elem) =>
-    elem.grupo.find((e) => e === "Orquesta")
-  ).sort((a, b) => a.nombre.localeCompare(b.nombre));
+  // Alumnos = await Alumnos.filter((elem) =>
+  //   elem.grupo.find((e) => e === "Orquesta")
+  // ).sort((a, b) => a.nombre.localeCompare(b.nombre));
   return Alumnos;
 };
 export const Total_Coro = async () => {

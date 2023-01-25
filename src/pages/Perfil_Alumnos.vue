@@ -91,13 +91,7 @@ let timer;
 let grupo = ref("");
 let Alumnos = ref("");
 const router = useRouter();
-const styleObject = ref({
-  color: "red",
-  fontSize: "13px",
-  "background-image": `url(${url.value})`,
-  "background-position": "center",
-  "background-size": "cover",
-});
+
 let filter = ref(router.currentRoute._rawValue.params.filter);
 const eventEmittedFromChild = (res) => {
   if (res.length != 0) {
@@ -173,7 +167,8 @@ const Filtrar = async (res) => {
 };
 
 onMounted(async () => {
-  await cargar_alumnos();
+  let alumnos = await cargar_alumnos();
+  //selecciona solamente a los alumnos que forman parte del grupo "Orquesta"
 });
 onBeforeUnmount(() => {
   clearTimeout(timer);
