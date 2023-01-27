@@ -1,9 +1,14 @@
 <template>
-  <div class="q-pa-sm">
+  <div class="q-ma-sm">
     <!-- Formulario del alumno -->
-    <q-form @submit="onSubmit" @reset="onReset" class="q-gutter-md">
+    <q-form @submit="onSubmit" @reset="onReset" class="q-ma-md">
       <q-stepper v-model="step" ref="stepper" alternative-labels color="primary" animated>
-        <q-step :name="1" title="Datos del Alumno" icon="settings" :done="step > 1">
+        <q-step
+          :name="1"
+          title="Datos del Alumno"
+          icon="create_new_folder"
+          :done="step > 1"
+        >
           <q-input
             class="col-5 q-mb-md"
             filled
@@ -12,6 +17,7 @@
             label="Nombre"
             placeholder="Nombre Completo"
             autofocus
+            :rules="[(val) => (val && val.length > 0) || 'Campo Obligatorio']"
           />
           <q-input
             class="col-5 q-mb-md"
@@ -20,49 +26,47 @@
             v-model="alumno.apellido"
             label="Apellido"
             placeholder="Apellidos Completos"
+            :rules="[(val) => (val && val.length > 0) || 'Campo Obligatorio']"
           />
 
           <q-input
             filled
             lazy-rules
-            class="col-5"
+            class="col-5 q-mb-md"
             v-model="alumno.nac"
             label="Año Nacimiento"
             placeholder="DD/MM/AAAA"
+            :rules="[(val) => (val && val.length > 0) || 'Campo Obligatorio']"
           />
           <q-input
             filled
             lazy-rules
-            class="col-5"
+            class="col-5 q-mb-md"
             v-model="alumno.edad"
             label="Edad"
             placeholder="Edad"
+            :rules="[(val) => (val && val.length > 0) || 'Campo Obligatorio']"
           />
           <q-input
             filled
             lazy-rules
-            class="col-5"
+            class="col-5 q-mb-md"
             v-model="alumno.sexo"
             label="Sexo"
             placeholder="Sexo"
             :rules="[(val) => (val && val.length > 0) || 'Campo Obligatorio']"
           />
-          <q-btn
-            class="col-5 q-mb-md"
-            @click="registrarAlumno() && $router.push('/Perfil_Alumnos')"
-            color="secondary"
-            label="Registrar"
-          />
+
           <q-input
             filled
-            class="col-5"
+            class="col-5 q-mb-md"
             v-model="alumno.cedula"
             label="Cedula del Alumno"
             placeholder="Cedula del Alumno"
             :rules="[(val) => (val && val.length > 0) || 'Campo Obligatorio']"
           />
           <q-input
-            class="col-5"
+            class="col-5 q-mb-md"
             filled
             lazy-rules
             v-model="alumno.tlf_alumno"
@@ -75,13 +79,13 @@
         <q-step
           :name="2"
           title="Centro Educativo o Trabajo"
-          icon="create_new_folder"
+          icon="school"
           :done="step > 2"
         >
           <q-input
             filled
             lazy-rules
-            class="col-3"
+            class="col-5 q-mb-md"
             v-model="alumno.colegio_trabajo"
             label="Colegio/Trabajo"
             placeholder="Ingresa el Nombre de la Institución"
@@ -90,7 +94,7 @@
           <q-input
             filled
             lazy-rules
-            class="col-3"
+            class="col-5 q-mb-md"
             v-model="alumno.tlf_colegio_trabajo"
             label="Telefono del Colegio/Trabajo"
             placeholder="Ingresa el numero de telefono del Colegio o Trabajo"
@@ -99,7 +103,7 @@
           <q-input
             filled
             lazy-rules
-            class="col-3"
+            class="col-5 q-mb-md"
             v-model="alumno.direccion_colegio_trabajo"
             label="Direccion del Colegio/Trabajo"
             placeholder="Ingresa el numero de telefono del Colegio o Trabajo"
@@ -108,19 +112,19 @@
           <q-input
             filled
             lazy-rules
-            class="col-3"
+            class="col-5 q-mb-md"
             v-model="alumno.horario_colegio_trabajo"
             label="Horario de salida del Colegio/Trabajo"
             placeholder="Ingresa el horario de salida del Colegio o Trabajo"
             :rules="[(val) => (val && val.length > 0) || 'Campo Obligatorio']"
           />
         </q-step>
-        <!-- paso 3 -->
-        <q-step :name="3" title="Informacion de los Padres" icon="add_comment">
+        <!-- paso 3 INFORMACION DE LOS PADRES-->
+        <q-step :name="3" title="Informacion de los Padres" icon="family_restroom">
           <q-input
             filled
             lazy-rules
-            class="col-5"
+            class="col-5 q-mb-md"
             v-model="alumno.madre"
             label="Nombre de la Madre"
             placeholder="Ingresa el Nombre de la Madre"
@@ -129,7 +133,7 @@
           <q-input
             filled
             lazy-rules
-            class="col-3"
+            class="col-5 q-mb-md"
             v-model="alumno.tlf_madre"
             label="Telefono de la Madre"
             placeholder="Ingresa el Numero de telefono de la Madre"
@@ -138,7 +142,7 @@
           <q-input
             filled
             lazy-rules
-            class="col-3"
+            class="col-5 q-mb-md"
             v-model="alumno.cedula_madre"
             label="Cedula de la Madre"
             placeholder="Cedula de la Madre"
@@ -147,7 +151,7 @@
           <q-input
             filled
             lazy-rules
-            class="col-3"
+            class="col-5 q-mb-md"
             v-model="alumno.padre"
             label="Nombre de la Padre"
             placeholder="Ingresa el Nombre de la Padre"
@@ -156,7 +160,7 @@
           <q-input
             filled
             lazy-rules
-            class="col-3"
+            class="col-5 q-mb-md"
             v-model="alumno.tlf_padre"
             label="Telefono del Padre"
             placeholder="Ingresa el Numero de telefono de la Padre"
@@ -165,7 +169,7 @@
           <q-input
             filled
             lazy-rules
-            class="col-3"
+            class="col-5 q-mb-md"
             v-model="alumno.cedula_padre"
             label="Cedula del Padre"
             placeholder="Cedula del Padre"
@@ -174,7 +178,7 @@
           <q-input
             filled
             lazy-rules
-            class="col-5"
+            class="col-5 q-mb-md"
             v-model="alumno.direccion"
             label="Direccion"
             placeholder="Ingresa la Direccion donde vive el alumno"
@@ -182,7 +186,7 @@
           />
           <q-input
             filled
-            class="col-5"
+            class="col-5 q-mb-md"
             v-model="alumno.tlf_emergencia"
             label="Telefono de Emergencia"
             placeholder="Ingresa un numero de emergencia"
@@ -190,7 +194,7 @@
           <br />
           <q-input
             filled
-            class="col-3"
+            class="col-5 q-mb-md"
             v-model="alumno.email"
             label="E-mail"
             placeholder="Ingresa un correo electronico"
@@ -207,11 +211,12 @@
         <q-step
           :name="4"
           title="Crear Alumno Nuevo"
-          icon="add_comment"
+          icon="person_add"
           class="fit row inline justify-center"
         >
           <q-btn
-            @click="registrarAlumno() && $router.push('/')"
+            class="col-5 q-mb-md"
+            @click="registrarAlumno() && $router.push('/Perfil_Alumnos')"
             color="secondary"
             label="Registrar"
           />
@@ -241,10 +246,11 @@
 </template>
 
 <script setup>
-import { ref } from "vue";
+import { ref, watchEffect } from "vue";
 import { useQuasar } from "quasar";
 import { Crear_Alumnos, Salir } from "../firebase";
 import moment from "moment";
+import { useRouter } from "vue-router";
 const step = ref(1);
 
 const alumno = ref({
@@ -306,5 +312,4 @@ const onReset = () => {
   alumno.value.nombre = null;
   alumno.value.apellido = null;
 };
-//Registrar alumnos en firebase
 </script>

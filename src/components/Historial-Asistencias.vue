@@ -78,7 +78,6 @@ let MesesRegistrados = ref({});
 let separator = ref("cell");
 let rows = ref([]);
 let Global = ref([]);
-Global.value = inject("Global");
 const columns = [
   {
     name: "Fecha",

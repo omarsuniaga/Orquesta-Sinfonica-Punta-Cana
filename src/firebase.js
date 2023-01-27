@@ -6,6 +6,8 @@ import {
   onAuthStateChanged,
   signInWithEmailAndPassword,
   signOut,
+  setPersistence,
+  browserSessionPersistence,
 } from "firebase/auth";
 import {
   collection,
@@ -42,9 +44,10 @@ const auth = getAuth(app);
 const db = getFirestore(app);
 const storage = getStorage(app);
 const Fecha = moment().format("YYYY/MM/DD");
+const ALUMNOS = [];
 let Lista_Ausentes = [];
 let Lista_Presentes = [];
-const ALUMNOS = [];
+let __SESION = false;
 export {
   auth,
   db,
@@ -54,22 +57,20 @@ export {
   Lista_Presentes,
   Lista_Ausentes,
   ALUMNOS,
+  __SESION,
 };
-export const useAuthState = () => {
-  const user = ref(null);
-  const error = ref(null);
-  let unsubscribe;
-  onMounted(() => {
-    unsubscribe = onAuthStateChanged(
-      auth,
-      (u) => (user.value = u),
-      (e) => (error.value = e)
-    );
+export const Iniciar_Automaticamente = () => {
+  return new Promise((resolve, reject) => {
+    onAuthStateChanged(auth, (user) => {
+      if (user) {
+        __SESION = true;
+        resolve(true);
+      } else {
+        __SESION = false;
+        resolve(false);
+      }
+    });
   });
-  onUnmounted(() => unsubscribe());
-
-  const isAuthenticated = computed(() => user.value != null);
-  return { user, error, isAuthenticated };
 };
 async function ConConexion() {
   await enableNetwork(db);
@@ -99,10 +100,7 @@ enableIndexedDbPersistence(db).catch((err) => {
 });
 export const Crear_Alumnos = async (alumno) => {
   try {
-    const docRef = await setDoc(
-      doc(db, "ALUMNOS", alumno.id.toString()),
-      alumno
-    ).then();
+    await setDoc(doc(db, "ALUMNOS", alumno.id.toString()), alumno).then();
   } catch (error) {
     console.log(error);
   }
@@ -174,6 +172,17 @@ export const classificationByGenre = async () => {
       acc[alumno.sexo] = (acc[alumno.sexo] || 0) + 1;
       return acc;
     }, {});
+  } catch (error) {
+    console.log(error);
+  }
+};
+
+export const classificationByGroup = async () => {
+  try {
+    const alumnos = await getAlumnos();
+    let set = new Set();
+    alumnos.forEach((alumno) => alumno.grupo.map((g) => set.add(g)));
+    return [...set];
   } catch (error) {
     console.log(error);
   }
@@ -317,7 +326,7 @@ export const TresSemanas = () => {
   return ObjetoGlobal.value;
 };
 
-const TresMeses = () => {
+export const TresMeses = () => {
   let meses = attendance.value
     .filter(({ date, attended }) => {
       const attendenceDate = new Date(date);
@@ -443,28 +452,39 @@ export const Eliminar_User_Sesion = async (user) => {
 export const Entrar = async (email, password) => {
   try {
     return await signInWithEmailAndPassword(auth, email, password).then((e) =>
-      console.log("user logged", e.user)
+      console.log("Usuario Logeado", e.user)
     );
   } catch (error) {
     console.log(error);
   }
 };
 export const Salir = async () => {
-  firebase
-    .auth()
-    .signOut()
-    .then(function () {
-      // Sesión cerrada con éxito
-      console.log("Sesión cerrada");
-    })
-    .catch(function (error) {
-      // Error al cerrar sesión
-      console.log(error);
-    });
+  await signOut(auth);
+  return console.log("Usuario Deslogeado");
 };
-export const Iniciar_Automaticamente = () => {
-  new Promise((resolve, reject) => onAuthStateChanged(auth, resolve, reject));
-};
+setPersistence(auth, browserSessionPersistence)
+  .then(() => {
+    console.log(
+      "Persistence set to browser session",
+      browserSessionPersistence()
+    );
+
+    // Existing and future Auth states are now persisted in the current
+    // session only. Closing the window would clear any existing state even
+    // if a user forgets to sign out.
+    // ...
+    // New sign-in will be persisted with session persistence.
+    return signInWithEmailAndPassword(auth, email, password);
+  })
+  .catch((error) => {
+    // Handle Errors here.
+    const errorCode = error.code;
+    const errorMessage = error.message;
+  });
+// export const Iniciar_Automaticamente = async () => {
+// new Promise((resolve, reject) => onAuthStateChanged(auth, resolve, reject));
+// console.log("Iniciar_Automaticamente");
+// };
 export const Crear_Progresos = async (alumno) => {
   try {
     const Ref = doc(db, "ORQUESTA", alumno.id);
@@ -761,14 +781,14 @@ export const Clasificacion_Generos = async () => {
   return generos;
 };
 export const PROCESOS = async (id) => {
-  // try {
-  //   let RefColeccion = collection(db, "PROGRESOS");
-  //   let q = query(RefColeccion, where("id", "==", id));
-  //   const querySnapshot = await getDocs(q);
-  //   return querySnapshot.docs[0].data();
-  // } catch (error) {
-  //   console.log(error);
-  // }
-  // return null;
+  try {
+    let RefColeccion = collection(db, "PROGRESOS");
+    let q = query(RefColeccion, where("id", "==", id));
+    const querySnapshot = await getDocs(q);
+    return querySnapshot.docs[0].data();
+  } catch (error) {
+    console.log(error);
+  }
+  return null;
 };
 Clasificacion_Generos();

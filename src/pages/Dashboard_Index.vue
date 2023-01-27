@@ -1,47 +1,5 @@
 <template>
   <div class="q-pa-md">
-    <BuscarAlumnos
-      :text="text"
-      style="width: 100%"
-      @onFire="eventEmittedFromChild"
-    ></BuscarAlumnos>
-    <q-toolbar class="q-ma-sm">
-      <div
-        v-if="Resultado_Busqueda.length > 0"
-        style="width: 100%; max-width: 700px; min-width: 140px"
-      >
-        <div class="row flex justify-center scrollList" ref="chatRef">
-          <div style="width: 100%; max-width: 700px; min-width: 140px">
-            <q-card
-              class="q-ma-xs bg-gray-3"
-              v-for="(item, index) in Resultado_Busqueda"
-              :key="index"
-              @click="detalle(item.id)"
-            >
-              <q-item v-if="!item.asistencia" :id="item.id">
-                <q-item-section>
-                  <q-item-label class="text-weight-regular"
-                    >{{ item.nombre }}
-                    {{ $q.screen.gt.xs ? item.apellido : "" }}</q-item-label
-                  >
-                  <q-item-label>
-                    <q-virtual-scroll
-                      :items="item.grupo"
-                      virtual-scroll-horizontal
-                      v-slot="{ item, index }"
-                    >
-                      <div :key="index" :class="item.class" class="q-px-xs">
-                        <q-badge top color="red" :label="item" />
-                      </div>
-                    </q-virtual-scroll>
-                  </q-item-label>
-                </q-item-section>
-              </q-item>
-            </q-card>
-          </div>
-        </div>
-      </div>
-    </q-toolbar>
     <q-toolbar class="justify-center flex row" style="min-width: 375px; width: 100%">
       <q-btn-toggle
         v-model="model"
@@ -126,39 +84,12 @@
   </div>
 
   <q-toolbar>
-    <div class="full-width row inline wrap justify-between items-center content-center">
-      <q-card bordered class="my-card">
+    <div class="myCards">
+      <q-card class="" v-for="(item, index) in Totales_por_Grupos" :key="index">
         <q-card-section>
-          <div class="text-h6">Orquesta</div>
+          <div class="text-h6">{{ index }}</div>
         </q-card-section>
-        <q-card-section class="q-pt-none">
-          {{ TotalAlumnos_Orquesta.length }} Alumnos
-        </q-card-section>
-      </q-card>
-
-      <q-card bordered class="my-card">
-        <q-card-section>
-          <div class="text-h6">Coro</div>
-        </q-card-section>
-        <q-card-section class="q-pt-none">
-          {{ TotalAlumnos_Coro.length }} Alumnos</q-card-section
-        >
-      </q-card>
-
-      <q-card bordered class="my-card">
-        <q-card-section>
-          <div class="text-h6">Solfeo</div>
-        </q-card-section>
-        <q-card-section class="q-pt-none">
-          {{ TotalAlumnos_Solfeo.length }} Alumnos</q-card-section
-        >
-      </q-card>
-
-      <q-card bordered class="my-card">
-        <q-card-section>
-          <div class="text-h6">Esperando</div>
-        </q-card-section>
-        <q-card-section class="q-pt-none"> 30 Alumnos</q-card-section>
+        <q-card-section class="q-pt-none"> {{ item }} Alumnos </q-card-section>
       </q-card>
     </div>
   </q-toolbar>
@@ -222,13 +153,9 @@
 <script setup>
 import { ref, onMounted, provide, watchEffect } from "vue";
 import {
-  Clasificacion_Generos,
   Total_Orquesta,
-  Total_Coro,
-  Total_Solfeo,
   Mostrar_todo,
   Mostrar_Listado,
-  getAlumnos,
   classificationByGenre,
   Generar_Asistencias_Global,
 } from "../firebase";
@@ -239,23 +166,17 @@ import RightSideBar from "src/components/RightSideBar.vue";
 import moment from "moment";
 import VueApexCharts from "vue3-apexcharts";
 import HistorialAsistencias from "src/components/Historial-Asistencias.vue";
-import BuscarAlumnos from "src/components/Buscar-Alumnos.vue";
 
 //Variables
-const router = useRouter();
 const ObjetoGlobal = ref([]);
-const $q = useQuasar();
 let Global = ref([]);
-let Resultado_Busqueda = ref([]);
-let TotalAlumnos_Orquesta = ref(0);
-let TotalAlumnos_Coro = ref(0);
-let TotalAlumnos_Solfeo = ref(0);
-let model = ref("Semanal");
-let _l = ref([]);
+let Totales_por_Grupos = ref([]);
 let Alumnos = ref([]);
-let Fecha = moment().format("LLLL");
-let text = "";
+let _l = ref([]);
 let attendance = ref([]);
+const router = useRouter();
+let TotalAlumnos_Orquesta = ref(0);
+let model = ref("Semanal");
 let loading = ref(false);
 //crear una variable global para usarlo en el dashboar
 provide(/* key */ "Global", /* value */ Global.value);
@@ -266,14 +187,6 @@ let detalle = (id) => {
 const props = defineProps({
   text: String,
 });
-const eventEmittedFromChild = (res) => {
-  if (res.length != 0) {
-    Resultado_Busqueda.value = res.map((e) => ({ ...e }));
-    return Resultado_Busqueda.value;
-  } else {
-    Resultado_Busqueda.value.length = 0;
-  }
-};
 
 let generos = ref({
   series: [],
@@ -401,11 +314,18 @@ const TresMeses = () => {
 onMounted(async () => {
   //Obtener el total de alumnos segun el grupo
   let genre = await classificationByGenre();
-  //convertir genre en un array
 
-  TotalAlumnos_Coro.value = await Total_Coro();
-  TotalAlumnos_Orquesta.value = await Total_Orquesta();
-  TotalAlumnos_Solfeo.value = await Total_Solfeo();
+  //Obtener listados de Alumnos
+  Alumnos.value = await Mostrar_Listado().then((elem) => elem.map((e) => e.data()));
+
+  //Obtener el total de alumnos segun el grupo
+  Totales_por_Grupos.value = Alumnos.value.reduce((acc, curr) => {
+    curr.grupo.forEach((g) => {
+      acc[g] = (acc[g] || 0) + 1;
+    });
+    return acc;
+  }, {});
+
   console.log("Generar_Asistencias_Global", await Generar_Asistencias_Global());
 
   //Graficar los valores de Femeninos y Masculinos
@@ -417,7 +337,7 @@ onMounted(async () => {
   );
 
   //Obtetner listados de instrumentos
-  let instrumentos = TotalAlumnos_Orquesta.value
+  let instrumentos = Alumnos.value
     .map((e) => e.instrumento)
     .sort((a, b) => a - b)
     .reduce((prev, cur) => ((prev[cur] = prev[cur] + 1 || 1), prev), {});
@@ -429,9 +349,6 @@ onMounted(async () => {
   }
   //Obtener listados de Asistencias
   _l.value = await Mostrar_todo().then((elem) => elem.map((e) => e.data()));
-
-  //Obtener listados de Alumnos
-  Alumnos.value = await Mostrar_Listado().then((elem) => elem.map((e) => e.data()));
 
   //Funcion que permite crear una variable global segun la asistencias y fechas
   attendance.value = await Generar_Asistencias_Global();
@@ -495,13 +412,22 @@ watchEffect(async () => {
     transform: rotate(360deg);
   }
 }
-</style>
+.myCards {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  grid-gap: 30px; /* Agrega un espacio de 5px entre los rectángulos */
+  justify-content: end; /* Centra los elements horizontalmente */
+  align-content: center; /* Centra los elementos verticalmente */
+}
 
-<style lang="sass" scoped>
-.my-card
-  width: 150px
-  height: 100px
-  margin: 4px
-  max-width: 150px
-  max-height: 150px
+@media (max-width: 768px) {
+  .myCards {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    grid-template-rows: repeat(2, 1fr);
+    grid-gap: 20px; /* Agrega un espacio de 5px entre los rectángulos */
+    justify-content: space-around; /* Centra los elements horizontalmente */
+    /* align-content: center; Centra los elementos verticalmente */
+  }
+}
 </style>

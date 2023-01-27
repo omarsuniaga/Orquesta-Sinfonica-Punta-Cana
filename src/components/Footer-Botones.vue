@@ -19,7 +19,7 @@
 
 <script setup>
 import { ref } from "vue";
-let model = ref("asistencia");
+let model = ref("home");
 const Botones = ref([
   {
     icon: "home",
@@ -28,18 +28,17 @@ const Botones = ref([
   },
   {
     icon: "rule",
-    to: "/Pasar_Asistencias",
-    value: "asistencia",
+    to: "/Nuevo-Alumno",
+    value: "Registrar",
   },
   {
     icon: "search",
-    // to: "/Buscar/filter:All",
-    to: "/Buscar/",
+    to: "/Buscar",
     value: "buscar",
   },
   {
     icon: "dashboard",
-    to: "/Registrar_Alumnos",
+    to: "/Dashboard",
     value: "dashboard",
   },
 ]);

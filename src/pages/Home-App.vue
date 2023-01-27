@@ -3,12 +3,14 @@ import CarruselImagenes from "src/components/Carrusel-imagenes.vue";
 import MenuSecundario from "src/components/Menu-Secundario.vue";
 import ListadoHorizontal from "src/components/Listado-Horizontal.vue";
 import { onMounted, ref } from "vue";
-import { getAlumnos } from "src/firebase";
-const TotalAlumnos = ref([]);
+import { getAlumnos, classificationByGroup } from "src/firebase";
+const Alumnos = ref([]);
+let group = ref([]);
 let loading = ref(false);
 onMounted(async () => {
-  TotalAlumnos.value = await getAlumnos();
-  if (TotalAlumnos.value !== 0) {
+  group.value = await (await classificationByGroup()).reverse();
+  Alumnos.value = await getAlumnos();
+  if (Alumnos.value !== 0) {
     return (loading.value = true);
   }
 });
@@ -18,13 +20,12 @@ onMounted(async () => {
   <div v-if="!loading" class="loading-container">
     <div class="loading"></div>
   </div>
-  <div v-else>
+  <div v-else class="q-py-sm">
     <CarruselImagenes />
     <MenuSecundario />
-    <ListadoHorizontal grupo="Orquesta" :Alumnos="TotalAlumnos" />
-    <ListadoHorizontal grupo="Coro" :Alumnos="TotalAlumnos" />
-    <ListadoHorizontal grupo="Iniciacion 2" :Alumnos="TotalAlumnos" />
-    <ListadoHorizontal grupo="Iniciacion 1" :Alumnos="TotalAlumnos" />
+    <main v-for="(grupo, index) in group" :key="index">
+      <ListadoHorizontal :grupo="grupo" :Alumnos="Alumnos" />
+    </main>
   </div>
 </template>
 <style>

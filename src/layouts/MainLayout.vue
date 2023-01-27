@@ -5,7 +5,7 @@
         <q-space />
 
         <div class="no-wrap">
-          <q-btn flat no-wrap class="flex justify-center" @click="$router.push('/')">
+          <q-btn flat no-wrap class="flex justify-center" @click="$router.push('/Home')">
             <img src="~assets/funeyca.png" style="width: 60px; height: 60px" />
           </q-btn>
         </div>
@@ -24,15 +24,8 @@
 </template>
 
 <script setup>
-// import { inject, ref } from "vue";
-import { ref, reactive } from "vue";
+import { ref } from "vue";
 import FooterBotones from "src/components/Footer-Botones.vue";
-const leftDrawerOpen = ref(false);
-const toggleLeftDrawer = () => (leftDrawerOpen.value = !leftDrawerOpen.value);
-const search = ref("");
-const sesion = true;
-
-// const sesion = inject("SESION");
 
 const links2 = ref([
   {
@@ -46,23 +39,6 @@ const links2 = ref([
     to: "/Registrar_Alumnos",
   },
   { icon: "speed", text: "Progreso del Alumno", to: "/Perfil_Alumnos" },
-]);
-
-const links3 = ref([
-  { icon: "chart_simple", text: "YouTube Premium" },
-  { icon: "local_movies", text: "Movies & Shows" },
-  { icon: "videogame_asset", text: "Gaming" },
-  { icon: "live_tv", text: "Live" },
-]);
-
-const buttons1 = ref([
-  { text: "About" },
-  { text: "Press" },
-  { text: "Copyright" },
-  { text: "Contact us" },
-  { text: "Creators" },
-  { text: "Advertise" },
-  { text: "Developers" },
 ]);
 </script>
 

@@ -8,32 +8,6 @@
           style="min-width: 360px; width: 100%"
           @onFire="eventEmittedFromChild"
         ></BuscarAlumnos>
-        <!-- Filtro -->
-        <!-- <div
-          class="justify-center q-my-sm flex row"
-          style="min-width: 375px; width: 100%"
-        > -->
-        <!-- <q-btn-toggle
-            class="col-auto flex justify-around"
-            v-model="grupo"
-            rounded
-            spread
-            stack
-            no-caps
-            no-wrap
-            toggle-color="primary"
-            color="while"
-            text-color="primary"
-            :options="[
-              { label: 'Inicio 1', value: 'Ini1' },
-              { label: 'Inicio 2', value: 'Ini2' },
-              { label: 'Coro', value: 'Coro' },
-              { label: 'Orquesta', value: 'Orq' },
-              { label: 'Todos', value: 'All' },
-            ]"
-          >
-          </q-btn-toggle> -->
-        <!-- </div> -->
       </q-list>
     </div>
 
@@ -75,11 +49,11 @@ import { getAlumnos } from "../firebase";
 import BuscarAlumnos from "../components/Buscar-Alumnos.vue";
 import { useRouter } from "vue-router";
 
-const router = useRouter();
+const $router = useRouter();
 const listado = ref([]);
 const recientes = ref([]);
 const Alumnos = ref([]);
-let data = ref([]);
+const data = ref([]);
 
 let loading = ref(false);
 let text = ref("");
@@ -112,6 +86,7 @@ const buscar = (id) => {
     // Guardar el acumulador actualizado
     localStorage.setItem(`acumulador-${id}`, acumulador);
   } else {
+    //empuja el id del parametro al array con los ids del localstorage
     storedIds.push(id);
     localStorage.setItem("ids", JSON.stringify(storedIds));
     // Crear un acumulador para el nuevo id
@@ -122,14 +97,16 @@ const buscar = (id) => {
 };
 
 const eventEmittedFromChild = (res) => {
-  if (res.length != 0) {
-    listado.value = res.map((e) => ({ ...e }));
-    return listado.value;
-  } else {
-    // return cargar_alumnos();
+  try {
+    if (res.length != 0) {
+      listado.value = res.map((e) => ({ ...e }));
+      return listado.value;
+    }
+  } catch (error) {
+    return console.log(error);
   }
 };
-
+//devuelve las busquedas recientes
 watchEffect(async () => {
   recientes.value = Alumnos.value.filter((elem) =>
     data.value.ids.find((e) => e === elem.id)

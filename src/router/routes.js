@@ -2,25 +2,44 @@ const routes = [
   {
     path: "/",
     component: () => import("layouts/MainLayout.vue"),
-    children: [{ path: "", component: () => import("pages/Home-App.vue") }],
+    children: [
+      { path: "", component: () => import("src/pages/Index-Main.vue") },
+    ],
   },
   {
-    path: "/Pasar_Asistencias",
-    name: "Pasar_Asistencias",
+    path: "/home",
+    name: "home",
     component: () => import("layouts/MainLayout.vue"),
     children: [
-      { path: "", component: () => import("pages/Pasar_Asistencias.vue") },
+      { path: "/home", component: () => import("src/pages/Home-App.vue") },
     ],
-    // meta: { requiresAuth: true },
+    meta: { requiresAuth: true },
+  },
+
+  {
+    path: "/Modulo-Asistencia",
+    name: "Modulo-Asistencia",
+    component: () => import("layouts/MainLayout.vue"),
+    children: [
+      { path: "", component: () => import("pages/Modulo-Asistencia.vue") },
+    ],
+    meta: { requiresAuth: true },
   },
   {
-    path: "/Registrar_Alumnos",
-    name: "Registrar_Alumnos",
+    path: "/Nuevo-Alumno",
+    name: "Nuevo-Alumno",
+    component: () => import("layouts/MainLayout.vue"),
+    children: [{ path: "", component: () => import("pages/Nuevo-Alumno.vue") }],
+    meta: { requiresAuth: true },
+  },
+  {
+    path: "/Dashboard",
+    name: "Dashboard",
     component: () => import("layouts/MainLayout.vue"),
     children: [
-      { path: "", component: () => import("pages/Registrar_Alumnos.vue") },
+      { path: "", component: () => import("pages/Dashboard_Index.vue") },
     ],
-    // meta: { requiresAuth: true },
+    meta: { requiresAuth: true },
   },
   {
     path: "/Lista_Inactivos",
@@ -29,7 +48,7 @@ const routes = [
     children: [
       { path: "", component: () => import("pages/Lista_Inactivos.vue") },
     ],
-    // meta: { requiresAuth: true },
+    meta: { requiresAuth: true },
   },
   {
     path: "/Buscar",
@@ -39,7 +58,7 @@ const routes = [
     children: [
       { path: "", component: () => import("pages/Buscar-Alumnos.vue") },
     ],
-    // meta: { requiresAuth: true },
+    meta: { requiresAuth: true },
   },
   {
     path: "/Detalles_Alumnos/:id",
@@ -49,30 +68,13 @@ const routes = [
     children: [
       { path: "", component: () => import("pages/Detalles_Alumnos.vue") },
     ],
-    // meta: { requiresAuth: true },
+    meta: { requiresAuth: true },
   },
   {
-    path: "/Login",
-    name: "Login",
-    component: () => import("layouts/MainLayout.vue"),
-    children: [
-      { path: "", component: () => import("pages/Iniciar_Sesion.vue") },
-    ],
-  },
-  //agregar una pagina index que este vinculada al archivo Index_OutSession
-  {
-    path: "/Home",
-    name: "Home",
-    component: () => import("layouts/MainLayout.vue"),
-    children: [{ path: "", component: () => import("src/pages/Home-App.vue") }],
-  },
-
-  //agregar la pagina SoloCara para que se muestre al iniciar la pagina
-  {
-    path: "/SoloCara",
-    name: "SoloCara",
-    component: () => import("layouts/MainLayout.vue"),
-    children: [{ path: "", component: () => import("pages/SoloCara.vue") }],
+    path: "/login",
+    name: "login",
+    component: "login",
+    children: [{ path: "", component: () => import("src/pages/Log-in.vue") }],
   },
 
   {
