@@ -1,5 +1,5 @@
 <template>
-  <div class="q-ma-sm flex justify-center" style="min-width: 375px">
+  <div class="q-ma-sm flex justify-center bg-white" style="min-width: 375px">
     <q-list bordered separator>
       <div class="flex q-ma-sm justify-end wrap">
         <q-btn
@@ -46,70 +46,13 @@
         </q-card>
 
         <q-space />
-
-        <div class="row q-col-md">
-          <!-- <div class="col-6">
-            <q-card class="card1 q-mx-md q-pa-sm bg-grey-2 text-white">
-              <q-card-section>
-                <div class="text-h6 text-black">Semestre</div>
-              </q-card-section>
-
-              <q-card-section>
-                <q-linear-progress
-                  stripe
-                  rounded
-                  size="20px"
-                  :value="150 / 200"
-                  color="warning"
-                  class="q-mt-sm"
-                />
-                <div class="text-subtitle2 text-black">150/200</div>
-              </q-card-section>
-
-              <q-separator dark />
-
-              <q-card-actions class="flex justify-center">
-                <q-btn class="text-subtitle2 text-black" flat
-                  >Ver Graficas</q-btn
-                >
-              </q-card-actions>
-            </q-card>
-          </div> -->
-
-          <!-- <div class="col-6">
-            <q-card class="card1 q-mx-md q-pa-sm bg-grey-2 text-white">
-              <q-card-section>
-                <div class="text-h6 text-black">Octubre</div>
-              </q-card-section>
-              <q-card-section>
-                <q-linear-progress
-                  stripe
-                  rounded
-                  size="20px"
-                  :value="15 / 20"
-                  color="warning"
-                  class="q-mt-sm"
-                />
-                <div class="text-subtitle2 text-black">15/20</div>
-              </q-card-section>
-
-              <q-separator dark />
-
-              <q-card-actions class="flex justify-center">
-                <q-btn class="text-subtitle2 text-black" flat
-                  >Ver Graficas</q-btn
-                >
-              </q-card-actions>
-            </q-card>
-          </div> -->
-        </div>
       </q-item-label>
       <ArbolHabilidades />
       <q-separator />
       <LineaTiempo :editable="editable" />
       <q-separator />
       <q-separator />
-      <div class="row q-mx-lg">
+      <div class="row q-mx-lg bg-white">
         <div class="col-5">
           <q-input v-model="alumno.edad" :disable="editable" label="Edad" stack-label />
           <q-select

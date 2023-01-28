@@ -16,10 +16,7 @@
         :subtitle="item.Fecha.split('-').reverse().join('-')"
       >
         {{ item.Fecha.split("-")[1] }}
-        <div
-          class="row"
-          style="width: 100%; max-width: 700px; min-width: 140px"
-        >
+        <div class="row" style="width: 100%; max-width: 700px; min-width: 140px">
           <div class="col-6">
             <q-card class="card1 q-mx-md q-pa-sm bg-grey-2 text-white">
               <q-card-section>
@@ -29,9 +26,7 @@
               <q-card-section class="text-black">
                 <div class="row items-center">
                   <div class="col-6">
-                    <span class="text-md text-weight-bold">{{
-                      item.Obra
-                    }}</span>
+                    <span class="text-md text-weight-bold">{{ item.Obra }}</span>
                   </div>
                   <div class="col-6">
                     <q-knob
@@ -106,18 +101,15 @@ const op1 = async (res) => {
 };
 onMounted(async () => {
   // let { Repertorios } = await PROCESOS(id);
-  console.log(await PROCESOS(id));
-
+  // console.log(await PROCESOS(id));
   // Repertorios = Repertorios.map((elem)=>elem.Fecha.);
   // res.value = Repertorios.map((elem) => {
   //   let mes = elem.Fecha.split("-")[1]; // 03
   //   let anio = elem.Fecha.split("-")[0]; // 2022
   //   let mesNumero = meses[parseInt(mes) - 1]; // 3 => Marzo => 2 arrays[]
   //   let titulo = `${mesNumero}  ${anio}`;
-
   //   return titulo;
   // });
-
   /**
    * si la fecha que esta en repertorio tiene el mismo mes, se agrega a un array, sino, se muestra el siguiente objeto
    * 1. sacar el mes Repertorios
@@ -136,7 +128,6 @@ onMounted(async () => {
   //   }
   //   console.log(MesArrays);
   // }
-
   // return console.log(Repertorios);
 });
 </script>

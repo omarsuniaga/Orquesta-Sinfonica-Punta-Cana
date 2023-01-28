@@ -414,6 +414,7 @@ watchEffect(async () => {
 }
 .myCards {
   display: grid;
+
   grid-template-columns: repeat(4, 1fr);
   grid-gap: 30px; /* Agrega un espacio de 5px entre los rectángulos */
   justify-content: end; /* Centra los elements horizontalmente */
