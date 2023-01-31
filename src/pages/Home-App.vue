@@ -6,6 +6,7 @@ import { onMounted, ref } from "vue";
 import { getAlumnos, classificationByGroup } from "src/firebase";
 const Alumnos = ref([]);
 let group = ref([]);
+
 let loading = ref(false);
 onMounted(async () => {
   group.value = await (await classificationByGroup()).reverse();

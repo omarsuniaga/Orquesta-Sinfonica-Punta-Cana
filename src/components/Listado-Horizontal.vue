@@ -18,7 +18,7 @@ onMounted(async () => {
       <button id="alumnos">
         <div class="profile">
           <q-img
-            :src="(item.avatar ??= url)"
+            :src="(item.avatar ||= url)"
             @click="$router.push('/Detalles_Alumnos/' + item.id)"
           >
           </q-img>
