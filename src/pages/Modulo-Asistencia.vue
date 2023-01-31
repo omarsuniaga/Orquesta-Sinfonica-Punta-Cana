@@ -97,7 +97,7 @@
             <div v-else class="row flex justify-center scrollList" ref="chatRef">
               <div
                 v-if="Resultado_Busqueda.length > 0"
-                style="width: 100%; max-width: 700px; min-width: 140px scrollList"
+                style="width: 100%; max-width: 700px; min-width: 140px"
               >
                 <q-card
                   class="q-ma-xs bg-red-3"
@@ -112,7 +112,7 @@
                         >{{ item.nombre }}
                         {{ $q.screen.gt.sm ? item.apellido : "" }}</q-item-label
                       >
-                      <q-item-label class="scrollList">
+                      <q-item-label class="">
                         <q-virtual-scroll
                           :items="item.grupo"
                           virtual-scroll-horizontal

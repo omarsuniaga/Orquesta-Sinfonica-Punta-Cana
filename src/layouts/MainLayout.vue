@@ -1,21 +1,29 @@
 <template>
   <q-layout view="hHh lpR fFf" class="">
     <q-header reveal class="fondo q-py-xs">
-      <q-toolbar>
-        <q-space />
-
-        <div class="no-wrap">
-          <q-btn flat no-wrap class="flex justify-center" @click="$router.push('/Home')">
-            <img src="~assets/funeyca.png" style="width: 60px; height: 60px" />
-          </q-btn>
-        </div>
-
-        <q-space />
-      </q-toolbar>
+      <div class="no-wrap">
+        <q-btn flat no-wrap class="flex justify-center" to="/home">
+          <img src="~assets/funeyca.png" style="width: 60px; height: 60px" />
+        </q-btn>
+      </div>
     </q-header>
 
     <q-footer>
-      <FooterBotones />
+      <div style="min-width: 360px; width: 100%">
+        <q-btn-toggle
+          spread
+          v-model="model"
+          toggle-color="grey-6"
+          color="white"
+          no-caps
+          stretch
+          unelevated
+          text-color="grey-9"
+          :options="Botones"
+          padding="10px"
+        >
+        </q-btn-toggle>
+      </div>
     </q-footer>
     <q-page-container>
       <router-view />
@@ -24,22 +32,36 @@
 </template>
 
 <script setup>
-import { ref } from "vue";
-import FooterBotones from "src/components/Footer-Botones.vue";
-
-const links2 = ref([
+import { ref, watchEffect } from "vue";
+import { useRouter } from "vue-router";
+const $route = useRouter();
+let model = ref($route.currentRoute._rawValue);
+const Botones = ref([
   {
-    icon: "no_accounts",
-    text: "Ver Lista de Inactivos",
-    to: "/Lista_Inactivos",
+    icon: "home",
+    to: "/Home",
+    value: "home",
   },
   {
-    icon: "insights",
-    text: "Gráficas de Asistencias",
-    to: "/Registrar_Alumnos",
+    icon: "rule",
+    to: "/Nuevo-Alumno",
+    value: "Nuevo-Alumno",
   },
-  { icon: "speed", text: "Progreso del Alumno", to: "/Perfil_Alumnos" },
+  {
+    icon: "search",
+    to: "/Buscar",
+    value: "buscar",
+  },
+  {
+    icon: "dashboard",
+    to: "/Dashboard",
+    value: "dashboard",
+  },
 ]);
+
+watchEffect(() => {
+  model.value ??= "home";
+});
 </script>
 
 <style>

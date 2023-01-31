@@ -55,51 +55,138 @@
 import { ref, onMounted } from "vue";
 import { useRouter } from "vue-router";
 import { Nivel_Alumno } from "../data";
-import { PROCESOS } from "../firebase";
+import { Buscar_Alumno, Generar_Asistencias_Global, diasTrabajados } from "../firebase";
 const props = defineProps({
   editable: Boolean,
 });
 const id = useRouter().currentRoute._rawValue.params.id;
-let meses = [
-  "Enero",
-  "Febrero",
-  "Marzo",
-  "Abril",
-  "Mayo",
-  "Junio",
-  "Julio",
-  "Agosto",
-  "Septiembre",
-  "Octubre",
-  "Noviembre",
-  "Diciembre",
-];
-let body = ref();
+let informacion = ref(null);
 let res = ref(null);
-let {
-  NivelVibrato,
-  TiempoTocando,
-  Instrumento,
-  Fila,
-  Atril,
-  FechaRegistrado,
-  Nivel,
-  Grupo,
-} = Nivel_Alumno();
-
-let Frase1 =
-  Grupo === "Orquesta"
-    ? `tocando en la ${Grupo} el ${Instrumento}. Pertenece a la Fila de ${Fila} en el atril ${Atril} por su nivel`
-    : Grupo === "Coro"
-    ? `cantando en el ${Grupo}. Pertenece a la Fila de ${Fila}`
-    : Grupo === "Iniciacion 1"
-    ? `en las filas de ${Grupo}. Necesita mas tiempo para subir de nivel`
-    : null;
-const informacion = `Este Alumno empezó el ${FechaRegistrado} en el nivel ${Nivel}, tiene ${TiempoTocando} ${Frase1}`;
-const op1 = async (res) => {
-  console.log((CalidadSonido = res));
+let TotalAsistencia = 0;
+let resumen = {
+  inicio: "",
+  contextoInstrumento: "",
+  contextoGrupo: "",
+  contextoNivel: "",
+  contextoTiempo: "",
+  contextoAsistencia: "",
+  contextoInsigneas: "",
 };
+
+// console.log("asistencias", asistencias);
+// let {
+//   NivelVibrato,
+//   TiempoTocando,
+//   Instrumento,
+//   Fila,
+//   Atril,
+//   FechaRegistrado,
+//   Nivel,
+//   Grupo,
+// } = Nivel_Alumno();
+
+// let Frase1 =
+//   Grupo === "Orquesta"
+//     ? `tocando en la ${Grupo} el ${Instrumento}. Pertenece a la Fila de ${Fila} en el atril ${Atril} por su nivel`
+//     : Grupo === "Coro"
+//     ? `cantando en el ${Grupo}. Pertenece a la Fila de ${Fila}`
+//     : Grupo === "Iniciacion 1"
+//     ? `en las filas de ${Grupo}. Necesita mas tiempo para subir de nivel`
+//     : null;
+// const informacion = `Este Alumno empezó el ${FechaRegistrado} en el nivel ${Nivel}, tiene ${TiempoTocando} ${Frase1}`;
+// const op1 = async (res) => {
+//   console.log((CalidadSonido = res));
+// };
 onMounted(async () => {
+  //extraer alumno segun id de firebase
+  let alumno = await Buscar_Alumno(id);
+  let instrumento = alumno.instrumento.split(" ")[0];
+  let asistenciasAlumno = await Generar_Asistencias_Global().then((elem) =>
+    elem.filter((el) => (el.id === id ? (el.attended === true ? el.id : 0) : null))
+  );
+  let DiasRegistrados = await diasTrabajados();
+  TotalAsistencia = Math.round((asistenciasAlumno.length / DiasRegistrados.length) * 100);
+
+  function convertirFecha() {
+    const date = new Date(alumno.registro);
+    const options = {
+      weekday: "long",
+      year: "numeric",
+      month: "long",
+      day: "numeric",
+    };
+    const spanishDate = date.toLocaleDateString("es-ES", options);
+    return spanishDate;
+  }
+
+  function CalcularEdad(tiempo) {
+    const today = new Date();
+    const birthDate = new Date(tiempo);
+    let age = today.getFullYear() - birthDate.getFullYear();
+    const monthDiff = today.getMonth() - birthDate.getMonth();
+    if (monthDiff < 0 || (monthDiff === 0 && today.getDate() < birthDate.getDate())) {
+      age--;
+    }
+    return age;
+  }
+  function calcularMeses() {
+    //DD/MM/YYYY
+    const date = new Date(alumno.fecInscripcion);
+    const year = date.getFullYear();
+    const month = (date.getMonth() + 1).toString().padStart(2, "0");
+    const day = date.getDate().toString().padStart(2, "0");
+    const formattedDate = `${year}-${month}-${day}`;
+    const today = new Date();
+    const from = new Date(formattedDate);
+    const months =
+      (today.getFullYear() - from.getFullYear()) * 12 +
+      (today.getMonth() - from.getMonth());
+    const years = Math.floor(months / 12);
+    return `${years > 1 ? years + " años con" : years < 1 ? " " : years + " Año con"}  ${
+      months % 12 > 1
+        ? (months % 12) + " meses"
+        : months % 12 < 1
+        ? " "
+        : (months % 12) + " Mes"
+    }`;
+  }
+
+  let insigneas = "5";
+  let nivel =
+    TotalAsistencia >= 0 && TotalAsistencia <= 25
+      ? "nivel Muy Bajo"
+      : TotalAsistencia >= 26 && TotalAsistencia <= 40
+      ? "nivel Bajo"
+      : TotalAsistencia >= 41 && TotalAsistencia <= 65
+      ? "nivel notable"
+      : TotalAsistencia >= 66 && TotalAsistencia <= 79
+      ? "muy buen nivel"
+      : "Excelente nivel";
+  resumen.inicio = `
+  ${alumno.sexo === "Masculino" ? "El Alumno " : "La Alumna "}
+  ${alumno.nombre} ${alumno.apellido}`;
+
+  resumen.contextoInstrumento = ` en este tiempo escogio desarrollarse en ${instrumento} para empezar el nivel que segun su tiempo y rendimiento le ha permitido llegar.`;
+
+  resumen.contextoTiempo = ` Se registró un ${convertirFecha()} y tiene
+  de haber empezado sus estudios en la Fundacion  ${calcularMeses()}.`;
+
+  resumen.contextoGrupo = ` Actualmente se encuentra en ${
+    alumno.grupo == "Orquesta" ? " la " : " el "
+  } ${alumno.grupo}`;
+  resumen.contextoNivel = ` tocando en la fila de  ${alumno.instrumento}.`;
+  resumen.contextoAsistencia = ` obteniendo una asistencia total de ${TotalAsistencia}% `;
+  resumen.contextoInsigneas = ` y ha alcanzado ${insigneas} insignias que representan algunos retos individuales. Lo que representa un ${nivel} en responsabilidad, entrega y disciplina. `;
+
+  informacion.value =
+    resumen.inicio +
+    resumen.contextoInstrumento +
+    resumen.contextoGrupo +
+    resumen.contextoNivel +
+    resumen.contextoTiempo +
+    resumen.contextoAsistencia +
+    resumen.contextoInsigneas;
+
   // let { Repertorios } = await PROCESOS(id);
   // console.log(await PROCESOS(id));
   // Repertorios = Repertorios.map((elem)=>elem.Fecha.);

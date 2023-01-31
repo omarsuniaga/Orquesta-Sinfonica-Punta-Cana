@@ -44,21 +44,25 @@
 <script setup>
 import { useRouter } from "vue-router";
 import { ref } from "vue";
-import { auth } from "../firebase";
+import { auth, __SESION } from "../firebase";
 import { signInWithEmailAndPassword } from "firebase/auth";
+import { useQuasar } from "quasar";
 const router = useRouter();
 const username = ref(null);
 const pass = ref(null);
-
+const $q = useQuasar();
+console.log(__SESION);
 const onSubmit = async () => {
   try {
-    // await Entrar(username.value, pass.value);
-    let usuario = await signInWithEmailAndPassword(auth, username.value, pass.value);
-    await router.replace("/home");
-
-    console.log("usuario desde iniciar sesion ", usuario);
+    await signInWithEmailAndPassword(auth, username.value, pass.value);
+    return await router.replace("/home");
   } catch (error) {
-    console.log(error);
+    $q.notify({
+      message: "Credenciales invalidas",
+      color: "red-4",
+      textColor: "white",
+      icon: "cloud_done",
+    });
   }
 };
 const validar = (val) => {

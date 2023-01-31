@@ -1,6 +1,5 @@
-import { onMounted, onUnmounted } from "vue";
 import { initializeApp } from "firebase/app";
-
+//Modulo del Autenticacion
 import {
   getAuth,
   onAuthStateChanged,
@@ -9,6 +8,9 @@ import {
   setPersistence,
   browserSessionPersistence,
 } from "firebase/auth";
+//Modulo del Storage
+import { getStorage } from "firebase/storage";
+//Modulo de Base de Datos
 import {
   collection,
   getFirestore,
@@ -27,7 +29,6 @@ import {
   disableNetwork,
   enableNetwork,
 } from "firebase/firestore";
-// Subsequent
 import moment from "moment";
 export const firebaseConfig = {
   apiKey: import.meta.env.VITE_APP_API_KEY,
@@ -38,7 +39,7 @@ export const firebaseConfig = {
   messagingSenderId: import.meta.env.VITE_APP_MESSAGING_SENDER_ID,
   appId: import.meta.env.VITE_APP_APP_ID,
 };
-import { getStorage, ref } from "firebase/storage";
+
 const app = initializeApp(firebaseConfig);
 const auth = getAuth(app);
 const db = getFirestore(app);
@@ -52,7 +53,6 @@ export {
   auth,
   db,
   storage,
-  ref,
   Fecha,
   Lista_Presentes,
   Lista_Ausentes,
@@ -72,6 +72,37 @@ export const Iniciar_Automaticamente = () => {
     });
   });
 };
+
+export const useAuthState = () => {
+  const user = ref(null);
+  const error = ref(null);
+  const auth = getAuth();
+  let unsubscribe;
+  onMounted(() => {
+    unsubscribe = onAuthStateChanged(
+      auth,
+      (u) => (user.value = u),
+      (e) => (error.value = e)
+    );
+  });
+  onUnmounted(() => unsubscribe());
+
+  const isAuthenticated = computed(() => user.value != null);
+  return { user, error, isAuthenticated };
+};
+
+export const useSignOut = async () => {
+  try {
+    const auth = getAuth();
+    await signOut(auth);
+  } catch (e) {
+    alert(e.message);
+  }
+};
+export const getUserState = () =>
+  new Promise((resolve, reject) =>
+    onAuthStateChanged(getAuth(), resolve, reject)
+  );
 async function ConConexion() {
   await enableNetwork(db);
   console.log("Network disabled!", db);
@@ -272,6 +303,17 @@ export const Generar_Asistencias_Global = async () => {
   }, []);
   Obj = result;
   return Obj;
+};
+
+export const diasTrabajados = async () => {
+  try {
+    const asistencias = await Generar_Asistencias_Global();
+    let set = new Set();
+    asistencias.forEach((elem) => elem.date && set.add(elem.date));
+    return [...set];
+  } catch (error) {
+    console.log(error);
+  }
 };
 
 /***Clasificaciones por meses */
@@ -791,4 +833,3 @@ export const PROCESOS = async (id) => {
   }
   return null;
 };
-Clasificacion_Generos();

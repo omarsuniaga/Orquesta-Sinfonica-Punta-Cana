@@ -1,11 +1,21 @@
 const routes = [
   {
     path: "/",
-    component: () => import("layouts/MainLayout.vue"),
-    children: [
-      { path: "", component: () => import("src/pages/Index-Main.vue") },
-    ],
+    name: "",
+    component: () => import("src/pages/Index-Main.vue"),
   },
+  {
+    path: "/login",
+    name: "login",
+    component: () => import("src/pages/Log-in.vue"),
+  },
+
+  {
+    path: "/:pathMatch(.*)*",
+    name: "NotFound",
+    component: () => import("src/pages/ErrorNotFound.vue"),
+  },
+
   {
     path: "/home",
     name: "home",
@@ -20,6 +30,7 @@ const routes = [
     path: "/Modulo-Asistencia",
     name: "Modulo-Asistencia",
     component: () => import("layouts/MainLayout.vue"),
+
     children: [
       { path: "", component: () => import("pages/Modulo-Asistencia.vue") },
     ],
@@ -71,15 +82,14 @@ const routes = [
     meta: { requiresAuth: true },
   },
   {
-    path: "/login",
-    name: "login",
-    component: "login",
-    children: [{ path: "", component: () => import("src/pages/Log-in.vue") }],
-  },
-
-  {
-    path: "/:catchAll(.*)*",
-    component: () => import("pages/ErrorNotFound.vue"),
+    path: "/Calificacion_Alumno/",
+    name: "Calificacion_Alumno",
+    props: true,
+    component: () => import("layouts/MainLayout.vue"),
+    children: [
+      { path: "", component: () => import("pages/Calificacion-Alumno.vue") },
+    ],
+    meta: { requiresAuth: true },
   },
 ];
 

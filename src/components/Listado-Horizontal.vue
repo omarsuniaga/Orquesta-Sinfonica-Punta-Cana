@@ -1,6 +1,5 @@
 <script setup>
-import { Total_Orquesta } from "../firebase/";
-import { ref, onMounted, inject } from "vue";
+import { ref, onMounted } from "vue";
 const listado = ref([]);
 let url = ref("https://picsum.photos/200/300");
 const props = defineProps(["grupo", "Alumnos"]);
@@ -10,7 +9,6 @@ onMounted(async () => {
     elem.grupo.find((e) => e === props.grupo)
   ).sort((a, b) => a.nombre.localeCompare(b.nombre));
 });
-// console.log("Alumnos", props.Alumnos);
 </script>
 
 <template>
@@ -19,7 +17,10 @@ onMounted(async () => {
     <div id="alumnos-container " v-for="item in listado" :key="item.id">
       <button id="alumnos">
         <div class="profile">
-          <q-img :src="url" @click="$router.push('/Detalles_Alumnos/' + item.id)">
+          <q-img
+            :src="(item.avatar ??= url)"
+            @click="$router.push('/Detalles_Alumnos/' + item.id)"
+          >
           </q-img>
         </div>
         <div class="title">
@@ -62,10 +63,12 @@ onMounted(async () => {
 #alumnos .profile img {
   width: 100px;
   height: 100px;
-  border-radius: 60%;
+  border-radius: 50%;
   padding: 0;
   margin: 0;
   border: 2px solid rgb(248, 248, 248);
+  object-fit: cover;
+  /* estirar imagen */
 }
 #alumnos .title {
   text-align: center;
