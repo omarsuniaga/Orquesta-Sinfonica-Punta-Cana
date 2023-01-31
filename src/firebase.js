@@ -282,7 +282,7 @@ export const Generar_Asistencias_Global = async () => {
     return Obj;
   });
 
-  //Function to compare two objects
+  //Función para comparar dos objetos
   function compare(a, b) {
     if (a.date < b.date) return -1;
     if (a.date > b.date) return 1;
@@ -291,7 +291,7 @@ export const Generar_Asistencias_Global = async () => {
 
   Obj.sort(compare);
 
-  //Use reduce to group objects with the same name and date
+  //Utiliza reduce para agrupar objetos con el mismo nombre y fecha
   const result = Obj.reduce((acc, curr) => {
     const existing = acc.find(
       ({ name, date }) => name === curr.name && date === curr.date
@@ -314,83 +314,6 @@ export const diasTrabajados = async () => {
   } catch (error) {
     console.log(error);
   }
-};
-
-/***Clasificaciones por meses */
-export const UltimaSemana = async () => {
-  let Hoy = await Generar_Asistencias_Global();
-  Hoy.filter(({ date, attended }) => {
-    const attendenceDate = new Date(date);
-    const threeWeeksAgo = new Date();
-    threeWeeksAgo.setDate(threeWeeksAgo.getDate() - 7);
-    return attended && attendenceDate > threeWeeksAgo;
-  }).reduce((attendees, { name }) => {
-    attendees[name] = (attendees[name] || 0) + 1;
-    return attendees;
-  }, {});
-  return Hoy;
-  // //convertir el Objeto Semanas.value en un array
-  // let HoyArray = [];
-  // HoyArray = Object.entries(Hoy);
-  // let ObjetoGlobal = HoyArray.sort((a, b) => b[1] - a[1]);
-
-  // const SeleccionaPrimerosCinco = ObjetoGlobal.slice(0, 5);
-  // const SeleccionaUltimosCinco = ObjetoGlobal.slice(-5);
-  // const PrimerosCinco = SeleccionaPrimerosCinco.map((entry) => entry);
-  // const UltimosCinco = SeleccionaUltimosCinco.map((entry) => entry);
-  // ObjetoGlobal.PrimerosCinco = PrimerosCinco;
-  // ObjetoGlobal.UltimosCinco = UltimosCinco;
-  return ObjetoGlobal;
-};
-
-export const TresSemanas = () => {
-  let Semanas = attendance.value
-    .filter(({ date, attended }) => {
-      const attendenceDate = new Date(date);
-      const threeWeeksAgo = new Date();
-      threeWeeksAgo.setDate(threeWeeksAgo.getDate() - 21);
-      return attended && attendenceDate > threeWeeksAgo;
-    })
-    .reduce((attendees, { name }) => {
-      attendees[name] = (attendees[name] || 0) + 1;
-      return attendees;
-    }, {});
-  //convertir el Objeto Semanas.value en un array
-  let SemanasArray = ref([]);
-  SemanasArray.value = Object.entries(Semanas);
-  ObjetoGlobal.value = SemanasArray.value.sort((a, b) => b[1] - a[1]);
-  const SeleccionaPrimerosCinco = ObjetoGlobal.value.slice(0, 5);
-  const SeleccionaUltimosCinco = ObjetoGlobal.value.slice(-5);
-  const PrimerosCinco = SeleccionaPrimerosCinco.map((entry) => entry);
-  const UltimosCinco = SeleccionaUltimosCinco.map((entry) => entry);
-  ObjetoGlobal.value.PrimerosCinco = PrimerosCinco;
-  ObjetoGlobal.value.UltimosCinco = UltimosCinco;
-  return ObjetoGlobal.value;
-};
-
-export const TresMeses = () => {
-  let meses = attendance.value
-    .filter(({ date, attended }) => {
-      const attendenceDate = new Date(date);
-      const threeMonthsAgo = new Date();
-      threeMonthsAgo.setMonth(threeMonthsAgo.getMonth() - 3);
-      return attended && attendenceDate > threeMonthsAgo;
-    })
-    .reduce((attendees, { name }) => {
-      attendees[name] = (attendees[name] || 0) + 1;
-      return attendees;
-    }, {});
-  let MesArray = ref([]);
-  MesArray.value = Object.entries(meses);
-  ObjetoGlobal.value = MesArray.value.sort((a, b) => b[1] - a[1]);
-  const SeleccionaPrimerosCinco = ObjetoGlobal.value.slice(0, 5);
-  const SeleccionaUltimosCinco = ObjetoGlobal.value.slice(-5);
-  const PrimerosCinco = SeleccionaPrimerosCinco.map((entry) => entry);
-  const UltimosCinco = SeleccionaUltimosCinco.map((entry) => entry);
-  ObjetoGlobal.value.PrimerosCinco = PrimerosCinco;
-  ObjetoGlobal.value.UltimosCinco = UltimosCinco;
-
-  return ObjetoGlobal.value;
 };
 
 /*

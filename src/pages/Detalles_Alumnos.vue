@@ -17,8 +17,6 @@ const metadata = {
   contentType: "image/jpeg",
 };
 
-let file = reactive(null);
-
 const $q = reactive(useQuasar());
 const id = useRouter().currentRoute._rawValue.params.id;
 const alumno = reactive({});
@@ -26,7 +24,8 @@ let editable = reactive(false);
 let imagen = reactive("");
 let sexo = reactive(["Masculino", "Femenino"]);
 let options = reactive(["Orquesta", "Coro", "Iniciacion 2", "Iniciacion 1"]);
-
+let loading = reactive(null);
+let file = reactive(null);
 const archivo = (e) => {
   file = e.target.files[0];
   const storageRef = ref(storage, "Avatars/" + file.name);
@@ -34,8 +33,8 @@ const archivo = (e) => {
   uploadTask.on(
     "state_changed",
     (snapshot) => {
-      const progress = (snapshot.bytesTransferred / snapshot.totalBytes) * 100;
-      console.log("Proceso de la carga " + progress + "% ");
+      loading = (snapshot.bytesTransferred / snapshot.totalBytes) * 100;
+      console.log("Proceso de la carga " + loading + "% ");
       switch (snapshot.state) {
         case "paused":
           console.log("Carga pausada");
@@ -354,12 +353,12 @@ const eliminar = async () => {
           />
         </div>
       </div>
-      <q-input
+      <!-- <q-input
         v-model="alumno.avatar"
         :disable="editable"
         label="URL del Avatar"
         stack-label
-      />
+      /> -->
     </q-list>
     <span>Datos Adicionales</span>
     <q-list bordered separator style="width: 100%">
@@ -386,6 +385,11 @@ const eliminar = async () => {
             stack-label
           />
           <input class="bg-grey-2" type="file" @change="archivo($event)" />
+          <div v-if="loading">
+            {{ loading }}
+            <!-- <q-spinner-hourglass color="primary" size="2em" />
+            <q-tooltip :offset="[0, 8]">Subiendo</q-tooltip> -->
+          </div>
           <q-btn
             round
             dense

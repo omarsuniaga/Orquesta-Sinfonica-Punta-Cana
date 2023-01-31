@@ -114,80 +114,37 @@
       <HistorialAsistencias />
     </q-card>
   </div>
-  <q-toolbar>
-    <div class="text-overline">Eventos</div>
-    <q-space></q-space>
-
-    <div class="text-overline">Horarios</div>
-    <div class="text-caption text-green q-ml-md">All patients</div>
-    <q-icon name="fas fa-chevron-right" size="10px" class="" color="green-7" />
-  </q-toolbar>
-  <div class="row q-col-gutter-md">
-    <div class="col-6">
-      <q-card class="card1 q-mx-md q-pa-sm" bordered>
-        <div class="row q-col-gutter-md">
-          <div class="col-6">
-            <div class="text-caption">Cantidad del coro</div>
-            <div class="text-caption text-grey-5">4:30pm - 7:30pm</div>
-            <div>Hotel Barcelo</div>
-          </div>
-          <div class="col-6">
-            <div class="flex justify-end row">Autobus</div>
-          </div>
-        </div>
-      </q-card>
-    </div>
-    <div class="col-6">
-      <q-card class="q-mx-md q-pa-sm" bordered>
-        <div class="row q-col-gutter-md">
-          <div class="col-3">aaa</div>
-          <div class="col-9">bbb</div>
-        </div>
-        <div class="row q-col-gutter-md q-mt-md"></div>
-      </q-card>
-    </div>
-  </div>
-  <RightSideBar />
 </template>
 
 <script setup>
 import { ref, onMounted, provide, watchEffect } from "vue";
 import {
-  Total_Orquesta,
   Mostrar_todo,
   Mostrar_Listado,
   classificationByGenre,
   Generar_Asistencias_Global,
 } from "../firebase";
 
-import { useQuasar } from "quasar";
 import { useRouter } from "vue-router";
-import RightSideBar from "src/components/RightSideBar.vue";
-import moment from "moment";
 import VueApexCharts from "vue3-apexcharts";
 import HistorialAsistencias from "src/components/Historial-Asistencias.vue";
 
 //Variables
-const ObjetoGlobal = ref([]);
-let Global = ref([]);
 let Totales_por_Grupos = ref([]);
-let Alumnos = ref([]);
-let _l = ref([]);
+let ObjetoGlobal = ref([]);
 let attendance = ref([]);
-const router = useRouter();
-let TotalAlumnos_Orquesta = ref(0);
+let Alumnos = ref([]);
+let Global = ref([]);
+let _l = ref([]);
 let model = ref("Semanal");
 let loading = ref(false);
+
 //crear una variable global para usarlo en el dashboar
 provide(/* key */ "Global", /* value */ Global.value);
 
-let detalle = (id) => {
-  return router.push(`/Detalles_Alumnos/${id}`);
-};
 const props = defineProps({
   text: String,
 });
-
 let generos = ref({
   series: [],
   chartOptions: {
@@ -195,7 +152,7 @@ let generos = ref({
       width: 580,
       type: "pie",
     },
-    labels: ["Masculinos", "Femeninos", "Vacio", "undefined"],
+    labels: [],
     responsive: [
       {
         breakpoint: 280,
@@ -235,12 +192,12 @@ const pie = ref({
   },
 });
 
-const UltimaSemana = async () => {
+const UnaSemana = async () => {
   let Hoy = await attendance.value
     .filter(({ date, attended }) => {
-      const attendenceDate = new Date(date);
-      const threeWeeksAgo = new Date();
-      threeWeeksAgo.setDate(threeWeeksAgo.getDate() - 7);
+      const attendenceDate = new Date(date); //Valor de la fecha registrada
+      const threeWeeksAgo = new Date(); // valor de la fecha actual
+      threeWeeksAgo.setDate(threeWeeksAgo.getDate() - 7); //resta a la fecha acual 7 dias
       return attended && attendenceDate > threeWeeksAgo;
     })
     .reduce((attendees, { name }) => {
@@ -254,13 +211,11 @@ const UltimaSemana = async () => {
 
   const SeleccionaPrimerosCinco = ObjetoGlobal.value.slice(0, 5);
   const SeleccionaUltimosCinco = ObjetoGlobal.value.slice(-5);
-  const PrimerosCinco = SeleccionaPrimerosCinco.map((entry) => entry);
-  const UltimosCinco = SeleccionaUltimosCinco.map((entry) => entry);
-  ObjetoGlobal.value.PrimerosCinco = PrimerosCinco;
-  ObjetoGlobal.value.UltimosCinco = UltimosCinco;
+  ObjetoGlobal.value.PrimerosCinco = SeleccionaPrimerosCinco.map((entry) => entry);
+  ObjetoGlobal.value.UltimosCinco = SeleccionaUltimosCinco.map((entry) => entry);
   return ObjetoGlobal.value;
 };
-const TresSemanas = () => {
+const CuatroSemanas = () => {
   let Semanas = attendance.value
     .filter(({ date, attended }) => {
       const attendenceDate = new Date(date);
@@ -276,12 +231,8 @@ const TresSemanas = () => {
   let SemanasArray = ref([]);
   SemanasArray.value = Object.entries(Semanas);
   ObjetoGlobal.value = SemanasArray.value.sort((a, b) => b[1] - a[1]);
-  const SeleccionaPrimerosCinco = ObjetoGlobal.value.slice(0, 5);
-  const SeleccionaUltimosCinco = ObjetoGlobal.value.slice(-5);
-  const PrimerosCinco = SeleccionaPrimerosCinco.map((entry) => entry);
-  const UltimosCinco = SeleccionaUltimosCinco.map((entry) => entry);
-  ObjetoGlobal.value.PrimerosCinco = PrimerosCinco;
-  ObjetoGlobal.value.UltimosCinco = UltimosCinco;
+  ObjetoGlobal.value.PrimerosCinco = ObjetoGlobal.value.slice(0, 5).map((entry) => entry);
+  ObjetoGlobal.value.UltimosCinco = ObjetoGlobal.value.slice(-5).map((entry) => entry);
   return ObjetoGlobal.value;
 };
 
@@ -300,25 +251,21 @@ const TresMeses = () => {
   let MesArray = ref([]);
   MesArray.value = Object.entries(meses);
   ObjetoGlobal.value = MesArray.value.sort((a, b) => b[1] - a[1]);
-  const SeleccionaPrimerosCinco = ObjetoGlobal.value.slice(0, 5);
-  const SeleccionaUltimosCinco = ObjetoGlobal.value.slice(-5);
-  const PrimerosCinco = SeleccionaPrimerosCinco.map((entry) => entry);
-  const UltimosCinco = SeleccionaUltimosCinco.map((entry) => entry);
-  ObjetoGlobal.value.PrimerosCinco = PrimerosCinco;
-  ObjetoGlobal.value.UltimosCinco = UltimosCinco;
+  ObjetoGlobal.value.PrimerosCinco = ObjetoGlobal.value.slice(0, 5).map((entry) => entry);
+  ObjetoGlobal.value.UltimosCinco = ObjetoGlobal.value.slice(-5).map((entry) => entry);
 
   return ObjetoGlobal.value;
 };
 
 //Esta funcion intenta almacenar en un objeto a los alumnos fecha y asistencia
 onMounted(async () => {
-  //Obtener el total de alumnos segun el grupo
+  //Obtener la cantidad de alumnos de cada genero
   let genre = await classificationByGenre();
 
   //Obtener listados de Alumnos
   Alumnos.value = await Mostrar_Listado().then((elem) => elem.map((e) => e.data()));
 
-  //Obtener el total de alumnos segun el grupo
+  //Obtener la cantidad de alumnos de cada grupo
   Totales_por_Grupos.value = Alumnos.value.reduce((acc, curr) => {
     curr.grupo.forEach((g) => {
       acc[g] = (acc[g] || 0) + 1;
@@ -326,27 +273,24 @@ onMounted(async () => {
     return acc;
   }, {});
 
-  console.log("Generar_Asistencias_Global", await Generar_Asistencias_Global());
-
-  //Graficar los valores de Femeninos y Masculinos
-  generos.value.series.push(
-    genre.Femenino,
-    genre.Masculino,
-    genre.Vacio,
-    genre.undefined
+  //Graficar y Etiquetar segun el genero
+  let label = Object.entries(genre);
+  label = label.map(
+    (e) => generos.value.chartOptions.labels.push(e[0]) && generos.value.series.push(e[1])
   );
 
-  //Obtetner listados de instrumentos
+  //Obtetner la cantidad de alumnos para cada instrumento
   let instrumentos = Alumnos.value
-    .map((e) => e.instrumento)
-    .sort((a, b) => a - b)
-    .reduce((prev, cur) => ((prev[cur] = prev[cur] + 1 || 1), prev), {});
+    .map((e) => e.instrumento) //mapear todos los instrumentos
+    .sort((a, b) => a - b) //ordenarlos alfabeticamente
+    .reduce((prev, cur) => ((prev[cur] = prev[cur] + 1 || 1), prev), {}); //contar todos los que se repiten
 
-  //Iterar los instrumentos para obtener la grafica por instrumentos
-  for (let clave in instrumentos) {
-    pie.value.series.push(instrumentos[clave]);
-    pie.value.chartOptions.labels.push(clave);
-  }
+  //Graficar y Etiquetar los instrumentos
+  let instrumts = Object.entries(instrumentos);
+  instrumts = instrumts.map(
+    (e) => pie.value.chartOptions.labels.push(e[0]) && pie.value.series.push(e[1])
+  );
+
   //Obtener listados de Asistencias
   _l.value = await Mostrar_todo().then((elem) => elem.map((e) => e.data()));
 
@@ -362,18 +306,18 @@ onMounted(async () => {
 //crear observador watch efectt
 watchEffect(async () => {
   switch (model.value) {
-    case "hoy":
-      UltimaSemana();
+    case "Semanal":
+      UnaSemana();
       break;
-    case "semanal":
-      TresSemanas();
+    case "Mensual":
+      CuatroSemanas();
       break;
-    case "mensual":
+    case "Semestral":
       TresMeses();
       break;
 
     default:
-      UltimaSemana();
+      UnaSemana();
       break;
   }
 });
