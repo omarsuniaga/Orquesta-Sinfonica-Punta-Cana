@@ -1,6 +1,9 @@
 <template>
   <div class="q-pa-md">
-    <q-toolbar class="justify-center flex row" style="min-width: 375px; width: 100%">
+    <q-toolbar
+      class="justify-center flex row"
+      style="min-width: 375px; width: 100%"
+    >
       <q-btn-toggle
         v-model="model"
         rounded
@@ -113,6 +116,9 @@
     <q-card class="q-ma-md q-pa-md" bordered>
       <HistorialAsistencias />
     </q-card>
+    <div class="row justify-center">
+      <q-btn flat @click="Salir()" label="Cerrar Sesión" color="warning" />
+    </div>
   </div>
 </template>
 
@@ -123,12 +129,13 @@ import {
   Mostrar_Listado,
   classificationByGenre,
   Generar_Asistencias_Global,
+  Salir,
+  auth,
 } from "../firebase";
 
 import { useRouter } from "vue-router";
 import VueApexCharts from "vue3-apexcharts";
 import HistorialAsistencias from "src/components/Historial-Asistencias.vue";
-
 //Variables
 let Totales_por_Grupos = ref([]);
 let ObjetoGlobal = ref([]);
@@ -138,7 +145,7 @@ let Global = ref([]);
 let _l = ref([]);
 let model = ref("Semanal");
 let loading = ref(false);
-
+console.log(auth.authStateSubscription.auth.currentUser);
 //crear una variable global para usarlo en el dashboar
 provide(/* key */ "Global", /* value */ Global.value);
 
@@ -211,8 +218,12 @@ const UnaSemana = async () => {
 
   const SeleccionaPrimerosCinco = ObjetoGlobal.value.slice(0, 5);
   const SeleccionaUltimosCinco = ObjetoGlobal.value.slice(-5);
-  ObjetoGlobal.value.PrimerosCinco = SeleccionaPrimerosCinco.map((entry) => entry);
-  ObjetoGlobal.value.UltimosCinco = SeleccionaUltimosCinco.map((entry) => entry);
+  ObjetoGlobal.value.PrimerosCinco = SeleccionaPrimerosCinco.map(
+    (entry) => entry
+  );
+  ObjetoGlobal.value.UltimosCinco = SeleccionaUltimosCinco.map(
+    (entry) => entry
+  );
   return ObjetoGlobal.value;
 };
 const CuatroSemanas = () => {
@@ -231,8 +242,12 @@ const CuatroSemanas = () => {
   let SemanasArray = ref([]);
   SemanasArray.value = Object.entries(Semanas);
   ObjetoGlobal.value = SemanasArray.value.sort((a, b) => b[1] - a[1]);
-  ObjetoGlobal.value.PrimerosCinco = ObjetoGlobal.value.slice(0, 5).map((entry) => entry);
-  ObjetoGlobal.value.UltimosCinco = ObjetoGlobal.value.slice(-5).map((entry) => entry);
+  ObjetoGlobal.value.PrimerosCinco = ObjetoGlobal.value
+    .slice(0, 5)
+    .map((entry) => entry);
+  ObjetoGlobal.value.UltimosCinco = ObjetoGlobal.value
+    .slice(-5)
+    .map((entry) => entry);
   return ObjetoGlobal.value;
 };
 
@@ -251,8 +266,12 @@ const TresMeses = () => {
   let MesArray = ref([]);
   MesArray.value = Object.entries(meses);
   ObjetoGlobal.value = MesArray.value.sort((a, b) => b[1] - a[1]);
-  ObjetoGlobal.value.PrimerosCinco = ObjetoGlobal.value.slice(0, 5).map((entry) => entry);
-  ObjetoGlobal.value.UltimosCinco = ObjetoGlobal.value.slice(-5).map((entry) => entry);
+  ObjetoGlobal.value.PrimerosCinco = ObjetoGlobal.value
+    .slice(0, 5)
+    .map((entry) => entry);
+  ObjetoGlobal.value.UltimosCinco = ObjetoGlobal.value
+    .slice(-5)
+    .map((entry) => entry);
 
   return ObjetoGlobal.value;
 };
@@ -261,9 +280,17 @@ const TresMeses = () => {
 onMounted(async () => {
   //Obtener la cantidad de alumnos de cada genero
   let genre = await classificationByGenre();
-
+  let { F, f, Femenino } = genre;
+  let { Masculino, M, masculino } = genre;
+  Femenino = F + f + Femenino;
+  Masculino = Masculino + M + masculino;
+  let { Vacio } = genre;
+  console.log(genre);
+  genre = { Femenino, Masculino, Vacio };
   //Obtener listados de Alumnos
-  Alumnos.value = await Mostrar_Listado().then((elem) => elem.map((e) => e.data()));
+  Alumnos.value = await Mostrar_Listado().then((elem) =>
+    elem.map((e) => e.data())
+  );
 
   //Obtener la cantidad de alumnos de cada grupo
   Totales_por_Grupos.value = Alumnos.value.reduce((acc, curr) => {
@@ -276,7 +303,9 @@ onMounted(async () => {
   //Graficar y Etiquetar segun el genero
   let label = Object.entries(genre);
   label = label.map(
-    (e) => generos.value.chartOptions.labels.push(e[0]) && generos.value.series.push(e[1])
+    (e) =>
+      generos.value.chartOptions.labels.push(e[0]) &&
+      generos.value.series.push(e[1])
   );
 
   //Obtetner la cantidad de alumnos para cada instrumento
@@ -288,7 +317,8 @@ onMounted(async () => {
   //Graficar y Etiquetar los instrumentos
   let instrumts = Object.entries(instrumentos);
   instrumts = instrumts.map(
-    (e) => pie.value.chartOptions.labels.push(e[0]) && pie.value.series.push(e[1])
+    (e) =>
+      pie.value.chartOptions.labels.push(e[0]) && pie.value.series.push(e[1])
   );
 
   //Obtener listados de Asistencias

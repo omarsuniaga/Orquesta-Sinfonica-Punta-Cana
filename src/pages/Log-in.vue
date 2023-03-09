@@ -1,13 +1,14 @@
 <template>
-  <div class="q-ma-md">
-    <h6 class="text-white">Bienvenidos a OSIJPC</h6>
-    <div class="min-width-xl">
+  <div class="q-ma-xl">
+    <div class="container">
+      <h6 class="text-white">Bienvenidos a OSIJPC</h6>
+      <img src="../assets/funeyca.png" alt="" />
       <q-form @submit.prevent="onSubmit" @reset="onReset" class="q-pa-md">
         <q-input
           bg-color="white"
-          v-model="username"
+          v-model="email"
           type="text"
-          label="Username"
+          label="email"
           lazy-rules
           outlined
           :rules="[(val) => (val && val.length > 0) || 'Escribe tu correo']"
@@ -22,20 +23,19 @@
           lazy-rules
           :rules="[
             (val) => (val !== null && val !== '') || 'Datos Incorrectos',
-            (val) => validar(val) || 'Caracteres Invalidos',
           ]"
         />
 
-        <div class="q-pa-md column q-gutter-sm">
+        <div class="q-gutter-md q-pa-md column">
           <q-btn label="Entrar" type="submit" color="primary" />
         </div>
-        <div class="inline-block">
-          <!-- <q-link to="/RecuperarClave" class="text-white"
+        <!-- <div class="inline-block"> -->
+        <!-- <q-link to="/RecuperarClave" class="text-white"
             >Olvidaste tu contraseña?</q-link
           > -->
-          <q-space />
-          <!-- <q-link to="/" class="text-white">Politica?</q-link> -->
-        </div>
+        <!-- <q-link to="/" class="text-white">Politica?</q-link> -->
+        <!-- </div> -->
+        <q-space />
       </q-form>
     </div>
   </div>
@@ -43,40 +43,72 @@
 
 <script setup>
 import { useRouter } from "vue-router";
-import { ref } from "vue";
-import { auth, __SESION } from "../firebase";
+import { ref, computed } from "vue";
 import { signInWithEmailAndPassword } from "firebase/auth";
+import { SolicitarCredenciales, auth } from "../firebase";
 import { useQuasar } from "quasar";
+import { useNivelStore } from "../stores/Niveles";
+
+const store = useNivelStore();
+
 const router = useRouter();
-const username = ref(null);
+const email = ref(null);
 const pass = ref(null);
 const $q = useQuasar();
-console.log(__SESION);
+// const { nivel } = storeToRefs(store);
 const onSubmit = async () => {
   try {
-    await signInWithEmailAndPassword(auth, username.value, pass.value);
-    return await router.replace("/home");
+    let res = await signInWithEmailAndPassword(auth, email.value, pass.value);
+    if (res._tokenResponse.registered) {
+      let nivel = await SolicitarCredenciales(email.value);
+      console.log("🚀 ~ file: Log-in.vue:64 ~ onSubmit ~ nivel:", nivel);
+
+      store.setNivel(email);
+      return router.push("/home");
+    }
   } catch (error) {
-    $q.notify({
-      message: "Credenciales invalidas",
-      color: "red-4",
-      textColor: "white",
-      icon: "cloud_done",
-    });
+    error.code === "auth/user-not-found"
+      ? $q.notify({
+          message: "Usuario no encontrado",
+          color: "red-4",
+          textColor: "white",
+          icon: "cloud_done",
+        })
+      : error.code === "auth/wrong-password"
+      ? $q.notify({
+          message: "Contraseña incorrecta",
+          color: "red-4",
+          textColor: "white",
+          icon: "cloud_done",
+        })
+      : $q.notify({
+          message: "Credenciales invalidas",
+          color: "red-4",
+          textColor: "white",
+          icon: "cloud_done",
+        });
   }
-};
-const validar = (val) => {
-  var myregex = /^(?=.*\d)(?=.*[a-z])(?=.*[A-Z]).{8,}$/;
-  // if (myregex.test(val)) {
-  //   return true;
-  // } else {
-  //   return false;
-  // }
-  return true;
 };
 
 const onReset = () => {
-  username.value = null;
+  email.value = null;
   pass.value = null;
 };
 </script>
+<style>
+.container {
+  display: inline;
+}
+.container img {
+  width: 100px;
+  height: 100px;
+  margin: 0 auto;
+  display: block;
+}
+.container h6 {
+  text-align: center;
+}
+q-btn {
+  width: 100%;
+}
+</style>

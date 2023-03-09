@@ -2,8 +2,19 @@
   <div class="q-pa-sm">
     <!-- Formulario del alumno -->
     <q-form @submit="onSubmit" @reset="onReset" class="q-gutter-md">
-      <q-stepper v-model="step" ref="stepper" alternative-labels color="primary" animated>
-        <q-step :name="1" title="Datos del Alumno" icon="settings" :done="step > 1">
+      <q-stepper
+        v-model="step"
+        ref="stepper"
+        alternative-labels
+        color="primary"
+        animated
+      >
+        <q-step
+          :name="1"
+          title="Datos del Alumno"
+          icon="settings"
+          :done="step > 1"
+        >
           <q-input
             class="col-5 q-mb-md"
             filled
@@ -236,14 +247,13 @@
         </template>
       </q-stepper>
     </q-form>
-    <q-btn flat @click="Salir()" label="Salir" color="warning" />
   </div>
 </template>
 
 <script setup>
 import { ref } from "vue";
 import { useQuasar } from "quasar";
-import { Crear_Alumnos, Salir } from "../firebase";
+import { Crear_Alumnos } from "../firebase";
 import moment from "moment";
 const step = ref(1);
 

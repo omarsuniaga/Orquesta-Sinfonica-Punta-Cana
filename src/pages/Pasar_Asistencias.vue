@@ -229,7 +229,7 @@
 </template>
 
 <script setup>
-import { useCounterStore } from "src/stores/example-store";
+import { useCounterStore } from "src/stores/Niveles";
 import {
   Asistencia_de_Hoy,
   Buscar_Por_Fecha,

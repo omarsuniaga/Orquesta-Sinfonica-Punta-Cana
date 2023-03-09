@@ -3,12 +3,23 @@ import CarruselImagenes from "src/components/Carrusel-imagenes.vue";
 import MenuSecundario from "src/components/Menu-Secundario.vue";
 import ListadoHorizontal from "src/components/Listado-Horizontal.vue";
 import { onMounted, ref } from "vue";
-import { getAlumnos, classificationByGroup } from "src/firebase";
+import { getAlumnos, classificationByGroup, __NIVEL, auth } from "src/firebase";
+import { useNivelStore } from "../stores/Niveles";
+const store = useNivelStore();
 const Alumnos = ref([]);
 let group = ref([]);
-
+let id = ref();
 let loading = ref(false);
+let nivel = ref("");
+
 onMounted(async () => {
+  auth.onAuthStateChanged(async (user) => {
+    if (user) {
+      nivel.value = await store.setNivel(user.email);
+      nivel.value = parseInt(nivel.value);
+    }
+  });
+
   group.value = await (await classificationByGroup()).reverse();
   Alumnos.value = await getAlumnos();
   if (Alumnos.value !== 0) {
@@ -18,7 +29,8 @@ onMounted(async () => {
 </script>
 
 <template>
-  <div v-if="!loading" class="loading-container">
+  <div v-if="!loading" class="loading-container text-red-1">
+    {{ nivel }}
     <div class="loading"></div>
   </div>
   <div v-else class="q-py-sm">

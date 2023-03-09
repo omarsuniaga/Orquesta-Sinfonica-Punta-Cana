@@ -41,7 +41,8 @@ export const firebaseConfig = {
 };
 
 const app = initializeApp(firebaseConfig);
-const auth = getAuth(app);
+export const auth = getAuth(app);
+auth.languageCode = "es";
 const db = getFirestore(app);
 const storage = getStorage(app);
 const Fecha = moment().format("YYYY/MM/DD");
@@ -49,16 +50,10 @@ const ALUMNOS = [];
 let Lista_Ausentes = [];
 let Lista_Presentes = [];
 let __SESION = false;
-export {
-  auth,
-  db,
-  storage,
-  Fecha,
-  Lista_Presentes,
-  Lista_Ausentes,
-  ALUMNOS,
-  __SESION,
-};
+let __NIVEL;
+let __VALIDACION = false;
+let __ID;
+
 export const Iniciar_Automaticamente = () => {
   return new Promise((resolve, reject) => {
     onAuthStateChanged(auth, (user) => {
@@ -317,7 +312,7 @@ export const diasTrabajados = async () => {
 };
 
 /*
- ****** BUSCAR ALUMNO ******
+ ****** BUSCAR ALUMNO en FIREBASE******
  */
 export const Buscar_Alumno = async (id) => {
   try {
@@ -414,18 +409,36 @@ export const Eliminar_User_Sesion = async (user) => {
 /*
  ****** LOGIN Y LOGOUT *******
  */
+
 export const Entrar = async (email, password) => {
   try {
-    return await signInWithEmailAndPassword(auth, email, password).then((e) =>
-      console.log("Usuario Logeado", e.user)
-    );
+    let res = await signInWithEmailAndPassword(auth, email, password);
+    return res;
   } catch (error) {
     console.log(error);
   }
 };
 export const Salir = async () => {
   await signOut(auth);
+  __SESION = false;
+  window.location.replace("/");
   return console.log("Usuario Deslogeado");
+};
+export const SolicitarCredenciales = async (email) => {
+  try {
+    let RefColeccion = collection(db, "USUARIOS");
+    let q = query(RefColeccion, where("email", "==", email));
+    let querySnapshot = await getDocs(q);
+    if (querySnapshot.empty) {
+      return null;
+    } else {
+      let { Nivel } = querySnapshot.docs[0].data();
+      console.log(Nivel);
+      return Nivel;
+    }
+  } catch (error) {
+    console.log(error);
+  }
 };
 setPersistence(auth, browserSessionPersistence)
   .then(() => {
@@ -623,43 +636,8 @@ export const Buscar_Asistencias_mes = async (mes) => {
         : null
     );
   }
-  //Filtrar todos los registros donde el mes sea igual al seleccionado
-  // _l.filter((elem) =>
-  //   !!elem.Fecha
-  //     ? elem.Fecha.split("-")[1] === mes.toString()
-  //       ? elem.Data.presentes.filter((el) =>
-  //           !!el
-  //             ? Buscar_Alumno(el).then((e) =>
-  //                 !!e.nombre && !!e.apellido
-  //                   ? (NOMBRE = e.nombre + " " + e.apellido)
-  //                   : null
-  //               ) && PRESENTES++
-  //             : null
-  //         ) &&
-  //         elem.Data.ausentes.filter((el) =>
-  //           !!el
-  //             ? Buscar_Alumno(el).then((e) => {
-  //                 !!e.nombre && !!e.apellido
-  //                   ? (NOMBRE = e.nombre + " " + e.apellido)
-  //                   : null;
-  //               }) && AUSENTES++
-  //             : null
-  //         ) &&
-  //         RESULTADO.push({
-  //           nombre: NOMBRE,
-  //           inasistencias: AUSENTES,
-  //           asistencias: PRESENTES,
-  //           mes: mes,
-  //         }) &&
-  //         ((NOMBRE = ""), (PRESENTES = 0), (AUSENTES = 0))
-  //       : null
-  //     : null
-  // );
-
-  // return console.log("Resultados", RESULTADO);
   return Listado;
 };
-
 //Obtener asistencias
 export const ObtenerAsistencias = async (id) => {
   let objeto = {};
@@ -687,7 +665,6 @@ export const Contar_Ausentes = async (mes = "09") => {
   let Listado_Fechas = await getDocs(Ref);
   return Listado_Fechas;
 };
-
 // Contar alumnos de la orquesta
 export const Total_Orquesta = async () => {
   let Alumnos = await Mostrar_Listado().then((elem) =>
@@ -716,7 +693,6 @@ export const Total_Solfeo = async () => {
   ).sort((a, b) => a.nombre.localeCompare(b.nombre));
   return Alumnos;
 };
-
 export const Grupo_Porcentaje_Fechas = async (grupo) => {
   let array = [];
   let _l = [];
@@ -767,3 +743,17 @@ export const PROCESOS = async (id) => {
   }
   return null;
 };
+
+export {
+  db,
+  storage,
+  Fecha,
+  Lista_Presentes,
+  Lista_Ausentes,
+  ALUMNOS,
+  __SESION,
+  __NIVEL,
+  __ID,
+  __VALIDACION,
+};
+Iniciar_Automaticamente();

@@ -34,31 +34,41 @@
 <script setup>
 import { ref, watchEffect } from "vue";
 import { useRouter } from "vue-router";
+import { auth } from "../firebase";
 const $route = useRouter();
 let model = ref($route.currentRoute._rawValue);
-const Botones = ref([
+let Botones = ref([
   {
     icon: "home",
     to: "/Home",
     value: "home",
+    auth: auth.currentUser.displayName >= 0 ? true : false,
   },
   {
     icon: "rule",
     to: "/Nuevo-Alumno",
     value: "Nuevo-Alumno",
+    auth:
+      auth.currentUser.displayName === 0
+        ? true
+        : auth.currentUser.displayName === 1
+        ? true
+        : false,
   },
   {
     icon: "search",
     to: "/Buscar",
     value: "buscar",
+    auth: auth.currentUser.displayName >= 0,
   },
   {
     icon: "dashboard",
     to: "/Dashboard",
     value: "dashboard",
+    auth: auth.currentUser.displayName >= 0,
   },
 ]);
-
+Botones = Botones.value.filter((elem) => elem.auth === true);
 watchEffect(() => {
   model.value ??= "home";
 });

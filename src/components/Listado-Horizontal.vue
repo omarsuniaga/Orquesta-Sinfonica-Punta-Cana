@@ -14,27 +14,31 @@ onMounted(async () => {
 <template>
   <h5 class="text-white q-mx-sm">{{ grupo }}</h5>
   <div class="container">
-    <div id="alumnos-container " v-for="item in listado" :key="item.id">
-      <button id="alumnos">
-        <div class="profile">
-          <q-img
-            :src="(item.avatar ||= url)"
-            @click="$router.push('/Detalles_Alumnos/' + item.id)"
-          >
-          </q-img>
+    <q-scroll-area style="height: 20vw; width: 100vw">
+      <div class="row no-wrap">
+        <div v-for="(item, index) of listado" :key="index">
+          <button id="alumnos">
+            <div class="profile">
+              <q-img
+                :src="(item.avatar ||= url)"
+                @click="$router.push('/Detalles_Alumnos/' + item.id)"
+              >
+              </q-img>
+            </div>
+            <div class="title">
+              <span>{{ item.nombre }}</span>
+            </div>
+          </button>
         </div>
-        <div class="title">
-          <span>{{ item.nombre }}</span>
-        </div>
-      </button>
-    </div>
+      </div>
+    </q-scroll-area>
   </div>
 </template>
 <style>
 .container {
+  display: flex;
   margin: auto;
   width: 100vw;
-  display: flex;
   overflow-x: scroll;
 }
 #alumnos-container {

@@ -12,6 +12,12 @@ import {
 import { Dialog, useQuasar } from "quasar";
 import { storage } from "../firebase";
 import { ref, uploadBytesResumable, getDownloadURL } from "firebase/storage";
+import { useNivelStore } from "../stores/Niveles";
+const store = useNivelStore();
+let nivel = computed(() => store.setNivel);
+console.log("🚀 ~ file: Detalles_Alumnos.vue:19 ~ store:", nivel.value);
+//let nivel = reactive(store.nivel);
+
 /** @type {any} */
 const metadata = {
   contentType: "image/jpeg",
@@ -19,12 +25,12 @@ const metadata = {
 
 const $q = reactive(useQuasar());
 const id = useRouter().currentRoute._rawValue.params.id;
-const alumno = reactive({});
-let editable = reactive(false);
-let imagen = reactive("");
 let sexo = reactive(["Masculino", "Femenino"]);
 let options = reactive(["Orquesta", "Coro", "Iniciacion 2", "Iniciacion 1"]);
-let loading = reactive(null);
+const alumno = reactive({});
+let editable = reactive(false);
+
+var loading = reactive(null);
 let file = reactive(null);
 const archivo = (e) => {
   file = e.target.files[0];
@@ -72,13 +78,16 @@ const archivo = (e) => {
     }
   );
 };
-function CalcularEdad() {
+function CalcularEdad(fecha) {
   //DD/MM/YYYY
   const today = new Date();
-  const birthDate = new Date(alumno.nac);
+  const birthDate = new Date(fecha);
   let age = today.getFullYear() - birthDate.getFullYear();
   const monthDiff = today.getMonth() - birthDate.getMonth();
-  if (monthDiff < 0 || (monthDiff === 0 && today.getDate() < birthDate.getDate())) {
+  if (
+    monthDiff < 0 ||
+    (monthDiff === 0 && today.getDate() < birthDate.getDate())
+  ) {
     age--;
   }
   return age;
@@ -93,7 +102,7 @@ function calcularTiempoInscripcion() {
 }
 
 onMounted(async () => {
-  let res = await mostrar_ficha(id);
+  mostrar_ficha(id);
 });
 const mostrar_ficha = (id) => {
   Buscar_Alumno(id).then((elem) => {
@@ -103,13 +112,14 @@ const mostrar_ficha = (id) => {
     alumno.cedula = elem.cedula || "Vacio";
     alumno.avatar = elem.avatar || imagen;
     alumno.nac = elem.nac || "Vacio";
-    alumno.edad = elem.edad || elem.nac !== "Vacio" ? CalcularEdad() : "Vacio";
+    alumno.edad = CalcularEdad(elem.nac);
     alumno.sexo = elem.sexo || "Vacio";
     alumno.email = elem.email || "Vacio";
     alumno.tlf = elem.tlf || "Vacio";
     alumno.emergencia = elem.emergencia || "Vacio";
     alumno.colegio_trabajo = elem.colegio_trabajo || "Vacio";
-    alumno.direccion_colegio_trabajo = elem.direccion_colegio_trabajo || "Vacio";
+    alumno.direccion_colegio_trabajo =
+      elem.direccion_colegio_trabajo || "Vacio";
     alumno.horario_colegio_trabajo = elem.horario_colegio_trabajo || "Vacio";
     alumno.registro = elem.registro;
     alumno.fecInscripcion = elem.fecInscripcion || "Vacio";
@@ -168,7 +178,7 @@ const eliminar = async () => {
 <template>
   <div class="q-ma-sm flex justify-center bg-white" style="min-width: 375px">
     <q-list bordered separator>
-      <div class="flex q-ma-sm justify-end wrap">
+      <div v-if="nivel === 0" class="flex q-ma-sm justify-end wrap">
         <q-btn
           class="q-mx-xs"
           color="primary"
@@ -191,6 +201,7 @@ const eliminar = async () => {
           @click="eliminar()"
         />
       </div>
+      <div v-else></div>
       <q-item-label header class="q-m-sm">
         <q-card class="flex row">
           <q-avatar class="avatar">
@@ -199,7 +210,10 @@ const eliminar = async () => {
 
           <q-card-section>
             <q-card-section class="">
-              <span class="text-h5 text-weight-bolder q-mx-md" style="width: 100%">
+              <span
+                class="text-h5 text-weight-bolder q-mx-md"
+                style="width: 100%"
+              >
                 {{ alumno.nombre }} {{ alumno.apellido }}
               </span>
             </q-card-section>
@@ -222,9 +236,14 @@ const eliminar = async () => {
       <q-separator />
       <LineaTiempo :editable="editable" />
       <q-separator />
-      <div class="row q-mx-lg bg-white">
+      <div v-if="nivel === 0" class="row q-mx-lg bg-white">
         <div class="col-5">
-          <q-input v-model="alumno.edad" :disable="editable" label="Edad" stack-label />
+          <q-input
+            v-model="alumno.edad"
+            :disable="editable"
+            label="Edad"
+            stack-label
+          />
           <q-select
             v-model="alumno.sexo"
             label="sexo"
@@ -265,7 +284,12 @@ const eliminar = async () => {
         </div>
 
         <div class="col-5 offset-md-1">
-          <q-input v-model="alumno.email" :disable="editable" label="Email" stack-label />
+          <q-input
+            v-model="alumno.email"
+            :disable="editable"
+            label="Email"
+            stack-label
+          />
           <q-input
             v-model="alumno.emergencia"
             :disable="editable"
@@ -308,8 +332,7 @@ const eliminar = async () => {
       </div>
     </q-list>
     <q-separator />
-    <span>Padres</span>
-    <q-list bordered separator style="width: 100%">
+    <q-list v-if="nivel === 0" bordered separator style="width: 100%">
       <div class="row flex q-ma-lg">
         <div class="col-5">
           <q-input
@@ -360,8 +383,8 @@ const eliminar = async () => {
         stack-label
       /> -->
     </q-list>
-    <span>Datos Adicionales</span>
-    <q-list bordered separator style="width: 100%">
+    <q-separator />
+    <q-list v-if="nivel === 0" bordered separator style="width: 100%">
       <div class="row q-col-gutter-x-md flex justify-between q-ma-sm">
         <div class="col-auto q-ma-sm row no-wrap">
           <q-select
@@ -403,7 +426,7 @@ const eliminar = async () => {
     </q-list>
     <div>
       <!-- @click="$router.push('/Detalles_Alumnos/' + item.id)" -->
-      <q-btn to="/Calificacion_Alumno/">run</q-btn>
+      <q-btn to="/Calificacion_Alumno/">Calificacion</q-btn>
     </div>
   </div>
 </template>
