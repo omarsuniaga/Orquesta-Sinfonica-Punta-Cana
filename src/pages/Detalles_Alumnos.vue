@@ -1,6 +1,6 @@
 <script setup>
 import { useRouter } from "vue-router";
-import { reactive, onMounted } from "vue";
+import { reactive, onMounted, computed } from "vue";
 import ArbolHabilidadesVue from "src/components/Arbol-Habilidades.vue";
 import LineaTiempo from "src/components/Linea-Tiempo.vue";
 import {
@@ -12,11 +12,11 @@ import {
 import { Dialog, useQuasar } from "quasar";
 import { storage } from "../firebase";
 import { ref, uploadBytesResumable, getDownloadURL } from "firebase/storage";
-import { useNivelStore } from "../stores/Niveles";
-const store = useNivelStore();
-let nivel = computed(() => store.setNivel);
-console.log("🚀 ~ file: Detalles_Alumnos.vue:19 ~ store:", nivel.value);
-//let nivel = reactive(store.nivel);
+// import { useNivelStore } from "../stores/Niveles";
+// const store = useNivelStore();
+// const nivel = computed(() => store.nivel);
+// console.log("🚀 ~ file: Detalles_Alumnos.vue:19 ~ store:", nivel.value);
+let nivel = reactive(0);
 
 /** @type {any} */
 const metadata = {
