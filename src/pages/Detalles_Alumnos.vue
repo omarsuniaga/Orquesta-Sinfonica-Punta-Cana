@@ -8,6 +8,7 @@ import {
   Actualizar_Alumno,
   Eliminar_Alumno,
   Mover_Alumnos,
+  auth,
 } from "../firebase";
 import { Dialog, useQuasar } from "quasar";
 import { storage } from "../firebase";
@@ -16,7 +17,8 @@ import { ref, uploadBytesResumable, getDownloadURL } from "firebase/storage";
 // const store = useNivelStore();
 // const nivel = computed(() => store.nivel);
 // console.log("🚀 ~ file: Detalles_Alumnos.vue:19 ~ store:", nivel.value);
-let nivel = reactive(0);
+
+let nivel = reactive(auth.currentUser.phoneNumber);
 
 /** @type {any} */
 const metadata = {
@@ -29,9 +31,10 @@ let sexo = reactive(["Masculino", "Femenino"]);
 let options = reactive(["Orquesta", "Coro", "Iniciacion 2", "Iniciacion 1"]);
 const alumno = reactive({});
 let editable = reactive(false);
-
+let progress = reactive(0);
 var loading = reactive(null);
 let file = reactive(null);
+
 const archivo = (e) => {
   file = e.target.files[0];
   const storageRef = ref(storage, "Avatars/" + file.name);
@@ -40,7 +43,7 @@ const archivo = (e) => {
     "state_changed",
     (snapshot) => {
       loading = (snapshot.bytesTransferred / snapshot.totalBytes) * 100;
-      console.log("Proceso de la carga " + loading + "% ");
+      progress = loading;
       switch (snapshot.state) {
         case "paused":
           console.log("Carga pausada");
@@ -78,28 +81,63 @@ const archivo = (e) => {
     }
   );
 };
-function CalcularEdad(fecha) {
-  //DD/MM/YYYY
-  const today = new Date();
-  const birthDate = new Date(fecha);
-  let age = today.getFullYear() - birthDate.getFullYear();
-  const monthDiff = today.getMonth() - birthDate.getMonth();
-  if (
-    monthDiff < 0 ||
-    (monthDiff === 0 && today.getDate() < birthDate.getDate())
-  ) {
-    age--;
+const calcularEdad = (fechaNacimiento) => {
+  const hoy = new Date();
+  const partesFecha = fechaNacimiento.split("-"); // separa la fecha en partes
+  const fechaNac = new Date(partesFecha[2], partesFecha[1] - 1, partesFecha[0]); // crea un objeto Date a partir de las partes
+  let edad = hoy.getFullYear() - fechaNac.getFullYear();
+  const mes = hoy.getMonth() - fechaNac.getMonth();
+
+  if (mes < 0 || (mes === 0 && hoy.getDate() < fechaNac.getDate())) {
+    edad--;
   }
-  return age;
+
+  return edad;
+};
+
+function calcularTiempoTranscurrido(desdeFecha) {
+  const fechaInicial = Date.parse(desdeFecha);
+  const fechaActual = new Date();
+  const diferenciaEnMilisegundos = fechaActual - fechaInicial;
+  const segundos = Math.floor(diferenciaEnMilisegundos / 1000);
+  const minutos = Math.floor(segundos / 60);
+  const horas = Math.floor(minutos / 60);
+  const dias = Math.floor(horas / 24);
+  const semanas = Math.floor(dias / 7);
+  const meses = Math.floor(semanas / 4);
+  const anios = Math.floor(meses / 12);
+
+  console.log(
+    `Han pasado ${anios} años, ${meses} meses, ${semanas} semanas, ${dias} días`
+  );
+  return {
+    dias,
+    semanas,
+    meses,
+    anios,
+  };
 }
-function calcularTiempoInscripcion() {
-  const date = new Date(alumno.registro);
-  const year = date.getFullYear();
-  const month = (date.getMonth() + 1).toString().padStart(2, "0");
-  const day = date.getDate().toString().padStart(2, "0");
-  const formattedDate = `${day}/${month}/${year}`;
-  return formattedDate;
+
+function cambiarFormatoFecha(fecha) {
+  const fechaObj = new Date(fecha);
+  const dia = fechaObj.getDate();
+  const mes = fechaObj.getMonth() + 1;
+  const anio = fechaObj.getFullYear();
+  const hora = fechaObj.getHours();
+  const minutos = fechaObj.getMinutes();
+
+  // Agregar cero inicial si el mes o día es menor a 10
+  const diaStr = dia < 10 ? `0${dia}` : dia;
+  const mesStr = mes < 10 ? `0${mes}` : mes;
+
+  return `${diaStr}-${mesStr}-${anio}`;
 }
+
+// Ejemplo de uso
+const fechaOriginal = "Sunday, September 4, 2022 9:54 PM";
+const fechaNueva = cambiarFormatoFecha(fechaOriginal);
+
+console.log(fechaNueva); // Output: "04-09-2022 21:54"
 
 onMounted(async () => {
   mostrar_ficha(id);
@@ -112,7 +150,7 @@ const mostrar_ficha = (id) => {
     alumno.cedula = elem.cedula || "Vacio";
     alumno.avatar = elem.avatar || imagen;
     alumno.nac = elem.nac || "Vacio";
-    alumno.edad = CalcularEdad(elem.nac);
+    alumno.edad = calcularEdad(elem.nac) || "Vacio";
     alumno.sexo = elem.sexo || "Vacio";
     alumno.email = elem.email || "Vacio";
     alumno.tlf = elem.tlf || "Vacio";
@@ -122,7 +160,7 @@ const mostrar_ficha = (id) => {
       elem.direccion_colegio_trabajo || "Vacio";
     alumno.horario_colegio_trabajo = elem.horario_colegio_trabajo || "Vacio";
     alumno.registro = elem.registro;
-    alumno.fecInscripcion = elem.fecInscripcion || "Vacio";
+    alumno.fecInscripcion = cambiarFormatoFecha(elem.registro) || "Vacio";
     alumno.direccion = elem.direccion || "Vacio";
     alumno.Termino_Aporte_Mensual = elem.Termino_Aporte_Mensual || "Vacio";
     alumno.Termino_Redes_Sociales = elem.Termino_Redes_Sociales || "Vacio";
@@ -178,7 +216,7 @@ const eliminar = async () => {
 <template>
   <div class="q-ma-sm flex justify-center bg-white" style="min-width: 375px">
     <q-list bordered separator>
-      <div v-if="nivel === 0" class="flex q-ma-sm justify-end wrap">
+      <div v-if="nivel === '0'" class="flex q-ma-sm justify-end wrap">
         <q-btn
           class="q-mx-xs"
           color="primary"
@@ -236,7 +274,7 @@ const eliminar = async () => {
       <q-separator />
       <LineaTiempo :editable="editable" />
       <q-separator />
-      <div v-if="nivel === 0" class="row q-mx-lg bg-white">
+      <div v-if="nivel === '0'" class="row q-mx-lg bg-white">
         <div class="col-5">
           <q-input
             v-model="alumno.edad"
@@ -332,7 +370,7 @@ const eliminar = async () => {
       </div>
     </q-list>
     <q-separator />
-    <q-list v-if="nivel === 0" bordered separator style="width: 100%">
+    <q-list v-if="nivel === '0'" bordered separator style="width: 100%">
       <div class="row flex q-ma-lg">
         <div class="col-5">
           <q-input
@@ -384,7 +422,7 @@ const eliminar = async () => {
       /> -->
     </q-list>
     <q-separator />
-    <q-list v-if="nivel === 0" bordered separator style="width: 100%">
+    <q-list v-if="nivel === '0'" bordered separator style="width: 100%">
       <div class="row q-col-gutter-x-md flex justify-between q-ma-sm">
         <div class="col-auto q-ma-sm row no-wrap">
           <q-select
@@ -410,6 +448,7 @@ const eliminar = async () => {
           <input class="bg-grey-2" type="file" @change="archivo($event)" />
           <div v-if="loading">
             {{ loading }}
+            <q-linear-progress :value="progress" />
             <!-- <q-spinner-hourglass color="primary" size="2em" />
             <q-tooltip :offset="[0, 8]">Subiendo</q-tooltip> -->
           </div>

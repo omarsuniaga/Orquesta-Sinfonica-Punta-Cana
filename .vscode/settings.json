@@ -6,5 +6,6 @@
   "editor.codeActionsOnSave": ["source.fixAll.eslint"],
   "eslint.validate": ["javascript", "javascriptreact", "typescript", "vue"],
   "vue3snippets.enable-compile-vue-file-on-did-save-code": true,
-  "editor.tabCompletion": "on"
+  "editor.tabCompletion": "on",
+  "editor.hover.enabled": true
 }

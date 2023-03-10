@@ -82,6 +82,16 @@ const routes = [
     meta: { requiresAuth: true },
   },
   {
+    path: "/Cerrar",
+    name: "Cerrar",
+    props: true,
+    component: () => import("layouts/MainLayout.vue"),
+    children: [
+      { path: "", component: () => import("pages/Cerrar-Sesion.vue") },
+    ],
+    meta: { requiresAuth: true },
+  },
+  {
     path: "/Calificacion_Alumno/",
     name: "Calificacion_Alumno",
     props: true,

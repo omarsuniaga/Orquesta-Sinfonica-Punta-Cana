@@ -10,13 +10,5 @@ export const useNivelStore = defineStore("nivel", {
     async setNivel(email) {
       return (this.nivel = await SolicitarCredenciales(email));
     },
-    // get nivel
-    async getNivel() {
-      auth.onAuthStateChanged(async (user) => {
-        if (user) {
-          return (this.nivel = await SolicitarCredenciales(user.email));
-        }
-      });
-    },
   },
 });

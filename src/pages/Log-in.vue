@@ -43,14 +43,13 @@
 
 <script setup>
 import { useRouter } from "vue-router";
-import { ref, computed } from "vue";
+import { ref } from "vue";
 import { signInWithEmailAndPassword } from "firebase/auth";
-import { SolicitarCredenciales, auth } from "../firebase";
+import { auth } from "../firebase";
 import { useQuasar } from "quasar";
 import { useNivelStore } from "../stores/Niveles";
 
 const store = useNivelStore();
-
 const router = useRouter();
 const email = ref(null);
 const pass = ref(null);
@@ -60,10 +59,7 @@ const onSubmit = async () => {
   try {
     let res = await signInWithEmailAndPassword(auth, email.value, pass.value);
     if (res._tokenResponse.registered) {
-      let nivel = await SolicitarCredenciales(email.value);
-      console.log("🚀 ~ file: Log-in.vue:64 ~ onSubmit ~ nivel:", nivel);
-
-      store.setNivel(email);
+      store.setNivel(email.value);
       return router.push("/home");
     }
   } catch (error) {

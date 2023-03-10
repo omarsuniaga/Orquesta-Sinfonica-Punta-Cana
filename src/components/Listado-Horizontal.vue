@@ -14,7 +14,7 @@ onMounted(async () => {
 <template>
   <h5 class="text-white q-mx-sm">{{ grupo }}</h5>
   <div class="container">
-    <q-scroll-area style="height: 20vw; width: 100vw">
+    <q-scroll-area style="height: 45vw; width: 100vw">
       <div class="row no-wrap">
         <div v-for="(item, index) of listado" :key="index">
           <button id="alumnos">
@@ -37,18 +37,18 @@ onMounted(async () => {
 <style>
 .container {
   display: flex;
-  margin: auto;
+  margin: 0;
   width: 100vw;
   overflow-x: scroll;
 }
 #alumnos-container {
-  padding: 15px 0;
+  padding: 10px 0;
 }
 #alumnos {
   border: 0;
   background-color: transparent;
   cursor: pointer;
-  margin: 0 auto;
+  margin: 0;
 }
 #alumnos .profile {
   background: rgb(0, 30, 255);
@@ -207,18 +207,18 @@ onMounted(async () => {
       rgb(227, 38, 164) 73%,
       rgb(255, 9, 057) 100%
     );
-    padding: 4.5px;
+    padding: 4px;
     box-sizing: border-box;
-    width: 90px;
-    height: 90px;
-    border-radius: 50%;
+    width: 75px;
+    height: 75px;
+    border-radius: 60%;
   }
   #alumnos .profile img {
-    width: 80px;
-    height: 80px;
+    width: 65px;
+    height: 65px;
     border-radius: 50%;
-    padding: 0;
-    margin: 0;
+    padding: 1px;
+    margin: 1px;
     border: 2px solid rgb(255, 255, 255);
   }
 }

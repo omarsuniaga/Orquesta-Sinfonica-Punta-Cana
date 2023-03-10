@@ -54,14 +54,31 @@ let __NIVEL;
 let __VALIDACION = false;
 let __ID;
 
+export {
+  db,
+  storage,
+  Fecha,
+  Lista_Presentes,
+  Lista_Ausentes,
+  ALUMNOS,
+  __SESION,
+  __NIVEL,
+  __ID,
+  __VALIDACION,
+};
+
 export const Iniciar_Automaticamente = () => {
   return new Promise((resolve, reject) => {
     onAuthStateChanged(auth, (user) => {
       if (user) {
-        __SESION = true;
+        SolicitarCredenciales(user.email).then((nivel) => {
+          user.phoneNumber = nivel;
+        });
+
+        // __SESION = true;
         resolve(true);
       } else {
-        __SESION = false;
+        // __SESION = false;
         resolve(false);
       }
     });
@@ -433,7 +450,6 @@ export const SolicitarCredenciales = async (email) => {
       return null;
     } else {
       let { Nivel } = querySnapshot.docs[0].data();
-      console.log(Nivel);
       return Nivel;
     }
   } catch (error) {
@@ -744,16 +760,4 @@ export const PROCESOS = async (id) => {
   return null;
 };
 
-export {
-  db,
-  storage,
-  Fecha,
-  Lista_Presentes,
-  Lista_Ausentes,
-  ALUMNOS,
-  __SESION,
-  __NIVEL,
-  __ID,
-  __VALIDACION,
-};
 Iniciar_Automaticamente();
