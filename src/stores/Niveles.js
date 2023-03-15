@@ -12,9 +12,12 @@ export const useNivelStore = defineStore("nivel", {
       return (this.nivel = await SolicitarCredenciales(email));
     },
     // Lista de imagenes
-    async setImagenList() {
-      const imagenes = await auth.currentUser.getIdTokenResult();
-      return (this.imagenList = imagenes.claims.imagenes);
+    addImagen(url, name) {
+      let imagen = {
+        url,
+        name,
+      };
+      return this.imagenList.push(imagen).reverse();
     },
   },
 });

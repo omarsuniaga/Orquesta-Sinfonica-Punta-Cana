@@ -13,7 +13,7 @@
       @mouseleave="autoplay = true"
     >
       <q-carousel-slide
-        v-for="(imagen, index) of carouselItems"
+        v-for="(imagen, index) of store.imageList"
         :key="index"
         :name="index"
         :img-src="imagen.src"
@@ -26,13 +26,12 @@
 </template>
 
 <script setup>
-import { ref, onMounted } from "vue";
+import { ref, onMounted, computed } from "vue";
 import { storage, auth } from "../firebase";
 import { ref as storageRef, listAll, getDownloadURL } from "firebase/storage";
 import SubirFotos from "./SubirFotos.vue";
 import { useNivelStore } from "../stores/Niveles";
-import { store } from "quasar/wrappers";
-// const nivelStore = useNivelStore();
+let store = useNivelStore();
 let nivel = ref(auth.currentUser.phoneNumber);
 let destino = ref("Carrusel");
 const slide = ref(1);
@@ -52,6 +51,7 @@ onMounted(async () => {
         src: url,
         alt: image.name,
       });
+      store.imageList = carouselItems.value;
     }
 
     // Itera sobre la lista de imágenes y agrega cada una al carrusel
