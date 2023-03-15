@@ -32,7 +32,7 @@ let loading = ref(false);
 let file = ref("");
 const archivo = (e) => {
   file = e.target.files[0];
-  const storageRef = refe(storage, props.destino + "/" + file.value);
+  const storageRef = refe(storage, props.destino + "/" + file.value.name);
   const uploadTask = uploadBytesResumable(storageRef, file, metadata);
   uploadTask.on(
     "state_changed",
