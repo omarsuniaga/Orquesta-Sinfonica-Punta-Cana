@@ -44,7 +44,7 @@ const app = initializeApp(firebaseConfig);
 export const auth = getAuth(app);
 auth.languageCode = "es";
 const db = getFirestore(app);
-const storage = getStorage(app);
+export const storage = getStorage(app);
 const Fecha = moment().format("YYYY/MM/DD");
 const ALUMNOS = [];
 let Lista_Ausentes = [];
@@ -56,7 +56,6 @@ let __ID;
 
 export {
   db,
-  storage,
   Fecha,
   Lista_Presentes,
   Lista_Ausentes,

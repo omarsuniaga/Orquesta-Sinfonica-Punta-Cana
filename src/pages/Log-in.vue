@@ -8,12 +8,11 @@
           bg-color="white"
           v-model="email"
           type="text"
-          label="email"
+          label="eMail"
           lazy-rules
           outlined
           :rules="[(val) => (val && val.length > 0) || 'Escribe tu correo']"
         />
-
         <q-input
           filled
           bg-color="white"
@@ -27,7 +26,7 @@
         />
 
         <div class="q-gutter-md q-pa-md column">
-          <q-btn label="Entrar" type="submit" color="primary" />
+          <q-btn label="Entrar" type="submit" color="green" />
         </div>
         <!-- <div class="inline-block"> -->
         <!-- <q-link to="/RecuperarClave" class="text-white"
@@ -106,5 +105,14 @@ const onReset = () => {
 }
 q-btn {
   width: 100%;
+}
+
+/* Estilos para dispositivos de pantalla grande */
+@media (min-width: 768px) {
+  /* Ajustar el ancho del formulario */
+  form {
+    max-width: 600px;
+    margin: 0 auto;
+  }
 }
 </style>

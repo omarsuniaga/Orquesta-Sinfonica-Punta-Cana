@@ -15,7 +15,7 @@ let nivel = ref("");
 onMounted(async () => {
   nivel.value = await auth.currentUser.phoneNumber;
   group.value = await classificationByGroup();
-  group.value.reverse();
+  // group.value.reverse();
   // console.log("group.value", group.value);
   Alumnos.value = await getAlumnos();
   if (Alumnos.value !== 0) {

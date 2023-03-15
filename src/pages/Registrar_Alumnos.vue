@@ -39,7 +39,7 @@
             class="col-5"
             v-model="alumno.nac"
             label="Año Nacimiento"
-            placeholder="DD/MM/AAAA"
+            placeholder="DD-MM-AAAA"
           />
           <q-input
             filled
@@ -55,7 +55,7 @@
             class="col-5"
             v-model="alumno.sexo"
             label="Sexo"
-            placeholder="Sexo"
+            placeholder="Femenino/Masculino"
             :rules="[(val) => (val && val.length > 0) || 'Campo Obligatorio']"
           />
           <q-btn
@@ -222,7 +222,7 @@
           class="fit row inline justify-center"
         >
           <q-btn
-            @click="registrarAlumno() && $router.push('/')"
+            @click="registrarAlumno() && $router.push('/Home')"
             color="secondary"
             label="Registrar"
           />

@@ -14,7 +14,7 @@ onMounted(async () => {
 <template>
   <h5 class="text-white q-mx-sm">{{ grupo }}</h5>
   <div class="container">
-    <q-scroll-area style="height: 45vw; width: 100vw">
+    <q-scroll-area style="height: 35vw; width: 100vw">
       <div class="row no-wrap">
         <div v-for="(item, index) of listado" :key="index">
           <button id="alumnos">
@@ -37,7 +37,6 @@ onMounted(async () => {
 <style>
 .container {
   display: flex;
-  margin: 0;
   width: 100vw;
   overflow-x: scroll;
 }
@@ -51,12 +50,12 @@ onMounted(async () => {
   margin: 0;
 }
 #alumnos .profile {
-  background: rgb(0, 30, 255);
+  background: rgb(34, 181, 181);
   background: linear-gradient(
-    36deg,
-    rgb(0, 30, 255) 28%,
-    rgb(156, 90, 134) 73%,
-    rgb(60, 26, 81) 100%
+    150deg,
+    rgb(97, 124, 233) 10%,
+    rgb(140, 255, 146) 50%,
+    rgb(23, 157, 74) 80%
   );
   padding: 9px;
   box-sizing: border-box;
@@ -76,136 +75,20 @@ onMounted(async () => {
 }
 #alumnos .title {
   text-align: center;
-  padding: 5px 0;
+  padding: 15px 0;
   color: #fff;
-}
-#alumnos.active .profile {
-  animation-duration: 1s;
-  animation-name: contorno;
-  animation-iteration-count: infinite;
+  font-size: 1.2rem;
 }
 
-@keyframes contorno {
-  0% {
-    background: linear-gradient(
-      36deg,
-      rgb(255, 255, 255) 0%,
-      rgb(255, 255, 255) 0%,
-      rgb(0, 30, 255) 28%,
-      rgb(227, 38, 164) 73%,
-      rgb(96, 28, 137) 100%
-    );
-  }
-  10% {
-    background: linear-gradient(
-      72deg,
-      rgb(255, 255, 255) 0%,
-      rgb(255, 255, 255) 0%,
-      rgb(0, 30, 255) 28%,
-      rgb(227, 38, 164) 73%,
-      rgb(96, 28, 137) 100%
-    );
-  }
-  20% {
-    background: linear-gradient(
-      108deg,
-      rgb(255, 255, 255) 0%,
-      rgb(255, 255, 255) 0%,
-      rgb(0, 30, 255) 28%,
-      rgb(227, 38, 164) 73%,
-      rgb(96, 28, 137) 100%
-    );
-  }
-  30% {
-    background: linear-gradient(
-      144deg,
-      rgb(255, 255, 255) 0%,
-      rgb(255, 255, 255) 0%,
-      rgb(0, 30, 255) 28%,
-      rgb(227, 38, 164) 73%,
-      rgb(96, 28, 137) 100%
-    );
-  }
-  40% {
-    background: linear-gradient(
-      180deg,
-      rgb(255, 255, 255) 0%,
-      rgb(255, 255, 255) 0%,
-      rgb(0, 30, 255) 28%,
-      rgb(227, 38, 164) 73%,
-      rgb(96, 28, 137) 100%
-    );
-  }
-  50% {
-    background: linear-gradient(
-      216deg,
-      rgb(255, 255, 255) 0%,
-      rgb(255, 255, 255) 0%,
-      rgb(0, 30, 255) 28%,
-      rgb(227, 38, 164) 73%,
-      rgb(96, 28, 137) 100%
-    );
-  }
-  60% {
-    background: linear-gradient(
-      252deg,
-      rgb(255, 255, 255) 0%,
-      rgb(255, 255, 255) 0%,
-      rgb(0, 30, 255) 28%,
-      rgb(227, 38, 164) 73%,
-      rgb(96, 28, 137) 100%
-    );
-  }
-  70% {
-    background: linear-gradient(
-      288deg,
-      rgb(255, 255, 255) 0%,
-      rgb(255, 255, 255) 0%,
-      rgb(0, 30, 255) 28%,
-      rgb(227, 38, 164) 73%,
-      rgb(96, 28, 137) 100%
-    );
-  }
-  80% {
-    background: linear-gradient(
-      324deg,
-      rgb(255, 255, 255) 0%,
-      rgb(255, 255, 255) 0%,
-      rgb(0, 30, 255) 28%,
-      rgb(227, 38, 164) 73%,
-      rgb(96, 28, 137) 100%
-    );
-  }
-  90% {
-    background: linear-gradient(
-      360deg,
-      rgb(255, 255, 255) 0%,
-      rgb(255, 255, 255) 0%,
-      rgb(0, 30, 255) 28%,
-      rgb(227, 38, 164) 73%,
-      rgb(96, 28, 137) 100%
-    );
-  }
-  100% {
-    background: linear-gradient(
-      396deg,
-      rgb(255, 255, 255) 0%,
-      rgb(255, 255, 255) 0%,
-      rgb(0, 26, 255) 28%,
-      rgb(227, 38, 164) 73%,
-      rgb(96, 28, 137) 100%
-    );
-  }
-}
 /* pantalla para moviles */
 @media screen and (max-width: 668px) {
   #alumnos .profile {
-    background: rgb(255, 201, 0);
+    background: rgb(34, 181, 181);
     background: linear-gradient(
-      36deg,
-      rgb(0, 30, 255) 13%,
-      rgb(227, 38, 164) 73%,
-      rgb(255, 9, 057) 100%
+      150deg,
+      rgb(97, 124, 233) 10%,
+      rgb(140, 255, 146) 50%,
+      rgb(23, 157, 74) 80%
     );
     padding: 4px;
     box-sizing: border-box;
@@ -217,9 +100,9 @@ onMounted(async () => {
     width: 65px;
     height: 65px;
     border-radius: 50%;
-    padding: 1px;
-    margin: 1px;
-    border: 2px solid rgb(255, 255, 255);
+    padding: 2px;
+    margin: 0.5px;
+    border: 3px solid rgb(152, 213, 186);
   }
 }
 </style>

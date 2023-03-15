@@ -20,21 +20,22 @@ import { ref, uploadBytesResumable, getDownloadURL } from "firebase/storage";
 
 let nivel = reactive(auth.currentUser.phoneNumber);
 
-/** @type {any} */
-const metadata = {
-  contentType: "image/jpeg",
-};
-
 const $q = reactive(useQuasar());
 const id = useRouter().currentRoute._rawValue.params.id;
 let sexo = reactive(["Masculino", "Femenino"]);
 let options = reactive(["Orquesta", "Coro", "Iniciacion 2", "Iniciacion 1"]);
 const alumno = reactive({});
 let editable = reactive(false);
-let progress = reactive(0);
-var loading = reactive(null);
-let file = reactive(null);
 
+/**Subir Foto */
+/** @type {any} */
+const metadata = {
+  contentType: "image/jpeg",
+};
+var loading = reactive(null);
+let progress = reactive(0);
+let file = reactive(null);
+let imagen = reactive(null);
 const archivo = (e) => {
   file = e.target.files[0];
   const storageRef = ref(storage, "Avatars/" + file.name);
@@ -70,7 +71,6 @@ const archivo = (e) => {
         })
         .then(
           () => {
-            console.log("URL de descarga: " + imagen);
             alumno.avatar = imagen;
             guardar(alumno);
           },
@@ -81,6 +81,28 @@ const archivo = (e) => {
     }
   );
 };
+
+//Cambiar Formato de la Fecha
+function cambiarFormatoFecha1(fecha) {
+  const fechaObj = new Date(fecha);
+  const dia = fechaObj.getDate();
+  const mes = fechaObj.getMonth() + 1;
+  const anio = fechaObj.getFullYear();
+  const hora = fechaObj.getHours();
+  const minutos = fechaObj.getMinutes();
+
+  // Agregar cero inicial si el mes o día es menor a 10
+  const diaStr = dia < 10 ? `0${dia}` : dia;
+  const mesStr = mes < 10 ? `0${mes}` : mes;
+  const res = `${diaStr}-${mesStr}-${anio}`;
+  return res;
+}
+
+function cambiarFormatoFecha2(fecha) {
+  fecha = fecha.replace("/", "-");
+  let fechaFormateada = fecha.replace(/\//g, "-");
+  return fechaFormateada;
+}
 const calcularEdad = (fechaNacimiento) => {
   const hoy = new Date();
   const partesFecha = fechaNacimiento.split("-"); // separa la fecha en partes
@@ -118,27 +140,6 @@ function calcularTiempoTranscurrido(desdeFecha) {
   };
 }
 
-function cambiarFormatoFecha(fecha) {
-  const fechaObj = new Date(fecha);
-  const dia = fechaObj.getDate();
-  const mes = fechaObj.getMonth() + 1;
-  const anio = fechaObj.getFullYear();
-  const hora = fechaObj.getHours();
-  const minutos = fechaObj.getMinutes();
-
-  // Agregar cero inicial si el mes o día es menor a 10
-  const diaStr = dia < 10 ? `0${dia}` : dia;
-  const mesStr = mes < 10 ? `0${mes}` : mes;
-
-  return `${diaStr}-${mesStr}-${anio}`;
-}
-
-// Ejemplo de uso
-const fechaOriginal = "Sunday, September 4, 2022 9:54 PM";
-const fechaNueva = cambiarFormatoFecha(fechaOriginal);
-
-console.log(fechaNueva); // Output: "04-09-2022 21:54"
-
 onMounted(async () => {
   mostrar_ficha(id);
 });
@@ -149,6 +150,7 @@ const mostrar_ficha = (id) => {
     alumno.apellido = elem.apellido;
     alumno.cedula = elem.cedula || "Vacio";
     alumno.avatar = elem.avatar || imagen;
+    alumno.fecInscripcion = cambiarFormatoFecha1(elem.registro) || "Vacio";
     alumno.nac = elem.nac || "Vacio";
     alumno.edad = calcularEdad(elem.nac) || "Vacio";
     alumno.sexo = elem.sexo || "Vacio";
@@ -160,7 +162,6 @@ const mostrar_ficha = (id) => {
       elem.direccion_colegio_trabajo || "Vacio";
     alumno.horario_colegio_trabajo = elem.horario_colegio_trabajo || "Vacio";
     alumno.registro = elem.registro;
-    alumno.fecInscripcion = cambiarFormatoFecha(elem.registro) || "Vacio";
     alumno.direccion = elem.direccion || "Vacio";
     alumno.Termino_Aporte_Mensual = elem.Termino_Aporte_Mensual || "Vacio";
     alumno.Termino_Redes_Sociales = elem.Termino_Redes_Sociales || "Vacio";
@@ -241,12 +242,12 @@ const eliminar = async () => {
       </div>
       <div v-else></div>
       <q-item-label header class="q-m-sm">
-        <q-card class="flex row">
-          <q-avatar class="avatar">
+        <q-card class="row">
+          <q-avatar class="avatar col-12">
             <img :src="alumno.avatar" />
           </q-avatar>
 
-          <q-card-section>
+          <q-card-section class="col-12">
             <q-card-section class="">
               <span
                 class="text-h5 text-weight-bolder q-mx-md"
@@ -266,6 +267,7 @@ const eliminar = async () => {
             <q-toolbar>{{ alumno.registro }} </q-toolbar>
           </q-card-section>
         </q-card>
+        <input class="bg-grey-2" type="file" @change="archivo($event)" />
         <q-space />
       </q-item-label>
 
@@ -445,12 +447,12 @@ const eliminar = async () => {
             label="Instrumento / Interesado en:"
             stack-label
           />
-          <input class="bg-grey-2" type="file" @change="archivo($event)" />
+
           <div v-if="loading">
             {{ loading }}
             <q-linear-progress :value="progress" />
-            <!-- <q-spinner-hourglass color="primary" size="2em" />
-            <q-tooltip :offset="[0, 8]">Subiendo</q-tooltip> -->
+            <q-spinner-hourglass color="primary" size="2em" />
+            <q-tooltip :offset="[0, 8]">Subiendo</q-tooltip>
           </div>
           <q-btn
             round
@@ -472,7 +474,7 @@ const eliminar = async () => {
 
 <style>
 .avatar {
-  width: 200px;
-  height: 200px;
+  width: auto;
+  height: 30vh;
 }
 </style>

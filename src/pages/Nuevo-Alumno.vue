@@ -2,7 +2,13 @@
   <div class="q-ma-sm">
     <!-- Formulario del alumno -->
     <q-form @submit="onSubmit" @reset="onReset" class="q-ma-md">
-      <q-stepper v-model="step" ref="stepper" alternative-labels color="primary" animated>
+      <q-stepper
+        v-model="step"
+        ref="stepper"
+        alternative-labels
+        color="primary"
+        animated
+      >
         <q-step
           :name="1"
           title="Datos del Alumno"
@@ -35,25 +41,17 @@
             class="col-5 q-mb-md"
             v-model="alumno.nac"
             label="Año Nacimiento"
-            placeholder="DD/MM/AAAA"
+            placeholder="DD-MM-AAAA"
             :rules="[(val) => (val && val.length > 0) || 'Campo Obligatorio']"
           />
-          <q-input
-            filled
-            lazy-rules
-            class="col-5 q-mb-md"
-            v-model="alumno.edad"
-            label="Edad"
-            placeholder="Edad"
-            :rules="[(val) => (val && val.length > 0) || 'Campo Obligatorio']"
-          />
+
           <q-input
             filled
             lazy-rules
             class="col-5 q-mb-md"
             v-model="alumno.sexo"
             label="Sexo"
-            placeholder="Sexo"
+            placeholder="Femenino/Masculino"
             :rules="[(val) => (val && val.length > 0) || 'Campo Obligatorio']"
           />
 
@@ -63,7 +61,6 @@
             v-model="alumno.cedula"
             label="Cedula del Alumno"
             placeholder="Cedula del Alumno"
-            :rules="[(val) => (val && val.length > 0) || 'Campo Obligatorio']"
           />
           <q-input
             class="col-5 q-mb-md"
@@ -72,7 +69,6 @@
             v-model="alumno.tlf_alumno"
             label="Telefono"
             placeholder="Ingresa el Numero de telefono del alumno"
-            :rules="[(val) => (val && val.length > 0) || 'Campo Obligatorio']"
           />
         </q-step>
         <!-- Paso  2 INFORMACION DEL CENTRO EDUCATIVO O TRABAJO -->
@@ -120,7 +116,11 @@
           />
         </q-step>
         <!-- paso 3 INFORMACION DE LOS PADRES-->
-        <q-step :name="3" title="Informacion de los Padres" icon="family_restroom">
+        <q-step
+          :name="3"
+          title="Informacion de los Padres"
+          icon="family_restroom"
+        >
           <q-input
             filled
             lazy-rules
@@ -216,7 +216,7 @@
         >
           <q-btn
             class="col-5 q-mb-md"
-            @click="registrarAlumno() && $router.push('/Perfil_Alumnos')"
+            @click="registrarAlumno() && $router.push('/Home')"
             color="secondary"
             label="Registrar"
           />
@@ -241,7 +241,6 @@
         </template>
       </q-stepper>
     </q-form>
-    <q-btn flat @click="Salir()" label="Salir" color="warning" />
   </div>
 </template>
 
