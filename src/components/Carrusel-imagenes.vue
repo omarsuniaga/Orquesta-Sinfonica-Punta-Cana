@@ -1,9 +1,11 @@
 <template>
-  <div class="q-pa-md">
+  <div>
     <q-carousel
+      class="carousel"
+      swipeable
       animated
       v-model="slide"
-      navigation
+      thumbnails
       infinite
       :autoplay="autoplay"
       arrows
@@ -11,14 +13,23 @@
       transition-next="slide-left"
       @mouseenter="autoplay = false"
       @mouseleave="autoplay = true"
+      :style="[
+        'background-size: cover',
+        'background-position: center center',
+        'background-repeat: no-repeat',
+        'background-color: green',
+      ]"
     >
       <q-carousel-slide
+        width="150px"
+        class="carousel-item"
         v-for="(imagen, index) of store.imageList"
         :key="index"
         :name="index"
         :img-src="imagen.src"
       />
     </q-carousel>
+
     <div v-if="nivel === '0'">
       <subir-fotos :destino="destino" />
     </div>
@@ -37,7 +48,6 @@ let destino = ref("Carrusel");
 const slide = ref(1);
 const autoplay = ref(true);
 const carouselItems = ref([]);
-
 onMounted(async () => {
   // Obtiene una referencia a la carpeta "images"
   const imagesRef = storageRef(storage, "Carrusel");
@@ -60,3 +70,4 @@ onMounted(async () => {
   }
 });
 </script>
+<style></style>

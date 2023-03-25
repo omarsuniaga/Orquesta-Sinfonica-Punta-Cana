@@ -14,7 +14,7 @@ onMounted(async () => {
 <template>
   <h5 class="text-white q-mx-sm">{{ grupo }}</h5>
   <div class="container">
-    <q-scroll-area style="height: 35vw; width: 100vw">
+    <q-scroll-area class="horizontal">
       <div class="row no-wrap">
         <div v-for="(item, index) of listado" :key="index">
           <button id="alumnos">
@@ -35,10 +35,9 @@ onMounted(async () => {
   </div>
 </template>
 <style>
-.container {
-  display: flex;
+.container .horizontal {
+  height: 35vh;
   width: 100vw;
-  overflow-x: scroll;
 }
 #alumnos-container {
   padding: 10px 0;

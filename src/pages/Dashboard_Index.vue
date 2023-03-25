@@ -145,7 +145,6 @@ let Global = ref([]);
 let _l = ref([]);
 let model = ref("Semanal");
 let loading = ref(false);
-console.log(auth.authStateSubscription.auth.currentUser);
 //crear una variable global para usarlo en el dashboar
 provide(/* key */ "Global", /* value */ Global.value);
 
@@ -250,7 +249,6 @@ const CuatroSemanas = () => {
     .map((entry) => entry);
   return ObjetoGlobal.value;
 };
-
 const TresMeses = () => {
   let meses = attendance.value
     .filter(({ date, attended }) => {

@@ -5,6 +5,8 @@ import ListadoHorizontal from "src/components/Listado-Horizontal.vue";
 import { onMounted, ref, computed } from "vue";
 import { getAlumnos, classificationByGroup, __NIVEL, auth } from "src/firebase";
 import { useNivelStore } from "../stores/Niveles";
+import AgruparPorGenero from "src/components/Poblacion-Genero.vue";
+import PoblacionAlumnos from "src/components/Poblacion-Alumnos.vue";
 const store = useNivelStore();
 const Alumnos = ref([]);
 let group = ref([]);
@@ -29,9 +31,18 @@ onMounted(async () => {
     {{ nivel }}
     <div class="loading"></div>
   </div>
-  <div v-else class="q-p-sm">
-    <CarruselImagenes />
-    <MenuSecundario />
+  <div v-else class="q-pa-md">
+    <div class="row justify-between">
+      <!-- System column -->
+
+      <div class="col-12 col-md-9 col-sm-12"><CarruselImagenes /></div>
+      <div class="col-12 col-md-3 col-sm-12 no-wrap">
+        <MenuSecundario />
+        <AgruparPorGenero />
+        <PoblacionAlumnos />
+      </div>
+    </div>
+    <!-- if screen xl -->
     <main v-for="(grupo, index) in group" :key="index">
       <ListadoHorizontal :grupo="grupo" :Alumnos="Alumnos" />
     </main>
