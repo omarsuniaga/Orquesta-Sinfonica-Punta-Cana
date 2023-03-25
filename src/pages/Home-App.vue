@@ -35,11 +35,13 @@ onMounted(async () => {
     <div class="row justify-between">
       <!-- System column -->
 
-      <div class="col-12 col-md-9 col-sm-12"><CarruselImagenes /></div>
-      <div class="col-12 col-md-3 col-sm-12 no-wrap">
+      <div class="col-12 col-md-6 col-sm-12"><CarruselImagenes /></div>
+      <div class="col-12 col-md-6 col-sm-12">
         <MenuSecundario />
-        <AgruparPorGenero />
-        <PoblacionAlumnos />
+        <div class="row justify-center" v-if="$q.screen.width > 1024">
+          <AgruparPorGenero class="col-4" />
+          <PoblacionAlumnos class="col-4" />
+        </div>
       </div>
     </div>
     <!-- if screen xl -->

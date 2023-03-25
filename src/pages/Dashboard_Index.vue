@@ -197,7 +197,6 @@ const pie = ref({
     ],
   },
 });
-
 const UnaSemana = async () => {
   let Hoy = await attendance.value
     .filter(({ date, attended }) => {
