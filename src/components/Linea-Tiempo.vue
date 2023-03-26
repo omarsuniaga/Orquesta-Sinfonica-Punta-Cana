@@ -16,7 +16,10 @@
         :subtitle="item.Fecha.split('-').reverse().join('-')"
       >
         {{ item.Fecha.split("-")[1] }}
-        <div class="row" style="width: 100%; max-width: 700px; min-width: 140px">
+        <div
+          class="row"
+          style="width: 100%; max-width: 700px; min-width: 140px"
+        >
           <div class="col-6">
             <q-card class="card1 q-mx-md q-pa-sm bg-grey-2 text-white">
               <q-card-section>
@@ -26,7 +29,9 @@
               <q-card-section class="text-black">
                 <div class="row items-center">
                   <div class="col-6">
-                    <span class="text-md text-weight-bold">{{ item.Obra }}</span>
+                    <span class="text-md text-weight-bold">{{
+                      item.Obra
+                    }}</span>
                   </div>
                   <div class="col-6">
                     <q-knob
@@ -55,7 +60,11 @@
 import { ref, onMounted } from "vue";
 import { useRouter } from "vue-router";
 import { Nivel_Alumno } from "../data";
-import { Buscar_Alumno, Generar_Asistencias_Global, diasTrabajados } from "../firebase";
+import {
+  Buscar_Alumno,
+  Generar_Asistencias_Global,
+  diasTrabajados,
+} from "../firebase";
 const props = defineProps({
   editable: Boolean,
 });
@@ -102,13 +111,17 @@ onMounted(async () => {
   let alumno = await Buscar_Alumno(id);
   let instrumento = alumno.instrumento.split(" ")[0];
   let asistenciasAlumno = await Generar_Asistencias_Global().then((elem) =>
-    elem.filter((el) => (el.id === id ? (el.attended === true ? el.id : 0) : null))
+    elem.filter((el) =>
+      el.id === id ? (el.attended === true ? el.id : 0) : null
+    )
   );
   let DiasRegistrados = await diasTrabajados();
-  TotalAsistencia = Math.round((asistenciasAlumno.length / DiasRegistrados.length) * 100);
+  TotalAsistencia = Math.round(
+    (asistenciasAlumno.length / DiasRegistrados.length) * 100
+  );
 
-  function convertirFecha() {
-    const date = new Date(alumno.registro);
+  function convertirFecha(fecha) {
+    const date = new Date(fecha);
     const options = {
       weekday: "long",
       year: "numeric",
@@ -124,14 +137,26 @@ onMounted(async () => {
     const birthDate = new Date(tiempo);
     let age = today.getFullYear() - birthDate.getFullYear();
     const monthDiff = today.getMonth() - birthDate.getMonth();
-    if (monthDiff < 0 || (monthDiff === 0 && today.getDate() < birthDate.getDate())) {
+    if (
+      monthDiff < 0 ||
+      (monthDiff === 0 && today.getDate() < birthDate.getDate())
+    ) {
       age--;
     }
     return age;
   }
-  function calcularMeses() {
+  function cambiarFormatoFecha(fecha) {
+    // Separar día, mes y año en un arreglo
+    const partes = fecha.split("-");
+    // Crear una fecha en formato "AAAA/MM/DD"
+    const fechaNueva = new Date(partes[2], partes[1] - 1, partes[0]);
+    // Devolver la fecha en formato "AAAA-MM-DD"
+    return fechaNueva.toISOString().substring(0, 10);
+  }
+
+  function calcularMeses(fecha) {
     //DD/MM/YYYY
-    const date = new Date(alumno.fecInscripcion);
+    const date = new Date(cambiarFormatoFecha(fecha));
     const year = date.getFullYear();
     const month = (date.getMonth() + 1).toString().padStart(2, "0");
     const day = date.getDate().toString().padStart(2, "0");
@@ -142,7 +167,9 @@ onMounted(async () => {
       (today.getFullYear() - from.getFullYear()) * 12 +
       (today.getMonth() - from.getMonth());
     const years = Math.floor(months / 12);
-    return `${years > 1 ? years + " años con" : years < 1 ? " " : years + " Año con"}  ${
+    return `${
+      years > 1 ? years + " años con" : years < 1 ? " " : years + " Año con"
+    }  ${
       months % 12 > 1
         ? (months % 12) + " meses"
         : months % 12 < 1
@@ -166,17 +193,28 @@ onMounted(async () => {
   ${alumno.sexo === "Masculino" ? "El Alumno " : "La Alumna "}
   ${alumno.nombre} ${alumno.apellido}`;
 
-  resumen.contextoInstrumento = ` en este tiempo escogio desarrollarse en ${instrumento} para empezar el nivel que segun su tiempo y rendimiento le ha permitido llegar.`;
+  resumen.contextoInstrumento = `
+  en este tiempo escogio desarrollarse en ${instrumento}
+  empezar el nivel que segun su tiempo y rendimiento le
+  ha permitido llegar.`;
 
-  resumen.contextoTiempo = ` Se registró un ${convertirFecha()} y tiene
-  de haber empezado sus estudios en la Fundacion  ${calcularMeses()}.`;
+  resumen.contextoTiempo = ` Se registró un ${convertirFecha(
+    alumno.registro
+  )} y tiene
+  de haber empezado sus estudios en la Fundacion  ${calcularMeses(
+    alumno.fecInscripcion
+  )}.`;
 
   resumen.contextoGrupo = ` Actualmente se encuentra en ${
     alumno.grupo == "Orquesta" ? " la " : " el "
   } ${alumno.grupo}`;
   resumen.contextoNivel = ` tocando en la fila de  ${alumno.instrumento}.`;
-  resumen.contextoAsistencia = ` obteniendo una asistencia total de ${TotalAsistencia}% `;
-  resumen.contextoInsigneas = ` y ha alcanzado ${insigneas} insignias que representan algunos retos individuales. Lo que representa un ${nivel} en responsabilidad, entrega y disciplina. `;
+  resumen.contextoAsistencia = `
+  obteniendo una asistencia total de ${TotalAsistencia}% `;
+  resumen.contextoInsigneas = `
+   y ha alcanzado ${insigneas} insignias que representan
+   algunos retos individuales. Lo que representa un ${nivel}
+   en responsabilidad, entrega y disciplina. `;
 
   informacion.value =
     resumen.inicio +

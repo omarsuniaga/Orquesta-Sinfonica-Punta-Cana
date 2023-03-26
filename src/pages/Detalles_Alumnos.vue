@@ -1,6 +1,6 @@
 <script setup>
 import { useRouter } from "vue-router";
-import { reactive, onMounted, computed } from "vue";
+import { reactive, onMounted } from "vue";
 import ArbolHabilidadesVue from "src/components/Arbol-Habilidades.vue";
 import LineaTiempo from "src/components/Linea-Tiempo.vue";
 import {
@@ -12,76 +12,52 @@ import {
 } from "../firebase";
 import { Dialog, useQuasar } from "quasar";
 import { storage } from "../firebase";
-import { ref, uploadBytesResumable, getDownloadURL } from "firebase/storage";
+import { ref, uploadBytes, getDownloadURL } from "firebase/storage";
+import SubirFotos from "src/components/SubirFotos.vue";
+import { QBtn, QUploader } from "quasar";
+import CarruselImagenes from "src/components/Carrusel-imagenes.vue";
 // import { useNivelStore } from "../stores/Niveles";
 // const store = useNivelStore();
 // const nivel = computed(() => store.nivel);
 // console.log("🚀 ~ file: Detalles_Alumnos.vue:19 ~ store:", nivel.value);
 
 let nivel = reactive(auth.currentUser.phoneNumber);
-
 const $q = reactive(useQuasar());
 const id = useRouter().currentRoute._rawValue.params.id;
 let sexo = reactive(["Masculino", "Femenino"]);
 let options = reactive(["Orquesta", "Coro", "Iniciacion 2", "Iniciacion 1"]);
-const alumno = reactive({});
-let editable = reactive(false);
 
 /**Subir Foto */
 /** @type {any} */
 const metadata = {
   contentType: "image/jpeg",
 };
-var loading = reactive(null);
-let progress = reactive(0);
-let file = reactive(null);
-let imagen = reactive(null);
-const archivo = (e) => {
-  file = e.target.files[0];
-  const storageRef = ref(storage, "Avatars/" + file.name);
-  const uploadTask = uploadBytesResumable(storageRef, file, metadata);
-  uploadTask.on(
-    "state_changed",
-    (snapshot) => {
-      loading = (snapshot.bytesTransferred / snapshot.totalBytes) * 100;
-      progress = loading;
-      switch (snapshot.state) {
-        case "paused":
-          console.log("Carga pausada");
-          break;
-        case "running":
-          console.log("Carga Completa");
-          break;
-      }
-    },
-    (error) => {
-      switch (error.code) {
-        case "storage/unauthorized":
-          break;
-        case "storage/canceled":
-          break;
-        case "storage/unknown":
-          break;
-      }
-    },
-    () => {
-      getDownloadURL(uploadTask.snapshot.ref)
-        .then((downloadURL) => {
-          imagen = downloadURL;
-        })
-        .then(
-          () => {
-            alumno.avatar = imagen;
-            guardar(alumno);
-          },
-          (error) => {
-            console.log(error);
-          }
-        );
-    }
-  );
-};
+let _ = reactive({
+  alumno: {},
+  editable: false,
+  file: null,
+  loading: null,
+  progress: 0,
+  imagen: null,
+  imageUrl: null,
+  destino: `Avatars/${id}`,
+});
+const archivo = async (files) => {
+  // Solo se permitirá subir un archivo
+  const file = files[0];
+  // Creamos una referencia a la carpeta Avatars en Firebase Storage
+  const imageRef = ref(storage, _.destino);
+  const NewImageRef = ref(imageRef, file.name);
+  // Subimos el archivo a Firebase Storage
+  await uploadBytes(NewImageRef, file);
 
+  // Obtenemos la URL de la imagen en Firebase Storage
+  const url = await getDownloadURL(NewImageRef);
+
+  // Asignamos la URL a la variable reactiva
+  // _.imagen = url;
+  _.imageUrl = url;
+};
 //Cambiar Formato de la Fecha
 function cambiarFormatoFecha1(fecha) {
   const fechaObj = new Date(fecha);
@@ -97,7 +73,6 @@ function cambiarFormatoFecha1(fecha) {
   const res = `${diaStr}-${mesStr}-${anio}`;
   return res;
 }
-
 function cambiarFormatoFecha2(fecha) {
   fecha = fecha.replace("/", "-");
   let fechaFormateada = fecha.replace(/\//g, "-");
@@ -139,40 +114,39 @@ function calcularTiempoTranscurrido(desdeFecha) {
     anios,
   };
 }
-
 onMounted(async () => {
   mostrar_ficha(id);
 });
 const mostrar_ficha = (id) => {
   Buscar_Alumno(id).then((elem) => {
-    alumno.id = elem.id;
-    alumno.nombre = elem.nombre;
-    alumno.apellido = elem.apellido;
-    alumno.cedula = elem.cedula || "Vacio";
-    alumno.avatar = elem.avatar || imagen;
-    alumno.fecInscripcion = cambiarFormatoFecha1(elem.registro) || "Vacio";
-    alumno.nac = elem.nac || "Vacio";
-    alumno.edad = calcularEdad(elem.nac) || "Vacio";
-    alumno.sexo = elem.sexo || "Vacio";
-    alumno.email = elem.email || "Vacio";
-    alumno.tlf = elem.tlf || "Vacio";
-    alumno.emergencia = elem.emergencia || "Vacio";
-    alumno.colegio_trabajo = elem.colegio_trabajo || "Vacio";
-    alumno.direccion_colegio_trabajo =
+    _.alumno.id = elem.id;
+    _.alumno.nombre = elem.nombre;
+    _.alumno.apellido = elem.apellido;
+    _.alumno.cedula = elem.cedula || "Vacio";
+    _.alumno.avatar = elem.avatar || _.imagen;
+    _.alumno.fecInscripcion = cambiarFormatoFecha1(elem.registro) || "Vacio";
+    _.alumno.nac = elem.nac || "Vacio";
+    _.alumno.edad = calcularEdad(elem.nac) || "Vacio";
+    _.alumno.sexo = elem.sexo || "Vacio";
+    _.alumno.email = elem.email || "Vacio";
+    _.alumno.tlf = elem.tlf || "Vacio";
+    _.alumno.emergencia = elem.emergencia || "Vacio";
+    _.alumno.colegio_trabajo = elem.colegio_trabajo || "Vacio";
+    _.alumno.direccion_colegio_trabajo =
       elem.direccion_colegio_trabajo || "Vacio";
-    alumno.horario_colegio_trabajo = elem.horario_colegio_trabajo || "Vacio";
-    alumno.registro = elem.registro;
-    alumno.direccion = elem.direccion || "Vacio";
-    alumno.Termino_Aporte_Mensual = elem.Termino_Aporte_Mensual || "Vacio";
-    alumno.Termino_Redes_Sociales = elem.Termino_Redes_Sociales || "Vacio";
-    alumno.madre = elem.madre || "Vacio";
-    alumno.cedula_madre = elem.cedula_madre || "Vacio";
-    alumno.tlf_madre = elem.tlf_madre || "Vacio";
-    alumno.padre = elem.padre || "Vacio";
-    alumno.cedula_padre = elem.cedula_padre || "Vacio";
-    alumno.tlf_padre = elem.tlf_padre || "Vacio";
-    alumno.grupo = elem.grupo;
-    alumno.instrumento = elem.instrumento || "Vacio";
+    _.alumno.horario_colegio_trabajo = elem.horario_colegio_trabajo || "Vacio";
+    _.alumno.registro = elem.registro;
+    _.alumno.direccion = elem.direccion || "Vacio";
+    _.alumno.Termino_Aporte_Mensual = elem.Termino_Aporte_Mensual || "Vacio";
+    _.alumno.Termino_Redes_Sociales = elem.Termino_Redes_Sociales || "Vacio";
+    _.alumno.madre = elem.madre || "Vacio";
+    _.alumno.cedula_madre = elem.cedula_madre || "Vacio";
+    _.alumno.tlf_madre = elem.tlf_madre || "Vacio";
+    _.alumno.padre = elem.padre || "Vacio";
+    _.alumno.cedula_padre = elem.cedula_padre || "Vacio";
+    _.alumno.tlf_padre = elem.tlf_padre || "Vacio";
+    _.alumno.grupo = elem.grupo;
+    _.alumno.instrumento = elem.instrumento || "Vacio";
   });
 };
 
@@ -185,7 +159,7 @@ const guardar = async (alumno) => {
         textColor: "white",
         icon: "cloud_done",
       });
-      editable = true;
+      _.editable = true;
     })
     .catch((error) => {
       $q.notify({
@@ -215,7 +189,7 @@ const eliminar = async () => {
 };
 </script>
 <template>
-  <div class="q-ma-sm flex justify-center bg-white" style="min-width: 375px">
+  <div class="q-ma-sm row justify-center bg-white" style="min-width: 375px">
     <q-list bordered separator>
       <div v-if="nivel === '0'" class="flex q-ma-sm justify-end wrap">
         <q-btn
@@ -223,14 +197,14 @@ const eliminar = async () => {
           color="primary"
           icon="save"
           size="sm"
-          @click="guardar(alumno)"
+          @click="guardar(_.alumno)"
         />
         <q-btn
           class="q-mx-xs"
           color="orange-4"
           icon="edit_note"
           size="sm"
-          @click="editable = !editable"
+          @click="_.editable = !_.editable"
         />
         <q-btn
           class="q-mx-xs"
@@ -241,83 +215,95 @@ const eliminar = async () => {
         />
       </div>
       <div v-else></div>
-      <q-item-label header class="q-m-sm">
-        <q-card class="row">
-          <q-avatar class="avatar col-12">
-            <img :src="alumno.avatar" />
-          </q-avatar>
-
-          <q-card-section class="col-12">
-            <q-card-section class="">
-              <span
-                class="text-h5 text-weight-bolder q-mx-md"
-                style="width: 100%"
-              >
-                {{ alumno.nombre }} {{ alumno.apellido }}
-              </span>
-            </q-card-section>
-            <q-card-section>
-              <span
-                class="flex justify-center text-subtitle2 q-mx-sm"
-                style="width: 100%"
-              >
-                {{ alumno.instrumento }}
-              </span>
-            </q-card-section>
-            <q-toolbar>{{ alumno.registro }} </q-toolbar>
+      <q-item-label header class="q-m-md">
+        <q-card class="my-card row">
+          <img
+            :src="_.alumno.avatar"
+            class="col-12 col-sm-6 col-xl-6 col-md-6"
+          />
+          <CarruselImagenes
+            :mensaje="_.destino"
+            class="col-12 col-sm-6 col-xl-6 col-md-6"
+          />
+          <q-card-section class="col-12 col-md-6">
+            <div class="text-h6">
+              {{ _.alumno.nombre }} {{ _.alumno.apellido }}
+            </div>
+            <div class="text-subtitle2">{{ _.alumno.instrumento }}</div>
+            <LineaTiempo :disable="_.editable" class="text-justify" />
           </q-card-section>
         </q-card>
-        <input class="bg-grey-2" type="file" @change="archivo($event)" />
+        <!-- <input
+          id="subirImagen"
+          class="bg-grey-2"
+          type="file"
+          @added="archivo($event)"
+        /> -->
+        <!-- <q-img v-if="_.imageUrl" :src="_.imageUrl" />
+
+        <q-uploader
+          :auto-upload="false"
+          accept=".jpg,.jpeg,.png"
+          @added="archivo($event)"
+        >
+          <q-btn
+            color="primary"
+            v-if="!_.imageUrl"
+            id="subirImagen"
+            icon="cloud_upload"
+            label="Seleccionar imagen"
+          />
+        </q-uploader> -->
         <q-space />
       </q-item-label>
 
       <q-separator />
       <!-- <ArbolHabilidades /> -->
       <q-separator />
-      <LineaTiempo :editable="editable" />
+
       <q-separator />
       <div v-if="nivel === '0'" class="row q-mx-lg bg-white">
         <div class="col-5">
           <q-input
-            v-model="alumno.edad"
-            :disable="editable"
+            v-model="_.alumno.edad"
+            :disable="_.editable"
             label="Edad"
             stack-label
           />
           <q-select
-            v-model="alumno.sexo"
+            v-model="_.alumno.sexo"
             label="sexo"
             :options="sexo"
             stack-label
-            :disable="editable"
+            :disable="_.editable"
           />
           <q-input
-            v-model="alumno.cedula"
-            :disable="editable"
+            v-model="_.alumno.cedula"
+            :disable="_.editable"
             label="Cedula"
             stack-label
           />
           <q-input
-            v-model="alumno.nac"
-            :disable="editable"
+            v-model="_.alumno.nac"
+            :disable="_.editable"
             label="Fecha de Nacimiento"
             stack-label
           />
           <q-input
-            v-model="alumno.fecInscripcion"
-            :disable="editable"
+            v-model="_.alumno.fecInscripcion"
+            :disable="_.editable"
             label="Fecha de Inscripcion"
             stack-label
           />
           <q-input
-            v-model="alumno.direccion"
-            :disable="editable"
+            v-model="_.alumno.direccion"
+            :disable="_.editable"
             label="Direccion de Vivienda"
             stack-label
           />
           <q-input
-            v-model="alumno.tlf"
-            :disable="editable"
+            v-model="_.alumno.tlf"
+            :disable="_.editable"
             label="Telefono del Alumno"
             stack-label
           />
@@ -325,46 +311,46 @@ const eliminar = async () => {
 
         <div class="col-5 offset-md-1">
           <q-input
-            v-model="alumno.email"
-            :disable="editable"
+            v-model="_.alumno.email"
+            :disable="_.editable"
             label="Email"
             stack-label
           />
           <q-input
-            v-model="alumno.emergencia"
-            :disable="editable"
+            v-model="_.alumno.emergencia"
+            :disable="_.editable"
             label="Telefono de Emergencia"
             stack-label
           />
           <q-input
-            v-model="alumno.colegio_trabajo"
-            :disable="editable"
+            v-model="_.alumno.colegio_trabajo"
+            :disable="_.editable"
             label="Donde Estudia o Trabaja?"
             stack-label
           />
           <q-input
-            v-model="alumno.direccion_colegio_trabajo"
-            :disable="editable"
+            v-model="_.alumno.direccion_colegio_trabajo"
+            :disable="_.editable"
             label="Direccion de la Institucion"
             stack-label
           />
           <q-input
-            v-model="alumno.horario_colegio_trabajo"
-            :disable="editable"
+            v-model="_.alumno.horario_colegio_trabajo"
+            :disable="_.editable"
             label="Horario de Clases o Trabajo"
             stack-label
           />
         </div>
         <q-checkbox
-          :disable="editable"
-          v-model="alumno.Termino_Aporte_Mensual"
+          :disable="_.editable"
+          v-model="_.alumno.Termino_Aporte_Mensual"
           val="teal"
           label="Acepta el Termino del Aporte Mensual"
           color="teal"
         />
         <q-checkbox
-          :disable="editable"
-          v-model="alumno.Termino_Redes_Sociales"
+          :disable="_.editable"
+          v-model="_.alumno.Termino_Redes_Sociales"
           val="teal"
           label="Acepta el Termino hacer publica cualquier foto o video en las redes sociales de nuestra institucion "
           color="teal"
@@ -376,20 +362,20 @@ const eliminar = async () => {
       <div class="row flex q-ma-lg">
         <div class="col-5">
           <q-input
-            v-model="alumno.madre"
-            :disable="editable"
+            v-model="_.alumno.madre"
+            :disable="_.editable"
             label="Nombre de la Madre"
             stack-label
           />
           <q-input
-            v-model="alumno.cedula_madre"
-            :disable="editable"
+            v-model="_.alumno.cedula_madre"
+            :disable="_.editable"
             label="Cedula de la Madre"
             stack-label
           />
           <q-input
-            v-model="alumno.tlf_madre"
-            :disable="editable"
+            v-model="_.alumno.tlf_madre"
+            :disable="_.editable"
             label="Tlf de la Madre"
             stack-label
           />
@@ -397,28 +383,28 @@ const eliminar = async () => {
 
         <div class="col-5 offset-md-1">
           <q-input
-            v-model="alumno.padre"
-            :disable="editable"
+            v-model="_.alumno.padre"
+            :disable="_.editable"
             label="Nombre del Padre"
             stack-label
           />
           <q-input
-            v-model="alumno.cedula_padre"
-            :disable="editable"
+            v-model="_.alumno.cedula_padre"
+            :disable="_.editable"
             label="Cedula del Padre"
             stack-label
           />
           <q-input
-            v-model="alumno.tlf_padre"
-            :disable="editable"
+            v-model="_.alumno.tlf_padre"
+            :disable="_.editable"
             label="Telefono del Padre"
             stack-label
           />
         </div>
       </div>
       <!-- <q-input
-        v-model="alumno.avatar"
-        :disable="editable"
+        v-model="_.alumno.avatar"
+        :disable="_.editable"
         label="URL del Avatar"
         stack-label
       /> -->
@@ -429,28 +415,28 @@ const eliminar = async () => {
         <div class="col-auto q-ma-sm row no-wrap">
           <q-select
             filled
-            v-model="alumno.grupo"
+            v-model="_.alumno.grupo"
             multiple
             :options="options"
             use-chips
             stack-label
             label="Grupos"
-            :disable="editable"
+            :disable="_.editable"
             color="purple-6"
           />
           <q-input
             color="purple-12"
             class="q-mx-sm"
             filled
-            v-model="alumno.instrumento"
-            :disable="editable"
+            v-model="_.alumno.instrumento"
+            :disable="_.editable"
             label="Instrumento / Interesado en:"
             stack-label
           />
 
-          <div v-if="loading">
-            {{ loading }}
-            <q-linear-progress :value="progress" />
+          <div v-if="_.loading !== null">
+            {{ _.loading }}
+            <q-linear-progress :value="_.progress" />
             <q-spinner-hourglass color="primary" size="2em" />
             <q-tooltip :offset="[0, 8]">Subiendo</q-tooltip>
           </div>
@@ -459,14 +445,14 @@ const eliminar = async () => {
             dense
             flat
             icon="send"
-            @click="guardar(alumno)"
-            :disable="editable"
+            @click="guardar(_.alumno)"
+            :disable="_.editable"
           />
         </div>
       </div>
     </q-list>
     <div>
-      <!-- @click="$router.push('/Detalles_Alumnos/' + item.id)" -->
+      <!-- @click="$router.push('/Detalles__.alumnos/' + item.id)" -->
       <q-btn to="/Calificacion_Alumno/">Calificacion</q-btn>
     </div>
   </div>

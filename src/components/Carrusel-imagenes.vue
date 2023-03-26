@@ -23,7 +23,7 @@
       <q-carousel-slide
         width="150px"
         class="carousel-item"
-        v-for="(imagen, index) of store.imageList"
+        v-for="(imagen, index) of carouselItems"
         :key="index"
         :name="index"
         :img-src="imagen.src"
@@ -37,37 +37,47 @@
 </template>
 
 <script setup>
-import { ref, onMounted, computed } from "vue";
+import { ref, watchEffect, defineProps } from "vue";
 import { storage, auth } from "../firebase";
 import { ref as storageRef, listAll, getDownloadURL } from "firebase/storage";
 import SubirFotos from "./SubirFotos.vue";
 import { useNivelStore } from "../stores/Niveles";
 let store = useNivelStore();
 let nivel = ref(auth.currentUser.phoneNumber);
-let destino = ref("Carrusel");
 const slide = ref(1);
 const autoplay = ref(true);
 const carouselItems = ref([]);
-onMounted(async () => {
+const props = defineProps({
+  mensaje: {
+    type: String,
+  },
+});
+let destino = ref(props.mensaje);
+const getListImagen = () => {
   // Obtiene una referencia a la carpeta "images"
-  const imagesRef = storageRef(storage, "Carrusel");
-
-  try {
-    // Obtiene una lista de todas las imágenes en la carpeta "images"
-    const imageList = await listAll(imagesRef);
-    for (const image of imageList.items) {
-      const url = await getDownloadURL(image);
-      carouselItems.value.push({
-        src: url,
-        alt: image.name,
+  const imagesRef = storageRef(storage, props.mensaje);
+  // Obtiene una lista de todas las imágenes en la carpeta "images"
+  listAll(imagesRef)
+    .then((imageList) => {
+      imageList.items.forEach((image) => {
+        getDownloadURL(image)
+          .then((url) => {
+            carouselItems.value.push({
+              src: url,
+            });
+            store.imageList = carouselItems.value;
+          })
+          .catch((error) => {
+            console.error(error);
+          });
       });
-      store.imageList = carouselItems.value;
-    }
-
-    // Itera sobre la lista de imágenes y agrega cada una al carrusel
-  } catch (error) {
-    console.error(error);
-  }
+    })
+    .catch((error) => {
+      console.error(error);
+    });
+};
+watchEffect(async () => {
+  getListImagen();
 });
 </script>
 <style></style>

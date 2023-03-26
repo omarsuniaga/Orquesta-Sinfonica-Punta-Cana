@@ -17,7 +17,8 @@ export const useNivelStore = defineStore("nivel", {
         url,
         name,
       };
-      return this.imagenList.push(imagen).reverse();
+      this.imagenList.push(imagen);
+      return this.imagenList.reverse();
     },
   },
 });

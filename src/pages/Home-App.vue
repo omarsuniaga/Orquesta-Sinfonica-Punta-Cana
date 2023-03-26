@@ -13,7 +13,7 @@ let group = ref([]);
 let id = ref();
 let loading = ref(false);
 let nivel = ref("");
-
+const mensaje = ref("Carrusel");
 onMounted(async () => {
   nivel.value = await auth.currentUser.phoneNumber;
   group.value = await classificationByGroup();
@@ -35,7 +35,9 @@ onMounted(async () => {
     <div class="row justify-between">
       <!-- System column -->
 
-      <div class="col-12 col-md-6 col-sm-12"><CarruselImagenes /></div>
+      <div class="col-12 col-md-6 col-sm-12">
+        <CarruselImagenes :mensaje="mensaje" />
+      </div>
       <div class="col-12 col-md-6 col-sm-12">
         <MenuSecundario />
         <div class="row justify-center" v-if="$q.screen.width > 1024">

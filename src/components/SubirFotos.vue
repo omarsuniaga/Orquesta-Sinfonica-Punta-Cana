@@ -28,15 +28,13 @@ const props = defineProps({
 const metadata = {
   contentType: "image/jpeg",
 };
-let file = reactive("");
 // Función para subir archivo
 async function addNewImage(file) {
-  const imagesRef = refe(storage, "Carrusel");
+  const imagesRef = refe(storage, props.destino);
   const newImageRef = refe(imagesRef, file.name);
   await uploadBytes(newImageRef, file);
-
   const url = await getDownloadURL(newImageRef);
-  store.addImagen(url, file.name);
+  store.addImagen(url);
   $q.notify({
     message: "Imagen Guardada",
     color: "green-4",
