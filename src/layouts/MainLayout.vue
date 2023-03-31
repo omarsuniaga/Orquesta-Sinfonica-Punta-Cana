@@ -2,7 +2,7 @@
   <q-layout view="hHh lpR fFf" class="">
     <q-header reveal class="fondo q-py-xs">
       <div class="no-wrap">
-        <q-btn flat no-wrap class="flex justify-center" to="/home">
+        <q-btn flat no-wrap class="flex justify-center" to="/">
           <img src="~assets/funeyca.png" style="width: 60px; height: 60px" />
         </q-btn>
       </div>
@@ -40,8 +40,8 @@ let model = ref($route.currentRoute._rawValue);
 let Botones = ref([
   {
     icon: "home",
-    to: "/Home",
-    value: "home",
+    to: "/",
+    value: "",
     auth: auth.currentUser.displayName >= 0 ? true : false,
   },
   {

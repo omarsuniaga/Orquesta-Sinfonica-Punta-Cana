@@ -29,6 +29,19 @@ import {
   disableNetwork,
   enableNetwork,
 } from "firebase/firestore";
+import {
+  getDatabase,
+  ref,
+  child,
+  push,
+  update,
+  set,
+  get,
+  onValue,
+  onDisconnect,
+  serverTimestamp,
+} from "firebase/database";
+
 import moment from "moment";
 export const firebaseConfig = {
   apiKey: import.meta.env.VITE_APP_API_KEY,
@@ -36,14 +49,15 @@ export const firebaseConfig = {
   databaseURL: import.meta.env.VITE_APP_DATABASE_URL,
   projectId: import.meta.env.VITE_APP_PROJECT_ID,
   storageBucket: import.meta.env.VITE_APP_STORAGE_BUCKET,
-  messagingSenderId: import.meta.env.VITE_APP_MESSAGING_SENDER_ID,
   appId: import.meta.env.VITE_APP_APP_ID,
+  messagingSenderId: import.meta.env.VITE_APP_MESSAGING_SENDER_ID,
 };
 
 const app = initializeApp(firebaseConfig);
 export const auth = getAuth(app);
 auth.languageCode = "es";
-const db = getFirestore(app);
+export const db = getFirestore(app);
+export const realdb = getDatabase(app);
 export const storage = getStorage(app);
 const Fecha = moment().format("YYYY/MM/DD");
 const ALUMNOS = [];
@@ -55,7 +69,6 @@ let __VALIDACION = false;
 let __ID;
 
 export {
-  db,
   Fecha,
   Lista_Presentes,
   Lista_Ausentes,
@@ -76,30 +89,33 @@ export const Iniciar_Automaticamente = () => {
 
         // __SESION = true;
         resolve(true);
+        const connectedRef = ref(realdb, ".info/connected");
+        const myConnectionsRef = ref(realdb, `users/${user.uid}/connections`);
+        // almacena la marca de tiempo de mi última desconexión (la última vez que me vieron en línea)
+        const lastOnlineRef = ref(realdb, `users/${user.uid}/connections`);
+
+        onValue(connectedRef, (snap) => {
+          if (snap.val() === true) {
+            // ¡Estamos conectados (o reconectados)! Haga cualquier cosa aquí que debería suceder solo si está en línea (o al volver a conectarse)
+            const con = push(myConnectionsRef);
+
+            // Cuando desconecto, elimino este dispositivo
+            onDisconnect(con).remove();
+
+            // Agregar este dispositivo a mi lista de conexiones
+            // este valor podría contener información sobre el dispositivo o también una marca de tiempo
+            set(con, true);
+
+            // Cuando me desconecto, actualizo la última vez que me vieron en línea
+            onDisconnect(lastOnlineRef).set(serverTimestamp());
+          }
+        });
       } else {
         // __SESION = false;
         resolve(false);
       }
     });
   });
-};
-
-export const useAuthState = () => {
-  const user = ref(null);
-  const error = ref(null);
-  const auth = getAuth();
-  let unsubscribe;
-  onMounted(() => {
-    unsubscribe = onAuthStateChanged(
-      auth,
-      (u) => (user.value = u),
-      (e) => (error.value = e)
-    );
-  });
-  onUnmounted(() => unsubscribe());
-
-  const isAuthenticated = computed(() => user.value != null);
-  return { user, error, isAuthenticated };
 };
 
 export const useSignOut = async () => {
@@ -110,6 +126,25 @@ export const useSignOut = async () => {
     alert(e.message);
   }
 };
+export const SolicitarCredenciales = async (email) => {
+  try {
+    let RefColeccion = collection(db, "USUARIOS");
+    let q = query(RefColeccion, where("email", "==", email));
+    let querySnapshot = await getDocs(q);
+    if (querySnapshot.empty) {
+      return null;
+    } else {
+      let { Nivel } = querySnapshot.docs[0].data();
+      return Nivel;
+    }
+  } catch (error) {
+    console.log(error);
+  }
+};
+export const iniciarSesion = async (email, password) => {
+  return await signInWithEmailAndPassword(auth, email, password);
+};
+
 export const getUserState = () =>
   new Promise((resolve, reject) =>
     onAuthStateChanged(getAuth(), resolve, reject)
@@ -147,9 +182,16 @@ export const Crear_Alumnos = async (alumno) => {
     console.log(error);
   }
 };
+
+//Buscar algun alumno con detalles en el registro
 export const Leer_Alumnos = async () => {
   try {
     let alumnosRef = collection(db, "ALUMNOS");
+    let res = await getDocs(alumnosRef);
+    res.forEach((doc) => {
+      doc.data().instrumento === "Interés: Flauta";
+      console.log(doc.data().instrumento, doc.data().id);
+    });
     return await getDocs(alumnosRef);
   } catch (error) {
     console.log(error);
@@ -353,6 +395,9 @@ export const Buscar_Alumno_Nombre = async (text) => {
           ? resultado.push(elem.data())
           : null
       );
+      Li.filter((elem) =>
+        elem.data().id.search(text) != -1 ? resultado.push(elem.data()) : null
+      );
       return resultado;
     } catch (error) {
       console.log(error);
@@ -440,40 +485,7 @@ export const Salir = async () => {
   window.location.replace("/");
   return console.log("Usuario Deslogeado");
 };
-export const SolicitarCredenciales = async (email) => {
-  try {
-    let RefColeccion = collection(db, "USUARIOS");
-    let q = query(RefColeccion, where("email", "==", email));
-    let querySnapshot = await getDocs(q);
-    if (querySnapshot.empty) {
-      return null;
-    } else {
-      let { Nivel } = querySnapshot.docs[0].data();
-      return Nivel;
-    }
-  } catch (error) {
-    console.log(error);
-  }
-};
-setPersistence(auth, browserSessionPersistence)
-  .then(() => {
-    console.log(
-      "Persistence set to browser session",
-      browserSessionPersistence()
-    );
 
-    // Existing and future Auth states are now persisted in the current
-    // session only. Closing the window would clear any existing state even
-    // if a user forgets to sign out.
-    // ...
-    // New sign-in will be persisted with session persistence.
-    return signInWithEmailAndPassword(auth, email, password);
-  })
-  .catch((error) => {
-    // Handle Errors here.
-    const errorCode = error.code;
-    const errorMessage = error.message;
-  });
 // export const Iniciar_Automaticamente = async () => {
 // new Promise((resolve, reject) => onAuthStateChanged(auth, resolve, reject));
 // console.log("Iniciar_Automaticamente");
@@ -760,3 +772,4 @@ export const PROCESOS = async (id) => {
 };
 
 Iniciar_Automaticamente();
+Leer_Alumnos();

@@ -3,12 +3,12 @@
     <div class="container">
       <h6 class="text-white">Bienvenidos a OSIJPC</h6>
       <img src="../assets/funeyca.png" alt="" />
-      <q-form @submit.prevent="onSubmit" @reset="onReset" class="q-pa-md">
+      <q-form @submit.prevent="onSubmit" class="q-pa-md">
         <q-input
           bg-color="white"
-          v-model="email"
+          v-model="username"
           type="text"
-          label="eMail"
+          label="Username: admin/test/profe"
           lazy-rules
           outlined
           :rules="[(val) => (val && val.length > 0) || 'Escribe tu correo']"
@@ -18,7 +18,7 @@
           bg-color="white"
           type="password"
           label="Password"
-          v-model="pass"
+          v-model="password"
           lazy-rules
           :rules="[
             (val) => (val !== null && val !== '') || 'Datos Incorrectos',
@@ -43,23 +43,25 @@
 <script setup>
 import { useRouter } from "vue-router";
 import { ref } from "vue";
-import { signInWithEmailAndPassword } from "firebase/auth";
-import { auth } from "../firebase";
+import { iniciarSesion } from "../firebase";
 import { useQuasar } from "quasar";
 import { useNivelStore } from "../stores/Niveles";
-
 const store = useNivelStore();
+
 const router = useRouter();
-const email = ref(null);
-const pass = ref(null);
+const username = ref("");
+const password = ref("");
+
 const $q = useQuasar();
 // const { nivel } = storeToRefs(store);
 const onSubmit = async () => {
   try {
-    let res = await signInWithEmailAndPassword(auth, email.value, pass.value);
+    const email = `${username.value}@gmail.com`;
+
+    let res = await iniciarSesion(email, password.value);
     if (res._tokenResponse.registered) {
-      store.setNivel(email.value);
-      return router.push("/home");
+      store.setNivel(email);
+      return router.push("/");
     }
   } catch (error) {
     error.code === "auth/user-not-found"

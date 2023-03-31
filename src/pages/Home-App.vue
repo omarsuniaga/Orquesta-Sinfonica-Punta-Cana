@@ -14,6 +14,23 @@ let id = ref();
 let loading = ref(false);
 let nivel = ref("");
 const mensaje = ref("Carrusel");
+const useAuthState = () => {
+  const user = ref(null);
+  const error = ref(null);
+  const auth = getAuth();
+  let unsubscribe;
+  onMounted(() => {
+    unsubscribe = onAuthStateChanged(
+      auth,
+      (u) => (user.value = u),
+      (e) => (error.value = e)
+    );
+  });
+  onUnmounted(() => unsubscribe());
+
+  const isAuthenticated = computed(() => user.value != null);
+  return { user, error, isAuthenticated };
+};
 onMounted(async () => {
   nivel.value = await auth.currentUser.phoneNumber;
   group.value = await classificationByGroup();

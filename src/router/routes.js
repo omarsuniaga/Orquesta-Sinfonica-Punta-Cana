@@ -1,29 +1,22 @@
 const routes = [
   {
-    path: "/",
-    name: "",
-    component: () => import("src/pages/Index-Main.vue"),
-  },
-  {
     path: "/login",
     name: "login",
     component: () => import("src/pages/Log-in.vue"),
   },
-
+  {
+    path: "/",
+    name: "home",
+    component: () => import("layouts/MainLayout.vue"),
+    children: [
+      { path: "/", component: () => import("src/pages/Home-App.vue") },
+    ],
+    meta: { requiresAuth: true },
+  },
   {
     path: "/:pathMatch(.*)*",
     name: "NotFound",
     component: () => import("src/pages/ErrorNotFound.vue"),
-  },
-
-  {
-    path: "/home",
-    name: "home",
-    component: () => import("layouts/MainLayout.vue"),
-    children: [
-      { path: "/home", component: () => import("src/pages/Home-App.vue") },
-    ],
-    meta: { requiresAuth: true },
   },
 
   {

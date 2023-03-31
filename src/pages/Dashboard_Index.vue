@@ -96,19 +96,24 @@
       </q-card>
     </div>
   </q-toolbar>
+
   <div class="col-auto">
     <q-card class="q-ma-md q-pa-md" bordered>
       <div class="flex justify-between items-center">
-        <VueApexCharts
-          type="polarArea"
-          :options="pie.chartOptions"
-          :series="pie.series"
-        ></VueApexCharts>
-        <VueApexCharts
-          type="pie"
-          :options="generos.chartOptions"
-          :series="generos.series"
-        ></VueApexCharts>
+        <q-toolbar>
+          <div class="myCards">
+            <q-card class="" v-for="(item, index) in Instrumentos" :key="index">
+              <q-card-section>
+                <div class="text-h6">
+                  {{ index === "Vacio" ? "Sin Asignar" : index }}
+                </div>
+              </q-card-section>
+              <q-card-section class="q-pt-none">
+                {{ item }} Alumnos
+              </q-card-section>
+            </q-card>
+          </div>
+        </q-toolbar>
       </div>
     </q-card>
   </div>
@@ -142,6 +147,7 @@ let ObjetoGlobal = ref([]);
 let attendance = ref([]);
 let Alumnos = ref([]);
 let Global = ref([]);
+let Instrumentos = ref([]);
 let _l = ref([]);
 let model = ref("Semanal");
 let loading = ref(false);
@@ -151,52 +157,7 @@ provide(/* key */ "Global", /* value */ Global.value);
 const props = defineProps({
   text: String,
 });
-let generos = ref({
-  series: [],
-  chartOptions: {
-    chart: {
-      width: 580,
-      type: "pie",
-    },
-    labels: [],
-    responsive: [
-      {
-        breakpoint: 280,
-        options: {
-          chart: {
-            width: 400,
-          },
-          legend: {
-            position: "bottom",
-          },
-        },
-      },
-    ],
-  },
-});
-const pie = ref({
-  series: [],
-  chartOptions: {
-    chart: {
-      type: "polarArea",
-      width: 580,
-    },
-    labels: [],
-    responsive: [
-      {
-        breakpoint: 280,
-        options: {
-          chart: {
-            width: 400,
-          },
-          legend: {
-            position: "bottom",
-          },
-        },
-      },
-    ],
-  },
-});
+
 const UnaSemana = async () => {
   let Hoy = await attendance.value
     .filter(({ date, attended }) => {
@@ -275,15 +236,6 @@ const TresMeses = () => {
 
 //Esta funcion intenta almacenar en un objeto a los alumnos fecha y asistencia
 onMounted(async () => {
-  //Obtener la cantidad de alumnos de cada genero
-  let genre = await classificationByGenre();
-  let { F, f, Femenino } = genre;
-  let { Masculino, M, masculino } = genre;
-  Femenino = F + f + Femenino;
-  Masculino = Masculino + M + masculino;
-  let { Vacio } = genre;
-  console.log(genre);
-  genre = { Femenino, Masculino, Vacio };
   //Obtener listados de Alumnos
   Alumnos.value = await Mostrar_Listado().then((elem) =>
     elem.map((e) => e.data())
@@ -297,26 +249,11 @@ onMounted(async () => {
     return acc;
   }, {});
 
-  //Graficar y Etiquetar segun el genero
-  let label = Object.entries(genre);
-  label = label.map(
-    (e) =>
-      generos.value.chartOptions.labels.push(e[0]) &&
-      generos.value.series.push(e[1])
-  );
-
   //Obtetner la cantidad de alumnos para cada instrumento
-  let instrumentos = Alumnos.value
+  Instrumentos.value = Alumnos.value
     .map((e) => e.instrumento) //mapear todos los instrumentos
     .sort((a, b) => a - b) //ordenarlos alfabeticamente
     .reduce((prev, cur) => ((prev[cur] = prev[cur] + 1 || 1), prev), {}); //contar todos los que se repiten
-
-  //Graficar y Etiquetar los instrumentos
-  let instrumts = Object.entries(instrumentos);
-  instrumts = instrumts.map(
-    (e) =>
-      pie.value.chartOptions.labels.push(e[0]) && pie.value.series.push(e[1])
-  );
 
   //Obtener listados de Asistencias
   _l.value = await Mostrar_todo().then((elem) => elem.map((e) => e.data()));
