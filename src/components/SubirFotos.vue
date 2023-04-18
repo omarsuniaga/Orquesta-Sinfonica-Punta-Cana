@@ -41,6 +41,7 @@ async function addNewImage(file) {
     textColor: "white",
     icon: "save",
   });
+  console.log(url, 'URL');
 }
 // Manejador de eventos para el cambio de archivo
 function onFileChange(event) {

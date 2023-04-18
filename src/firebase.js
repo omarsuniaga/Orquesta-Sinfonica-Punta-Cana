@@ -190,7 +190,6 @@ export const Leer_Alumnos = async () => {
     let res = await getDocs(alumnosRef);
     res.forEach((doc) => {
       doc.data().instrumento === "Interés: Flauta";
-      console.log(doc.data().instrumento, doc.data().id);
     });
     return await getDocs(alumnosRef);
   } catch (error) {
