@@ -1,33 +1,15 @@
 <template>
   <div>
-    <q-carousel
-      class="carousel"
-      swipeable
-      animated
-      v-model="slide"
-      thumbnails
-      infinite
-      :autoplay="autoplay"
-      arrows
-      transition-prev="slide-right"
-      transition-next="slide-left"
-      @mouseenter="autoplay = false"
-      @mouseleave="autoplay = true"
-      :style="[
+    <q-carousel class="carousel" swipeable animated v-model="slide" thumbnails infinite :autoplay="autoplay" arrows
+      transition-prev="slide-right" transition-next="slide-left" @mouseenter="autoplay = false"
+      @mouseleave="autoplay = true" :style="[
         'background-size: cover',
         'background-position: center center',
         'background-repeat: no-repeat',
         'background-color: green',
-      ]"
-    >
-      <q-carousel-slide
-        width="150px"
-        class="carousel-item"
-        v-for="(imagen, index) of carouselItems"
-        :key="index"
-        :name="index"
-        :img-src="imagen.src"
-      />
+      ]">
+      <q-carousel-slide width="150px" class="carousel-item" v-for="(imagen, index) of carouselItems" :key="index"
+        :name="index" :img-src="imagen.src" />
     </q-carousel>
 
     <div v-if="nivel === '0'">

@@ -16,6 +16,11 @@ import { ref, uploadBytes, getDownloadURL } from "firebase/storage";
 import SubirFotos from "src/components/SubirFotos.vue";
 import { QBtn, QUploader } from "quasar";
 import CarruselImagenes from "src/components/Carrusel-imagenes.vue";
+import { Cloudinary } from '@cloudinary/url-gen'
+import { Resize } from '@cloudinary/url-gen/actions'
+const cldInstance = new Cloudinary({ cloud: { cloudName: 'dmwhl0lhp' } });
+
+
 // import { useNivelStore } from "../stores/Niveles";
 // const store = useNivelStore();
 // const nivel = computed(() => store.nivel);
@@ -31,11 +36,12 @@ let _ = reactive({
   editable: false,
   file: null,
   loading: null,
-  progress: 0,
-  imagen: null,
-  imageUrl: null,
+  imagen: 'https://www.asofiduciarias.org.co/wp-content/uploads/2018/06/sin-foto-300x300.png',
+  imageUrl: 'https://www.asofiduciarias.org.co/wp-content/uploads/2018/06/sin-foto-300x300.png',
   destino: `galeria/${id}`,
   avatar: `avatar/${id}`,
+  stars: 2,
+  ver: false,
 });
 
 /** @type {any} */
@@ -48,6 +54,9 @@ async function addNewImage(file) {
   const newImageRef = ref(imagesRef, file.name);
   await uploadBytes(newImageRef, file);
   const url = await getDownloadURL(newImageRef);
+  _.imageUrl = url;
+
+
   $q.notify({
     message: "Imagen Guardada",
     color: "green-4",
@@ -58,9 +67,34 @@ async function addNewImage(file) {
     elem.avatar = url;
     elem.id = id;
     Actualizar_Alumno(elem);
-    console.log('URL', elem.avatar);
+    _.imagen = elem.avatar
   });
 }
+// change format img
+
+
+
+
+const cambiarFormatoImg = async (url) => {
+  if (url === null) {
+    return 'https://www.asofiduciarias.org.co/wp-content/uploads/2018/06/sin-foto-300x300.png'
+  } else {
+    const myImage = cldInstance
+      .image(url)
+      .setDeliveryType('fetch')
+      .resize(Resize.fill().width(100).height(100))
+    _.imagen = myImage.toURL();
+    return myImage.toURL()
+  }
+}
+
+// const fetchedImage = cldInstance
+//   .image(_.alumno.avatar)
+//   .setDeliveryType('fetch');
+
+// console.log(fetchedImage.toURL());
+
+
 // Manejador de eventos para el cambio de archivo
 function onFileChange(event) {
   const files = event.target.files;
@@ -130,7 +164,7 @@ const mostrar_ficha = (id) => {
     _.alumno.nombre = elem.nombre;
     _.alumno.apellido = elem.apellido;
     _.alumno.cedula = elem.cedula || "Vacio";
-    _.alumno.avatar = elem.avatar || _.imageUrl;
+    _.alumno.avatar = cambiarFormatoImg(elem.avatar);
     _.alumno.fecInscripcion = cambiarFormatoFecha1(elem.registro) || "Vacio";
     _.alumno.nac = elem.nac || "Vacio";
     _.alumno.edad = calcularEdad(elem.nac) || "Vacio";
@@ -195,116 +229,128 @@ const eliminar = async () => {
     })
     .onDismiss(() => { });
 };
+const mostrar = () => {
+  _.ver = !_.ver;
+}
 </script>
 <template>
   <div class="q-ma-sm row justify-center bg-white" style="min-width: 375px">
-    <q-list bordered separator>
-      <div v-if="nivel === '0'" class="flex q-ma-sm justify-end wrap">
-        <q-btn class="q-mx-xs" color="primary" icon="save" size="sm" @click="guardar(_.alumno)" />
-        <q-btn class="q-mx-xs" color="orange-4" icon="edit_note" size="sm" @click="_.editable = !_.editable" />
-        <q-btn class="q-mx-xs" color="red-4" icon="remove_circle" size="sm" @click="eliminar()" />
-      </div>
-      <div v-else></div>
-      <q-item-label header class="q-m-md">
-        <q-card class="my-card row">
-          <img :src="_.alumno.avatar" class="col-12 col-sm-6 col-xl-6 col-md-6" @click="$refs.fileInput.click()" />
-          <CarruselImagenes :mensaje="_.destino" class="col-12 col-sm-6 col-xl-6 col-md-6" />
-          <q-card-section class="col-12 col-md-6">
-            <div class="text-h6">
-              {{ _.alumno.nombre }} {{ _.alumno.apellido }}
-            </div>
-            <div class="text-subtitle2">{{ _.alumno.instrumento }}</div>
-            <LineaTiempo :disable="_.editable" class="text-justify" />
-          </q-card-section>
-        </q-card>
-        <input class="bg-red-300" type="file" @change="onFileChange($event)" ref="fileInput" hidden="true" />
+    <q-card class="my-card">
+      <CarruselImagenes :mensaje="_.destino" class="col-12 col-sm-6 col-xl-6 col-md-6" />
 
-        <!--
-                                                                                                                                                                          <q-uploader :auto-upload="false" accept=".jpg,.jpeg,.png" @added="archivo($event)">
-                                                                                                                                                                            <q-btn color="primary" v-if="!_.imageUrl" id="subirImagen" icon="cloud_upload" label="Seleccionar imagen" />
-                                                                                                                                                                          </q-uploader> -->
-        <q-space />
-      </q-item-label>
-
-      <q-separator />
-      <!-- <ArbolHabilidades /> -->
-      <q-separator />
-
-      <q-separator />
-      <div v-if="nivel === '0'" class="row q-mx-lg bg-white">
-        <div class="col-5">
-          <q-input v-model="_.alumno.edad" :disable="_.editable" label="Edad" stack-label />
-          <q-select v-model="_.alumno.sexo" label="sexo" :options="sexo" stack-label :disable="_.editable" />
-          <q-input v-model="_.alumno.cedula" :disable="_.editable" label="Cedula" stack-label />
-          <q-input v-model="_.alumno.nac" :disable="_.editable" label="Fecha de Nacimiento" stack-label />
-          <q-input v-model="_.alumno.fecInscripcion" :disable="_.editable" label="Fecha de Inscripcion" stack-label />
-          <q-input v-model="_.alumno.direccion" :disable="_.editable" label="Direccion de Vivienda" stack-label />
-          <q-input v-model="_.alumno.tlf" :disable="_.editable" label="Telefono del Alumno" stack-label />
-        </div>
-
-        <div class="col-5 offset-md-1">
-          <q-input v-model="_.alumno.email" :disable="_.editable" label="Email" stack-label />
-          <q-input v-model="_.alumno.emergencia" :disable="_.editable" label="Telefono de Emergencia" stack-label />
-          <q-input v-model="_.alumno.colegio_trabajo" :disable="_.editable" label="Donde Estudia o Trabaja?"
-            stack-label />
-          <q-input v-model="_.alumno.direccion_colegio_trabajo" :disable="_.editable" label="Direccion de la Institucion"
-            stack-label />
-          <q-input v-model="_.alumno.horario_colegio_trabajo" :disable="_.editable" label="Horario de Clases o Trabajo"
-            stack-label />
-        </div>
-        <q-checkbox :disable="_.editable" v-model="_.alumno.Termino_Aporte_Mensual" val="teal"
-          label="Acepta el Termino del Aporte Mensual" color="teal" />
-        <q-checkbox :disable="_.editable" v-model="_.alumno.Termino_Redes_Sociales" val="teal"
-          label="Acepta el Termino hacer publica cualquier foto o video en las redes sociales de nuestra institucion "
-          color="teal" />
-      </div>
-    </q-list>
-    <q-separator />
-    <q-list v-if="nivel === '0'" bordered separator style="width: 100%">
-      <div class="row flex q-ma-lg">
-        <div class="col-5">
-          <q-input v-model="_.alumno.madre" :disable="_.editable" label="Nombre de la Madre" stack-label />
-          <q-input v-model="_.alumno.cedula_madre" :disable="_.editable" label="Cedula de la Madre" stack-label />
-          <q-input v-model="_.alumno.tlf_madre" :disable="_.editable" label="Tlf de la Madre" stack-label />
-        </div>
-
-        <div class="col-5 offset-md-1">
-          <q-input v-model="_.alumno.padre" :disable="_.editable" label="Nombre del Padre" stack-label />
-          <q-input v-model="_.alumno.cedula_padre" :disable="_.editable" label="Cedula del Padre" stack-label />
-          <q-input v-model="_.alumno.tlf_padre" :disable="_.editable" label="Telefono del Padre" stack-label />
-        </div>
-      </div>
-      <q-input v-model="_.alumno.avatar" :disable="_.editable" label="URL del Avatar" stack-label />
-    </q-list>
-    <q-separator />
-    <q-list v-if="nivel === '0'" bordered separator style="width: 100%">
-      <div class="row q-col-gutter-x-md flex justify-between q-ma-sm">
-        <div class="col-auto q-ma-sm row no-wrap">
-          <q-select filled v-model="_.alumno.grupo" multiple :options="options" use-chips stack-label label="Grupos"
-            :disable="_.editable" color="purple-6" />
-          <q-input color="purple-12" class="q-mx-sm" filled v-model="_.alumno.instrumento" :disable="_.editable"
-            label="Instrumento / Interesado en:" stack-label />
-
-          <div v-if="_.loading !== null">
-            {{ _.loading }}
-            <q-linear-progress :value="_.progress" />
-            <q-spinner-hourglass color="primary" size="2em" />
-            <q-tooltip :offset="[0, 8]">Subiendo</q-tooltip>
+      <q-card-section>
+        <q-item-section avatar class="full-width row inline  justify-center items-center content-center "
+          style="transform: translateY(-50%);">
+          <q-avatar size="150px">
+            <input class="bg-red-300" type="file" @change="onFileChange($event)" ref="fileInput" hidden="true" />
+            <img :src="_.imagen" @click="$refs.fileInput.click()">
+          </q-avatar>
+          <div class="col-auto text-grey text-caption q-pt-md row no-wrap items-center">
+            <q-icon name="place" />
+            {{ _.alumno.instrumento }}
           </div>
-          <q-btn round dense flat icon="send" @click="guardar(_.alumno)" :disable="_.editable" />
+        </q-item-section>
+
+        <div class="row no-wrap items-center">
+          <div class="col text-h6 ellipsis">
+            {{ _.alumno.nombre }} {{ _.alumno.apellido }}
+          </div>
+
         </div>
-      </div>
-    </q-list>
-    <div>
-      <!-- @click="$router.push('/Detalles__.alumnos/' + item.id)" -->
-      <q-btn to="/Calificacion_Alumno/">Calificacion</q-btn>
-    </div>
+        <div v-if="nivel === '0'" class="flex q-ma-sm justify-end wrap">
+          <q-btn class="q-mx-xs" color="primary" icon="save" size="sm" @click="guardar(_.alumno)" />
+          <q-btn class="q-mx-xs" color="orange-4" icon="edit_note" size="sm" @click="_.editable = !_.editable" />
+          <q-btn class="q-mx-xs" color="red-4" icon="remove_circle" size="sm" @click="eliminar()" />
+        </div>
+        <div v-else>
+        </div>
+        <q-rating v-model="_.stars" :max="5" size="32px" />
+      </q-card-section>
+
+      <q-card-section class="q-pt-none">
+        <div class="text-caption text-grey">
+          <LineaTiempo :disable="_.editable" />
+        </div>
+      </q-card-section>
+
+      <q-separator />
+
+      <q-card-actions>
+        <q-btn flat round icon="more" @click=mostrar() />
+        <q-btn flat color="primary" to="/Calificacion_Alumno/">Calificacion
+        </q-btn>
+      </q-card-actions>
+      <q-separator />
+      <main v-if="_.ver === true">
+        <q-list v-if="nivel === '0'" bordered separator style="width: 100%">
+          <div class="row flex q-ma-lg">
+            <div class="col-5">
+              <q-input v-model="_.alumno.madre" :disable="_.editable" label="Nombre de la Madre" stack-label />
+              <q-input v-model="_.alumno.cedula_madre" :disable="_.editable" label="Cedula de la Madre" stack-label />
+              <q-input v-model="_.alumno.tlf_madre" :disable="_.editable" label="Tlf de la Madre" stack-label />
+            </div>
+
+            <div class="col-5 offset-md-1">
+              <q-input v-model="_.alumno.padre" :disable="_.editable" label="Nombre del Padre" stack-label />
+              <q-input v-model="_.alumno.cedula_padre" :disable="_.editable" label="Cedula del Padre" stack-label />
+              <q-input v-model="_.alumno.tlf_padre" :disable="_.editable" label="Telefono del Padre" stack-label />
+            </div>
+          </div>
+          <q-input v-model="_.alumno.avatar" :disable="_.editable" label="URL del Avatar" stack-label />
+        </q-list>
+        <div v-if="nivel === '0'" class="row q-mx-lg bg-white">
+          <div class="col-5">
+            <q-input v-model="_.alumno.edad" :disable="_.editable" label="Edad" stack-label />
+            <q-select v-model="_.alumno.sexo" label="sexo" :options="sexo" stack-label :disable="_.editable" />
+            <q-input v-model="_.alumno.cedula" :disable="_.editable" label="Cedula" stack-label />
+            <q-input v-model="_.alumno.nac" :disable="_.editable" label="Fecha de Nacimiento" stack-label />
+            <q-input v-model="_.alumno.fecInscripcion" :disable="_.editable" label="Fecha de Inscripcion" stack-label />
+            <q-input v-model="_.alumno.direccion" :disable="_.editable" label="Direccion de Vivienda" stack-label />
+            <q-input v-model="_.alumno.tlf" :disable="_.editable" label="Telefono del Alumno" stack-label />
+          </div>
+
+          <div class="col-5 offset-md-1">
+            <q-input v-model="_.alumno.email" :disable="_.editable" label="Email" stack-label />
+            <q-input v-model="_.alumno.emergencia" :disable="_.editable" label="Telefono de Emergencia" stack-label />
+            <q-input v-model="_.alumno.colegio_trabajo" :disable="_.editable" label="Donde Estudia o Trabaja?"
+              stack-label />
+            <q-input v-model="_.alumno.direccion_colegio_trabajo" :disable="_.editable"
+              label="Direccion de la Institucion" stack-label />
+            <q-input v-model="_.alumno.horario_colegio_trabajo" :disable="_.editable" label="Horario de Clases o Trabajo"
+              stack-label />
+          </div>
+          <q-checkbox :disable="_.editable" v-model="_.alumno.Termino_Aporte_Mensual" val="teal"
+            label="Acepta el Termino del Aporte Mensual" color="teal" />
+          <q-checkbox :disable="_.editable" v-model="_.alumno.Termino_Redes_Sociales" val="teal"
+            label="Acepta el Termino hacer publica cualquier foto o video en las redes sociales de nuestra institucion "
+            color="teal" />
+        </div>
+        <q-list v-if="nivel === '0'" bordered separator style="width: 100%">
+          <div class="row q-col-gutter-x-md flex justify-between q-ma-sm">
+            <div class="col-auto q-ma-sm row no-wrap">
+              <q-select filled v-model="_.alumno.grupo" multiple :options="options" use-chips stack-label label="Grupos"
+                :disable="_.editable" color="purple-6" />
+              <q-input color="purple-12" class="q-mx-sm" filled v-model="_.alumno.instrumento" :disable="_.editable"
+                label="Instrumento / Interesado en:" stack-label />
+
+              <div v-if="_.loading !== null">
+                {{ _.loading }}
+                <q-linear-progress :value="_.progress" />
+                <q-spinner-hourglass color="primary" size="2em" />
+                <q-tooltip :offset="[0, 8]">Subiendo</q-tooltip>
+              </div>
+              <q-btn round dense flat icon="send" @click="guardar(_.alumno)" :disable="_.editable" />
+            </div>
+          </div>
+        </q-list>
+      </main>
+    </q-card>
   </div>
 </template>
 
 <style>
-.avatar {
-  width: auto;
-  height: 30vh;
+.q-card {
+  width: 100%;
+  max-width: 100%;
 }
 </style>
