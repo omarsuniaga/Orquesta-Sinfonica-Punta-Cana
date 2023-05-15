@@ -1,106 +1,3 @@
-<template>
-  <div class="q-pa-md">
-    <q-toolbar class="justify-center flex row" style="min-width: 375px; width: 100%">
-      <q-btn-toggle v-model="model" rounded spread stack no-caps no-wrap toggle-color="primary" color="while"
-        text-color="primary" :options="[
-          { value: 'Semanal', slot: 'semanal' },
-          { value: 'Mensual', slot: 'mensual' },
-          { value: 'Semestral', slot: 'semestral' },
-        ]">
-        <template v-slot:semanal>
-          <div class="row items-center no-wrap">
-            <div class="text-center">Semanal</div>
-          </div>
-        </template>
-
-        <template v-slot:mensual>
-          <div class="row items-center no-wrap">
-            <div class="text-center">Mensual</div>
-          </div>
-        </template>
-
-        <template v-slot:semestral>
-          <div class="row items-center no-wrap">
-            <div class="text-center">Semestral</div>
-          </div>
-        </template>
-      </q-btn-toggle>
-    </q-toolbar>
-    <q-card class="full-width row wrap justify-around items-center content-center" bordered>
-      <q-card-section>
-        <div class="cols">
-          <div class="text-overline">Los 5 Alumnos de Mayor Asistencias</div>
-          <q-item v-ripple v-for="lista of ObjetoGlobal.PrimerosCinco" :key="lista.id" class="'bg-green-4'">
-            <q-item-section>
-              <q-item-label lines="1" class="text-green-3">
-                <q-badge rounded color="green" :label="lista[1]"> </q-badge>
-                {{ lista[0] }}
-              </q-item-label>
-            </q-item-section>
-          </q-item>
-        </div>
-      </q-card-section>
-      <q-card-section>
-        <div class="cols">
-          <div class="text-overline">Los 5 Alumnos de Menor Asistencias</div>
-          <q-item v-ripple v-for="lista of ObjetoGlobal.UltimosCinco" :key="lista.id" class="'bg-red-4'">
-            <q-item-section>
-              <q-item-label lines="1" class="text-red-3">
-                <q-badge rounded color="red" :label="lista[1]"> </q-badge>
-                {{ lista[0] }}
-              </q-item-label>
-            </q-item-section>
-          </q-item>
-        </div>
-      </q-card-section>
-    </q-card>
-  </div>
-
-  <div v-if="!loading" class="loading-container">
-    <div class="loading"></div>
-  </div>
-
-  <q-toolbar>
-    <div class="myCards">
-      <q-card class="" v-for="(item, index) in Totales_por_Grupos" :key="index">
-        <q-card-section>
-          <div class="text-h6">{{ index }}</div>
-        </q-card-section>
-        <q-card-section class="q-pt-none"> {{ item }} Alumnos </q-card-section>
-      </q-card>
-    </div>
-  </q-toolbar>
-
-  <div class="col-auto">
-    <q-card class="q-ma-md " bordered>
-      <div class="flex justify-between items-center">
-        <q-toolbar>
-          <div class="myCards">
-            <q-card class="" v-for="(item, index) in Instrumentos" :key="index">
-              <q-card-section>
-                <div class="text-h6">
-                  {{ index === "Vacio" ? "Sin Asignar" : index }}
-                </div>
-              </q-card-section>
-              <q-card-section class="q-pt-none">
-                {{ item }} Alumnos
-              </q-card-section>
-            </q-card>
-          </div>
-        </q-toolbar>
-      </div>
-    </q-card>
-  </div>
-  <div class="col-auto">
-    <q-card class="q-ma-md q-pa-md" bordered>
-      <HistorialAsistencias />
-    </q-card>
-    <div class="row justify-center">
-      <q-btn flat @click="Salir()" label="Cerrar Sesión" color="warning" />
-    </div>
-  </div>
-</template>
-
 <script setup>
 import { ref, onMounted, provide, watchEffect } from "vue";
 import {
@@ -260,65 +157,108 @@ watchEffect(async () => {
   }
 });
 </script>
-<style scoped>
-/* Define el contenedor de la animación de carga */
-.loading-container {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  position: fixed;
-  top: 0;
-  left: 0;
-  right: 0;
-  bottom: 0;
-  background-color: rgba(0, 0, 0, 0.5);
-  z-index: 9999;
-}
 
-/* Define la animación de carga */
-.loading-container .loading {
-  border: 4px solid #f3f3f3;
-  border-top: 4px solid #3498db;
-  border-radius: 50%;
-  width: 40px;
-  height: 40px;
-  animation: spin 2s linear infinite;
-}
+<template>
+  <div class="q-pa-md">
+    <q-toolbar class="justify-center flex row" style="min-width: 375px; width: 100%">
+      <q-btn-toggle v-model="model" rounded spread stack no-caps no-wrap toggle-color="primary" color="while"
+        text-color="primary" :options="[
+          { value: 'Semanal', slot: 'semanal' },
+          { value: 'Mensual', slot: 'mensual' },
+          { value: 'Semestral', slot: 'semestral' },
+        ]">
+        <template v-slot:semanal>
+          <div class="row items-center no-wrap">
+            <div class="text-center">Semanal</div>
+          </div>
+        </template>
 
-/* Define la keyframe de la animación */
-@keyframes spin {
-  0% {
-    transform: rotate(0deg);
-  }
+        <template v-slot:mensual>
+          <div class="row items-center no-wrap">
+            <div class="text-center">Mensual</div>
+          </div>
+        </template>
 
-  100% {
-    transform: rotate(360deg);
-  }
-}
+        <template v-slot:semestral>
+          <div class="row items-center no-wrap">
+            <div class="text-center">Semestral</div>
+          </div>
+        </template>
+      </q-btn-toggle>
+    </q-toolbar>
+    <q-card class="full-width row wrap justify-around items-center content-center" bordered>
+      <q-card-section>
+        <div class="cols">
+          <div class="text-overline">Los 5 Alumnos de Mayor Asistencias</div>
+          <q-item v-ripple v-for="lista of ObjetoGlobal.PrimerosCinco" :key="lista.id" class="'bg-green-4'">
+            <q-item-section>
+              <q-item-label lines="1" class="text-green-3">
+                <q-badge rounded color="green" :label="lista[1]"> </q-badge>
+                {{ lista[0] }}
+              </q-item-label>
+            </q-item-section>
+          </q-item>
+        </div>
+      </q-card-section>
+      <q-card-section>
+        <div class="cols">
+          <div class="text-overline">Los 5 Alumnos de Menor Asistencias</div>
+          <q-item v-ripple v-for="lista of ObjetoGlobal.UltimosCinco" :key="lista.id" class="'bg-red-4'">
+            <q-item-section>
+              <q-item-label lines="1" class="text-red-3">
+                <q-badge rounded color="red" :label="lista[1]"> </q-badge>
+                {{ lista[0] }}
+              </q-item-label>
+            </q-item-section>
+          </q-item>
+        </div>
+      </q-card-section>
+    </q-card>
+  </div>
 
-.myCards {
-  display: grid;
-  grid-template-columns: repeat(6, 1fr);
-  grid-gap: 30px;
-  margin: 0.3rem;
+  <div v-if="!loading" class="loading-container">
+    <div class="loading"></div>
+  </div>
 
-  /* Agrega un espacio de 5px entre los rectángulos */
-  /* justify-content: end; */
-  /* Centra los elements horizontalmente */
-  /* align-content: center; */
-  /* Centra los elementos verticalmente */
-}
+  <q-toolbar>
+    <div class="myCards">
+      <q-card class="" v-for="(item, index) in Totales_por_Grupos" :key="index">
+        <q-card-section>
+          <div class="text-h6">{{ index }}</div>
+        </q-card-section>
+        <q-card-section class="q-pt-none"> {{ item }} Alumnos </q-card-section>
+      </q-card>
+    </div>
+  </q-toolbar>
 
-@media (max-width: 768px) {
-  .myCards {
-    display: grid;
-    grid-template-columns: repeat(2, 1fr);
-    grid-template-rows: repeat(2, 1fr);
-    grid-gap: 20px;
-    /* Agrega un espacio de 5px entre los rectángulos */
-    justify-content: space-around;
-    /* Centra los elements horizontalmente */
-    /* align-content: center; Centra los elementos verticalmente */
-  }
-}
-</style>
+  <div class="col-auto">
+    <q-card class="q-ma-md " bordered>
+      <div class="flex justify-between items-center">
+        <q-toolbar>
+          <div class="myCards">
+            <q-card class="" v-for="(item, index) in Instrumentos" :key="index">
+              <q-card-section>
+                <div class="text-h6">
+                  {{ index === "Vacio" ? "Sin Asignar" : index }}
+                </div>
+              </q-card-section>
+              <q-card-section class="q-pt-none">
+                {{ item }} Alumnos
+              </q-card-section>
+            </q-card>
+          </div>
+        </q-toolbar>
+      </div>
+    </q-card>
+  </div>
+  <div class="col-auto">
+    <q-card class="q-ma-md q-pa-md" bordered>
+      <HistorialAsistencias />
+    </q-card>
+    <div class="row justify-center">
+      <q-btn flat @click="Salir()" label="Cerrar Sesión" color="warning" />
+    </div>
+  </div>
+</template>
+
+<style></style>

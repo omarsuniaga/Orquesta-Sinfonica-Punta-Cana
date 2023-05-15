@@ -14,6 +14,15 @@ const routes = [
     meta: { requiresAuth: true },
   },
   {
+    path: "/lapso",
+    name: "lapso",
+    component: () => import("layouts/MainLayout.vue"),
+    children: [
+      { path: "/", component: () => import("src/pages/LapsoAsistencias.vue") },
+    ],
+    meta: { requiresAuth: true },
+  },
+  {
     path: "/:pathMatch(.*)*",
     name: "NotFound",
     component: () => import("src/pages/ErrorNotFound.vue"),

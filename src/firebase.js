@@ -43,6 +43,7 @@ import {
 } from "firebase/database";
 
 import moment from "moment";
+
 export const firebaseConfig = {
   apiKey: import.meta.env.VITE_APP_API_KEY,
   authDomain: import.meta.env.VITE_APP_AUTH_DOMAIN,
@@ -595,9 +596,9 @@ export const Buscar_Asistencias_id = async (id, mes) => {
     !!elem.Fecha
       ? elem.Fecha.split("-")[1] === mes.toString()
         ? elem.Data.presentes.filter((el) =>
-            el === id ? PRESENTES++ : null
-          ) &&
-          elem.Data.ausentes.filter((el) => (el === id ? AUSENTES++ : null))
+          el === id ? PRESENTES++ : null
+        ) &&
+        elem.Data.ausentes.filter((el) => (el === id ? AUSENTES++ : null))
         : null
       : null
   );
@@ -751,7 +752,7 @@ export const Clasificacion_Generos = async () => {
     const masculino = await getDocs(ConsultaMasculino);
     femenino.empty === false || masculino === false
       ? (generos.femenino = femenino.docs.length) &&
-        (generos.masculino = masculino.docs.length)
+      (generos.masculino = masculino.docs.length)
       : false;
   } catch (error) {
     console.log(error);

@@ -46,7 +46,7 @@ async function addNewImage(file) {
     icon: "save",
   });
   console.log(url, 'URL');
-  (url) ? loading = true : loading = false;
+  (url) ? loading.value = true : loading.value = false;
 }
 // Manejador de eventos para el cambio de archivo
 function FileChange(event) {
