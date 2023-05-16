@@ -163,7 +163,7 @@ watchEffect(async () => {
         </template>
       </q-btn-toggle>
     </q-toolbar>
-    <q-card class="full-width row wrap justify-around items-center content-center" bordered>
+    <q-card class="full-width row no-wrap justify-around items-center content-center" bordered>
       <q-card-section>
         <div class="cols">
           <div class="text-overline">Los 5 Alumnos de Mayor Asistencias</div>

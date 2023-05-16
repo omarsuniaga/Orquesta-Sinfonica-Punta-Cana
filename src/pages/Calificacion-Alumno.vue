@@ -1,67 +1,81 @@
 <template>
-  <q-page>
-    <q-form @submit="guardarRegistro">
+  <h3 style="color:white">Registrar Progreso</h3>
+  <div class="q-ma-sm row  justify-around wrap " style="min-width: 80%">
+    <q-form @submit="guardarRegistro" class="col-3">
+      <main>
+        <q-btn @click="agregarTema" label="Agregar Tema" color="primary" />
+        <q-btn type="submit" label="Guardar" color="primary" v-if="!ocultar" />
+
+      </main>
       <div v-for="(tema, temaIndex) in temas" :key="temaIndex">
-        <q-input v-model="tema.nombre" label="Tema/Objetivo" filled outlined class="bg-white" />
+        <q-input v-model="tema.nombre" label="Tema/Objetivo" filled outlined class="bg-white" id="tema" />
+        <q-btn @click="agregarObservacion(temaIndex)" label="Agregar Observación" color="primary" />
+        <q-btn @click="eliminarTema(temaIndex)" label="Eliminar Tema" color="negative" />
 
         <div v-for="(observacion, observacionIndex) in tema.observaciones" :key="observacionIndex">
           <q-input v-model="observaciones[temaIndex][observacionIndex]" label="Observación" filled outlined
-            class="bg-white" />
-          <q-btn @click="eliminarObservacion(temaIndex, observacionIndex)" label="Eliminar" color="negative" dense />
-          <q-card class="my-card" flat bordered>
-
-            <q-card-section>
-              <q-btn fab color="primary" icon="add" class="absolute"
-                style="top: 0; right: 12px; transform: translateY(-50%);" />
-
-              <div class="row no-wrap items-center">
-                <div class="col text-h6 ellipsis">
-                  {{ tema.nombre }}
-                </div>
-              </div>
-
-              <q-rating v-model="tema.calificacion" :max="5" size="32px" />
-            </q-card-section>
-
-            <q-card-section class="q-pt-none">
-              <div class="text-subtitle1">
-                {{ observaciones[temaIndex][observacionIndex] }}
-              </div>
-
-            </q-card-section>
-
-            <q-separator />
-
-            <q-card-actions>
-              <q-btn type="submit" label="Guardar" color="primary" />
-              <q-btn flat @click="agregarTema" label="Agregar Tema" color="primary" />
-              <q-btn flat @click="eliminarTema(temaIndex)" label="Eliminar Tema" color="negative" dense />
-            </q-card-actions>
-          </q-card>
+            class="bg-white" id="observaciones" />
+          <q-btn @click="eliminarObservacion(temaIndex, observacionIndex)" label="Eliminar Observacion" color="negative"
+            dense />
         </div>
-
-        <q-btn type="submit" label="Guardar" color="primary" />
-        <q-btn @click="agregarObservacion(temaIndex)" label="Agregar Observación" color="primary" />
-
-
       </div>
 
 
     </q-form>
-  </q-page>
+    <!-- Consulta -->
+    <div class="col-6">
+      <q-card class="my-card" flat bordered v-for="(tema, temaIndex) in ConsultaTemas" :key="temaIndex">
+        <q-card-section>
+          <q-btn fab color="primary" icon="edit" class="absolute"
+            style="top: 0; right: 12px; transform: translateY(-50%);" @click="editarTema(temaIndex)" />
+
+          <div class="row no-wrap items-center">
+            <div class="col text-h6 ellipsis">
+              {{ tema.nombre }}
+              {{ tema.itemKey }}
+            </div>
+          </div>
+
+          <q-rating v-model="tema.calificacion" :max="5" size="32px" />
+        </q-card-section>
+
+        <q-card-section class="q-pt-none" v-for="(observacion, observacionIndex) in tema.observaciones"
+          :key="observacionIndex">
+          <div class="text-subtitle">
+            {{ observacion }}
+          </div>
+
+        </q-card-section>
+
+        <q-separator />
+
+        <q-card-actions>
+          <q-btn label="Guardar" color="primary" @click="guardarEdicion()" v-if="ocultar" />
+        </q-card-actions>
+      </q-card>
+    </div>
+  </div>
 </template>
 
 <script setup>
-import { ref, reactive, watch, watchEffect } from 'vue';
+import { ref, reactive, watch } from 'vue';
 
-import { realdb } from '../firebase'
+import { realdb, Buscar_Alumno, Fecha } from '../firebase'
 import { useRouter } from 'vue-router';
-import { ref as REF, getDatabase, onValue, set, push } from "firebase/database";
-
+import { ref as REF, child, onValue, set, push, update } from "firebase/database";
+let itemKey = ref('')
+const ocultar = ref(false)
 const id = useRouter().currentRoute._rawValue.params.id;
 const temas = reactive([{ nombre: '', observaciones: [], calificacion: 0 }]);
 const observaciones = ref([]);
 const calificacion = ref(0);
+const ConsultaTemas = ref([])
+const instrumento = async (id) => {
+  const { instrumento } = await Buscar_Alumno(id)
+  return instrumento
+}
+
+instrumento(id)
 
 const agregarTema = () => {
   temas.push({ nombre: '', observaciones: [], calificacion: 0 });
@@ -79,12 +93,36 @@ const eliminarObservacion = (temaIndex, observacionIndex) => {
   temas[temaIndex].observaciones.splice(observacionIndex, 1);
 };
 
+const editarTema = (temaIndex) => {
+  ocultar.value = true
+  const tema = temas[temaIndex];
+  if (ConsultaTemas.value.length > 0) {
+    tema.nombre = ConsultaTemas.value[temaIndex].nombre;
+    tema.observaciones = ConsultaTemas.value[temaIndex].observaciones;
+    tema.calificacion = ConsultaTemas.value[temaIndex].calificacion;
+  }
+};
+
+// guardar edicion
+const guardarEdicion = () => {
+  ocultar.value = false
+  const { nombre, calificacion, observaciones } = temas[0];
+  const edit = push(child(REF(realdb), 'Alumno/' + id), nombre, calificacion, observaciones)
+  const updates = {};
+  updates['Alumno/' + id + itemKey.value] = edit;
+};
+
 const guardarRegistro = async () => {
+  ConsultaTemas.value = []
   for (const tema of temas) {
     const nombreTema = tema.nombre;
     const observaciones = tema.observaciones;
     const calificacion = tema.calificacion;
     writeUserData(id, nombreTema, observaciones, calificacion)
+    temas.nombre = ''
+    temas.observaciones = []
+    temas.calificacion = 0
+    temas.key = itemKey
   }
 
 };
@@ -110,9 +148,13 @@ watch(calificacion, () => {
 
 function writeUserData(id, nombreTema, observaciones, calificacion) {
   const userData = {
-    nombreTema, observaciones, calificacion
+    nombreTema, observaciones, calificacion, Fecha
   }
-  set(REF(realdb, 'Alumno/' + id), userData);
+  const newPostKey = push(child(REF(realdb), 'Alumno/' + id), userData)
+  itemKey.value = newPostKey.key
+  const updates = {};
+  updates['Alumno/' + id + itemKey.value] = userData;
+
 
 }
 // Función para extraer el contenido del alumno por ID
@@ -121,10 +163,11 @@ const obtenerContenidoPorIdAlumno = (id) => {
   onValue(DireccionRef, (snapshot) => {
     const data = snapshot.val();
     if (data) {
-      const { nombreTema, observaciones, calificacion } = data;
-      temas.push({ nombre: nombreTema, observaciones, calificacion });
+      for (let item in data) {
+        const { Fecha, nombreTema, calificacion, observaciones } = data[item]
+        ConsultaTemas.value.push({ nombre: nombreTema, observaciones, calificacion, Fecha, itemKey: itemKey.value });
+      }
     }
-
   });
 
 };

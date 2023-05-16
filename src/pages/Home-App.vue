@@ -61,9 +61,9 @@ onMounted(async () => {
       <div class="col-12 col-md-6 col-sm-12">
         <MenuSecundario />
         <div class="row justify-center" v-if="$q.screen.width > 1024">
-          <AgruparPorGenero class="col-4" />
-          <PoblacionAlumnos class="col-4" />
-          <LapsoAsistencias class="col-12" />
+          <AgruparPorGenero />
+          <PoblacionAlumnos />
+          <LapsoAsistencias />
         </div>
       </div>
     </div>
