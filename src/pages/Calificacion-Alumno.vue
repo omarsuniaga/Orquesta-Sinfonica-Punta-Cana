@@ -1,197 +1,172 @@
 <template>
-  <div class="q-pa-md">
-    <div class="q-gutter-md" style="max-width: 300px">
-      <q-input
-        rounded
-        outlined
-        v-model="inscripcion"
-        label="Tiempo Inscrito"
-        bg-color="white"
-        min="0"
-        max="10"
-        type="number"
-      />
-      <q-input
-        rounded
-        outlined
-        v-model="Repertorio"
-        label="Repertorio"
-        bg-color="white"
-        min="0"
-        max="10"
-        type="number"
-      />
-      <q-input
-        rounded
-        outlined
-        v-model="Tecnicas"
-        label="Tecnicas"
-        bg-color="white"
-        min="0"
-        max="10"
-        type="number"
-      />
+  <q-page>
+    <q-form @submit="guardarRegistro">
+      <div v-for="(tema, temaIndex) in temas" :key="temaIndex">
+        <q-input v-model="tema.nombre" label="Tema/Objetivo" filled outlined class="bg-white" />
 
-      <q-input
-        rounded
-        outlined
-        v-model="Asistencias"
-        label="Asistencias"
-        bg-color="white"
-        min="0"
-        max="10"
-        type="number"
-      />
-      <q-input
-        rounded
-        outlined
-        v-model="Afinacion"
-        label="Afinacion"
-        bg-color="white"
-        min="0"
-        max="10"
-        type="number"
-      />
-      <q-input
-        rounded
-        outlined
-        v-model="Sonido"
-        label="Sonido"
-        bg-color="white"
-        min="0"
-        max="10"
-        type="number"
-      />
-      <q-input
-        rounded
-        outlined
-        v-model="Actitudes"
-        label="Actitudes"
-        bg-color="white"
-        min="0"
-        max="10"
-        type="number"
-      />
-      <q-input
-        rounded
-        outlined
-        v-model="Comportamiento"
-        label="Comportamiento"
-        bg-color="white"
-        min="0"
-        max="10"
-        type="number"
-      />
-      <q-btn
-        rounded
-        bg-color="white"
-        color="grey-4"
-        text-color="purple"
-        unelevated
-        icon="camera_enhance"
-        label="Calcular"
-        @click="calculateGrade"
-      />
-      <q-circular-progress
-        show-value
-        class="text-light-blue q-ma-md"
-        :value="grade"
-        size="50px"
-        color="light-blue"
-      />
-    </div>
-  </div>
+        <div v-for="(observacion, observacionIndex) in tema.observaciones" :key="observacionIndex">
+          <q-input v-model="observaciones[temaIndex][observacionIndex]" label="Observación" filled outlined
+            class="bg-white" />
+          <q-btn @click="eliminarObservacion(temaIndex, observacionIndex)" label="Eliminar" color="negative" dense />
+          <q-card class="my-card" flat bordered>
+
+            <q-card-section>
+              <q-btn fab color="primary" icon="place" class="absolute"
+                style="top: 0; right: 12px; transform: translateY(-50%);" />
+
+              <div class="row no-wrap items-center">
+                <div class="col text-h6 ellipsis">
+                  {{ tema.nombre }}
+                </div>
+                <div class="col-auto text-grey text-caption q-pt-md row no-wrap items-center">
+                  <q-icon name="place" />
+                  250 ft
+                </div>
+              </div>
+
+              <q-rating v-model="tema.calificacion" :max="5" size="32px" />
+            </q-card-section>
+
+            <q-card-section class="q-pt-none">
+              <div class="text-subtitle1">
+                $・Italian, Cafe
+              </div>
+              <div class="text-caption text-grey">
+                Small plates, salads & sandwiches in an intimate setting.
+              </div>
+            </q-card-section>
+
+            <q-separator />
+
+            <q-card-actions>
+              <q-btn type="submit" label="Guardar" color="primary" />
+              <q-btn flat @click="agregarTema" label="Agregar Tema" color="primary" />
+              <q-btn flat @click="eliminarTema(temaIndex)" label="Eliminar Tema" color="negative" dense />
+            </q-card-actions>
+          </q-card>
+        </div>
+
+        <q-btn type="submit" label="Guardar" color="primary" />
+        <q-btn @click="agregarObservacion(temaIndex)" label="Agregar Observación" color="primary" />
+
+
+      </div>
+
+
+    </q-form>
+  </q-page>
 </template>
 
 <script setup>
-import { ref } from "vue";
-import { NeuralNetwork, recurrent } from "brain.js";
+import { ref, reactive, watch, watchEffect } from 'vue';
 
-let inscripcion = ref(0);
-let Repertorio = ref(0);
-let Tecnicas = ref(0);
-let Asistencias = ref(0);
-let Afinacion = ref(0);
-let Sonido = ref(0);
-let Actitudes = ref(0);
-let Comportamiento = ref(0);
-let grade = ref(0);
-// const { RNN } = recurrent;
+import { realdb } from '../firebase'
+import { useRouter } from 'vue-router';
+import { ref as REF, getDatabase, onValue, set, push } from "firebase/database";
 
-function reviewFromOutput(output) {
-  let review = "El alumno ha demostrado ser ";
-  if (output >= 0.9) {
-    review += "una estrella, con un desempeño sobresaliente en todos los aspectos.";
-  } else if (output >= 0.8) {
-    review += "muy bueno, con un desempeño destacado en la mayoría de los aspectos.";
-  } else if (output >= 0.7) {
-    review += "bueno, con un desempeño promedio en la mayoría de los aspectos.";
-  } else if (output >= 0.5) {
-    review += "regular, con un desempeño aceptable en algunos aspectos.";
-  } else if (output >= 0.2) {
-    review +=
-      "deficiente, con un desempeño por debajo del promedio en la mayoría de los aspectos.";
-  } else {
-    review += "muy deficiente, con un desempeño inaceptable en todos los aspectos.";
+const id = useRouter().currentRoute._rawValue.params.id;
+const temas = reactive([{ nombre: '', observaciones: [], calificacion: 0 }]);
+const observaciones = ref([]);
+const calificacion = ref(0);
+
+const agregarTema = () => {
+  temas.push({ nombre: '', observaciones: [], calificacion: 0 });
+};
+
+const eliminarTema = (temaIndex) => {
+  temas.splice(temaIndex, 1);
+};
+
+const agregarObservacion = (temaIndex) => {
+  temas[temaIndex].observaciones.push('');
+};
+
+const eliminarObservacion = (temaIndex, observacionIndex) => {
+  temas[temaIndex].observaciones.splice(observacionIndex, 1);
+};
+
+const guardarRegistro = async () => {
+  for (const tema of temas) {
+    const nombreTema = tema.nombre;
+    const observaciones = tema.observaciones;
+    const calificacion = tema.calificacion;
+    writeUserData(id, nombreTema, observaciones, calificacion)
   }
-  return console.log(review);
+
+};
+
+// Observar cambios en el arreglo de temas y actualizar la matriz de observaciones
+watch(temas, () => {
+  observaciones.value = temas.map((tema) => tema.observaciones);
+});
+
+// Observar cambios en la matriz de observaciones y actualizar el arreglo de temas
+watch(observaciones, () => {
+  temas.forEach((tema, temaIndex) => {
+    tema.observaciones = observaciones.value[temaIndex];
+  });
+});
+
+watch(calificacion, () => {
+  temas.forEach((tema, temaIndex) => {
+    tema.calificacion = calificacion.value[temaIndex];
+  });
+})
+
+
+function writeUserData(id, nombreTema, observaciones, calificacion) {
+  const userData = {
+    nombreTema, observaciones, calificacion
+  }
+  set(REF(realdb, 'Alumno/' + id), userData);
+
 }
-let calculateGrade = () => {
-  // const net = new RNN({ hiddenLayers: [10] });
-  const net = new NeuralNetwork({
-    hiddenLayers: [10],
+// Función para extraer el contenido del alumno por ID
+const obtenerContenidoPorIdAlumno = (id) => {
+  const DireccionRef = REF(realdb, 'Alumno/' + id);
+  onValue(DireccionRef, (snapshot) => {
+    const data = snapshot.val();
+    if (data) {
+      const { nombreTema, observaciones, calificacion } = data;
+      temas.push({ nombre: nombreTema, observaciones, calificacion });
+    }
+
   });
 
-  // Entrenar la red con datos de ejemplo
-  net.train([
-    { input: [10, 10, 10, 10, 10, 10, 10, 10], output: [1] },
-    { input: [9, 9, 9, 9, 9, 9, 9, 9], output: [0.9] },
-    { input: [8, 8, 8, 8, 8, 8, 8, 8], output: [0.8] },
-    { input: [7, 7, 7, 7, 7, 7, 7, 7], output: [0.7] },
-    { input: [6, 6, 6, 6, 6, 6, 6, 6], output: [0.6] },
-    { input: [5, 5, 5, 5, 5, 5, 5, 5], output: [0.5] },
-    { input: [4, 4, 4, 4, 4, 4, 4, 4], output: [0.4] },
-    { input: [3, 3, 3, 3, 3, 3, 3, 3], output: [0.3] },
-    { input: [2, 2, 2, 2, 2, 2, 2, 2], output: [0.2] },
-    { input: [1, 1, 1, 1, 1, 1, 1, 1], output: [0.1] },
-  ]);
-
-  // Utilizar la red para hacer una predicción
-  const review = net.run([
-    inscripcion.value,
-    Repertorio.value,
-    Tecnicas.value,
-    Asistencias.value,
-    Afinacion.value,
-    Sonido.value,
-    Actitudes.value,
-    Comportamiento.value,
-  ]);
-  reviewFromOutput(review);
-
-  /**
-   * Nombre es un alumno talentoso y dedicado que lleva 20 años tocando el violín.
-   * Con más de 100 obras en su repertorio, su técnica es impresionante,
-   * obteniendo una calificación de 7 de 10. Además,
-   * su asistencia y afinación son excepcionales,
-   * con calificaciones de 9 de 10 en ambos aspectos.
-   *  La calidad de su sonido es buena, también con una calificación de 7 de 10.
-   * Omar demuestra una buena conducta en clase y es claro que su dedicación y
-   * talento han contribuido a su desarrollo como músico. En general,
-   * es un placer tener a un alumno tan comprometido y talentoso como
-   * Omar en la clase de violín.
-   *
-   *
-   * Años tocando el violín: 20 años.
-   * Repertorio musical: más de 100 obras.
-   * Técnica: 7 de 10.
-   * Asistencia: 9 de 10.
-   * Afinación: 9 de 10.
-   * Sonido: 7 de 10.
-   * Talento: presente.
-   * Conducta en clase: buena.
-   */
 };
+
+obtenerContenidoPorIdAlumno(id)
+</script>
+
+<style scoped>
+.q-input.bg-white {
+  background-color: #ffffff;
+}
+</style>
+
+/**
+const $q = useQuasar();
+* Nombre es un alumno talentoso y dedicado que lleva 20 años tocando el violín.
+* Con más de 100 obras en su repertorio, su técnica es impresionante,
+* obteniendo una calificación de 7 de 10. Además,
+ * su asistencia y afinación son excepcionales,
+ * con calificaciones de 9 de 10 en ambos aspectos.
+ *  La calidad de su sonido es buena, también con una calificación de 7 de 10.
+ * Omar demuestra una buena conducta en clase y es claro que su dedicación y
+ * talento han contribuido a su desarrollo como músico. En general,
+ * es un placer tener a un alumno tan comprometido y talentoso como
+ * Omar en la clase de violín.
+ *
+ *
+ * Años tocando el violín: 20 años.
+ * Repertorio musical: más de 100 obras.
+ * Técnica: 7 de 10.
+ * Asistencia: 9 de 10.
+ * Afinación: 9 de 10.
+ * Sonido: 7 de 10.
+ * Talento: presente.
+ * Conducta en clase: buena.
+ */
 
 //para un alumno de 1año en el instrumento debe haber superado el nivel 1
 //Nivel 1
@@ -215,4 +190,3 @@ let calculateGrade = () => {
 //Flesh, Carl. El Sistema de Escala.
 //Suzuky, S. Método para Violín. Vol. 1 y Vol. 2.
 //Se realizará una selección y secuenciación de los estudios comprendidos en estos métodos, que ejerciten los propósitos descritos en el nivel.
-</script>

@@ -44,6 +44,7 @@ import {
 
 import moment from "moment";
 
+
 export const firebaseConfig = {
   apiKey: import.meta.env.VITE_APP_API_KEY,
   authDomain: import.meta.env.VITE_APP_AUTH_DOMAIN,
@@ -770,6 +771,24 @@ export const PROCESOS = async (id) => {
   }
   return null;
 };
+export const guardarRegistroEnFirebase = (id, nombreTema, observacion) => {
+  const connectedRef = ref(realdb, ".info/connected");
+  const myConnectionsRef = ref(realdb, `alumno/${id}/calificaciones`);
+  const nuevoRegistro = {
+    nombreTema,
+    observacion,
+    fecha: Date.now(),
+  };
+  onValue(connectedRef, (snap) => {
+    if (snap.val() === true) {
+      const con = push(myConnectionsRef);
+      set(con, nuevoRegistro);
+      alert("Registro Guardado");
+    }
+  });
+};
+
+
 
 Iniciar_Automaticamente();
 Leer_Alumnos();

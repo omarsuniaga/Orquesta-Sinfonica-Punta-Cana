@@ -18,7 +18,7 @@ const routes = [
     name: "lapso",
     component: () => import("layouts/MainLayout.vue"),
     children: [
-      { path: "/", component: () => import("src/pages/LapsoAsistencias.vue") },
+      { path: "", component: () => import("src/components/LapsoAsistencias.vue") },
     ],
     meta: { requiresAuth: true },
   },
@@ -84,6 +84,16 @@ const routes = [
     meta: { requiresAuth: true },
   },
   {
+    path: "/Calificacion_Alumno/:id",
+    name: "Calificacion_Alumno",
+    props: true,
+    component: () => import("layouts/MainLayout.vue"),
+    children: [
+      { path: "", component: () => import("pages/Calificacion-Alumno.vue") },
+    ],
+    meta: { requiresAuth: true },
+  },
+  {
     path: "/Cerrar",
     name: "Cerrar",
     props: true,
@@ -93,16 +103,7 @@ const routes = [
     ],
     meta: { requiresAuth: true },
   },
-  {
-    path: "/Calificacion_Alumno/",
-    name: "Calificacion_Alumno",
-    props: true,
-    component: () => import("layouts/MainLayout.vue"),
-    children: [
-      { path: "", component: () => import("pages/Calificacion-Alumno.vue") },
-    ],
-    meta: { requiresAuth: true },
-  },
+
 ];
 
 export default routes;

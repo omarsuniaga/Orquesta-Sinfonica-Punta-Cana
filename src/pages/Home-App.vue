@@ -7,6 +7,9 @@ import { getAlumnos, classificationByGroup, __NIVEL, auth } from "src/firebase";
 import { useNivelStore } from "../stores/Niveles";
 import AgruparPorGenero from "src/components/Poblacion-Genero.vue";
 import PoblacionAlumnos from "src/components/Poblacion-Alumnos.vue";
+import LapsoAsistencias from "src/components/LapsoAsistencias.vue";
+
+
 const store = useNivelStore();
 const Alumnos = ref([]);
 let group = ref([]);
@@ -60,6 +63,7 @@ onMounted(async () => {
         <div class="row justify-center" v-if="$q.screen.width > 1024">
           <AgruparPorGenero class="col-4" />
           <PoblacionAlumnos class="col-4" />
+          <LapsoAsistencias class="col-12" />
         </div>
       </div>
     </div>
@@ -98,6 +102,7 @@ onMounted(async () => {
   0% {
     transform: rotate(0deg);
   }
+
   100% {
     transform: rotate(360deg);
   }

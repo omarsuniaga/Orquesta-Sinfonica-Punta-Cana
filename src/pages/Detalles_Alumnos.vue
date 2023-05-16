@@ -17,8 +17,6 @@ import SubirFotos from "src/components/SubirFotos.vue";
 import { QBtn, QUploader } from "quasar";
 import CarruselImagenes from "src/components/Carrusel-imagenes.vue";
 import { Cloudinary } from '@cloudinary/url-gen'
-import { Resize } from '@cloudinary/url-gen/actions'
-const cldInstance = new Cloudinary({ cloud: { cloudName: 'dmwhl0lhp' } });
 
 
 // import { useNivelStore } from "../stores/Niveles";
@@ -267,7 +265,7 @@ const mostrar = () => {
       <q-separator />
 
       <q-card-actions>
-        <q-btn flat color="primary" to="/Calificacion_Alumno/">Calificacion
+        <q-btn flat color="primary" @click="$router.push('/Calificacion_Alumno/' + _.alumno.id)">Calificacion
         </q-btn>
       </q-card-actions>
       <q-separator />

@@ -3,22 +3,13 @@ import { ref, onMounted, provide, watchEffect } from "vue";
 import {
   Mostrar_todo,
   Mostrar_Listado,
-  classificationByGenre,
   Generar_Asistencias_Global,
-  Salir,
-  auth,
 } from "../firebase";
-
-import { useRouter } from "vue-router";
-import VueApexCharts from "vue3-apexcharts";
-import HistorialAsistencias from "src/components/Historial-Asistencias.vue";
 //Variables
-let Totales_por_Grupos = ref([]);
 let ObjetoGlobal = ref([]);
 let attendance = ref([]);
 let Alumnos = ref([]);
 let Global = ref([]);
-let Instrumentos = ref([]);
 let _l = ref([]);
 let model = ref("Semanal");
 let loading = ref(false);
@@ -112,20 +103,6 @@ onMounted(async () => {
     elem.map((e) => e.data())
   );
 
-  //Obtener la cantidad de alumnos de cada grupo
-  Totales_por_Grupos.value = Alumnos.value.reduce((acc, curr) => {
-    curr.grupo.forEach((g) => {
-      acc[g] = (acc[g] || 0) + 1;
-    });
-    return acc;
-  }, {});
-
-  //Obtetner la cantidad de alumnos para cada instrumento
-  Instrumentos.value = Alumnos.value
-    .map((e) => e.instrumento) //mapear todos los instrumentos
-    .sort((a, b) => a - b) //ordenarlos alfabeticamente
-    .reduce((prev, cur) => ((prev[cur] = prev[cur] + 1 || 1), prev), {}); //contar todos los que se repiten
-
   //Obtener listados de Asistencias
   _l.value = await Mostrar_todo().then((elem) => elem.map((e) => e.data()));
 
@@ -215,50 +192,4 @@ watchEffect(async () => {
       </q-card-section>
     </q-card>
   </div>
-
-  <div v-if="!loading" class="loading-container">
-    <div class="loading"></div>
-  </div>
-
-  <q-toolbar>
-    <div class="myCards">
-      <q-card class="" v-for="(item, index) in Totales_por_Grupos" :key="index">
-        <q-card-section>
-          <div class="text-h6">{{ index }}</div>
-        </q-card-section>
-        <q-card-section class="q-pt-none"> {{ item }} Alumnos </q-card-section>
-      </q-card>
-    </div>
-  </q-toolbar>
-
-  <div class="col-auto">
-    <q-card class="q-ma-md " bordered>
-      <div class="flex justify-between items-center">
-        <q-toolbar>
-          <div class="myCards">
-            <q-card class="" v-for="(item, index) in Instrumentos" :key="index">
-              <q-card-section>
-                <div class="text-h6">
-                  {{ index === "Vacio" ? "Sin Asignar" : index }}
-                </div>
-              </q-card-section>
-              <q-card-section class="q-pt-none">
-                {{ item }} Alumnos
-              </q-card-section>
-            </q-card>
-          </div>
-        </q-toolbar>
-      </div>
-    </q-card>
-  </div>
-  <div class="col-auto">
-    <q-card class="q-ma-md q-pa-md" bordered>
-      <HistorialAsistencias />
-    </q-card>
-    <div class="row justify-center">
-      <q-btn flat @click="Salir()" label="Cerrar Sesión" color="warning" />
-    </div>
-  </div>
 </template>
-
-<style></style>
