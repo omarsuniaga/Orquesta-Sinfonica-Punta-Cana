@@ -28,12 +28,10 @@
         <div class="q-gutter-md q-pa-md column">
           <q-btn label="Entrar" type="submit" color="green" />
         </div>
-        <!-- <div class="inline-block"> -->
-        <!-- <q-link to="/RecuperarClave" class="text-white"
-            >Olvidaste tu contraseña?</q-link
-          > -->
-        <!-- <q-link to="/" class="text-white">Politica?</q-link> -->
-        <!-- </div> -->
+        <div class="inline-block">
+          <q-link to="" class="text-white">Version 2024</q-link>
+          <!-- <q-link to="/" class="text-white">Politica?</q-link> -->
+        </div>
         <q-space />
       </q-form>
     </div>

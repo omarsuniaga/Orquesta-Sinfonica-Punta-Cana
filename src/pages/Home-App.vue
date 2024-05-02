@@ -9,7 +9,6 @@ import AgruparPorGenero from "src/components/Poblacion-Genero.vue";
 import PoblacionAlumnos from "src/components/Poblacion-Alumnos.vue";
 import LapsoAsistencias from "src/components/LapsoAsistencias.vue";
 
-
 const store = useNivelStore();
 const Alumnos = ref([]);
 let group = ref([]);
@@ -56,7 +55,7 @@ onMounted(async () => {
       <!-- System column -->
 
       <div class="col-12 col-md-6 col-sm-12">
-        <CarruselImagenes :mensaje="mensaje" />
+        <!-- <CarruselImagenes :mensaje="mensaje" /> -->
       </div>
       <div class="col-12 col-md-6 col-sm-12">
         <MenuSecundario />
