@@ -40,10 +40,10 @@ onMounted(async () => {
   </div>
   <div v-else class="q-pa-md">
     <MenuSecundario />
-    <div class="row justify-between">
+    <div class="row justify-center">
       <!-- System column -->
-
       <div class="col-12 col-md-6 col-sm-12">
+        <LapsoAsistencias />
         <!-- <CarruselImagenes :mensaje="mensaje" /> -->
       </div>
       <div class="col-12 col-md-6 col-sm-12">
@@ -53,7 +53,7 @@ onMounted(async () => {
         </div>
       </div>
     </div>
-    <LapsoAsistencias />
+
     <!-- if screen xl -->
     <main v-for="(grupo, index) in group" :key="index">
       <ListadoHorizontal :grupo="grupo" :Alumnos="Alumnos" />

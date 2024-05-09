@@ -5,6 +5,7 @@
       :rows="ObjetoGlobal"
       :columns="columns"
       row-key="name"
+      :loading="loading"
     />
   </div>
 </template>
