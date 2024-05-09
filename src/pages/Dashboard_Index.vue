@@ -1,12 +1,25 @@
 <template>
   <div class="q-pa-md">
-    <q-toolbar class="justify-center flex row" style="min-width: 375px; width: 100%">
-      <q-btn-toggle v-model="model" rounded spread stack no-caps no-wrap toggle-color="primary" color="while"
-        text-color="primary" :options="[
+    <q-toolbar
+      class="justify-center flex row"
+      style="min-width: 375px; width: 100%"
+    >
+      <q-btn-toggle
+        v-model="model"
+        rounded
+        spread
+        stack
+        no-caps
+        no-wrap
+        toggle-color="primary"
+        color="while"
+        text-color="primary"
+        :options="[
           { value: 'Semanal', slot: 'semanal' },
           { value: 'Mensual', slot: 'mensual' },
           { value: 'Semestral', slot: 'semestral' },
-        ]">
+        ]"
+      >
         <template v-slot:semanal>
           <div class="row items-center no-wrap">
             <div class="text-center">Semanal</div>
@@ -26,11 +39,19 @@
         </template>
       </q-btn-toggle>
     </q-toolbar>
-    <q-card class="full-width row wrap justify-around items-center content-center" bordered>
+    <q-card
+      class="full-width row wrap justify-around items-center content-center"
+      bordered
+    >
       <q-card-section>
         <div class="cols">
           <div class="text-overline">Los 5 Alumnos de Mayor Asistencias</div>
-          <q-item v-ripple v-for="lista of ObjetoGlobal.PrimerosCinco" :key="lista.id" class="'bg-green-4'">
+          <q-item
+            v-ripple
+            v-for="lista of ObjetoGlobal.PrimerosCinco"
+            :key="lista.id"
+            class="'bg-green-4'"
+          >
             <q-item-section>
               <q-item-label lines="1" class="text-green-3">
                 <q-badge rounded color="green" :label="lista[1]"> </q-badge>
@@ -43,7 +64,12 @@
       <q-card-section>
         <div class="cols">
           <div class="text-overline">Los 5 Alumnos de Menor Asistencias</div>
-          <q-item v-ripple v-for="lista of ObjetoGlobal.UltimosCinco" :key="lista.id" class="'bg-red-4'">
+          <q-item
+            v-ripple
+            v-for="lista of ObjetoGlobal.UltimosCinco"
+            :key="lista.id"
+            class="'bg-red-4'"
+          >
             <q-item-section>
               <q-item-label lines="1" class="text-red-3">
                 <q-badge rounded color="red" :label="lista[1]"> </q-badge>
@@ -72,7 +98,7 @@
   </q-toolbar>
 
   <div class="col-auto">
-    <q-card class="q-ma-md " bordered>
+    <q-card class="q-ma-md" bordered>
       <div class="flex justify-between items-center">
         <q-toolbar>
           <div class="myCards">
@@ -127,10 +153,6 @@ let model = ref("Semanal");
 let loading = ref(false);
 //crear una variable global para usarlo en el dashboar
 provide(/* key */ "Global", /* value */ Global.value);
-
-const props = defineProps({
-  text: String,
-});
 
 const UnaSemana = async () => {
   let Hoy = await attendance.value

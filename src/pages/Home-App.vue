@@ -1,43 +1,29 @@
 <script setup>
-import CarruselImagenes from "src/components/Carrusel-imagenes.vue";
-import MenuSecundario from "src/components/Menu-Secundario.vue";
-import ListadoHorizontal from "src/components/Listado-Horizontal.vue";
 import { onMounted, ref, computed } from "vue";
 import { getAlumnos, classificationByGroup, __NIVEL, auth } from "src/firebase";
 import { useNivelStore } from "../stores/Niveles";
+import useAuthState from "./useAuthState"; // Mover la lógica de autenticación a un compositor
+
+import CarruselImagenes from "src/components/Carrusel-imagenes.vue";
+import MenuSecundario from "src/components/Menu-Secundario.vue";
+import ListadoHorizontal from "src/components/Listado-Horizontal.vue";
 import AgruparPorGenero from "src/components/Poblacion-Genero.vue";
 import PoblacionAlumnos from "src/components/Poblacion-Alumnos.vue";
 import LapsoAsistencias from "src/components/LapsoAsistencias.vue";
 
 const store = useNivelStore();
 const Alumnos = ref([]);
-let group = ref([]);
-let id = ref();
-let loading = ref(false);
-let nivel = ref("");
+const group = ref([]); // Cambiar a const
+const id = ref();
+const loading = ref(false);
+const nivel = ref("");
 const mensaje = ref("Carrusel");
-const useAuthState = () => {
-  const user = ref(null);
-  const error = ref(null);
-  const auth = getAuth();
-  let unsubscribe;
-  onMounted(() => {
-    unsubscribe = onAuthStateChanged(
-      auth,
-      (u) => (user.value = u),
-      (e) => (error.value = e)
-    );
-  });
-  onUnmounted(() => unsubscribe());
 
-  const isAuthenticated = computed(() => user.value != null);
-  return { user, error, isAuthenticated };
-};
+const { user, error, isAuthenticated } = useAuthState(); // Usar el compositor de autenticación
+
 onMounted(async () => {
   nivel.value = await auth.currentUser.phoneNumber;
   group.value = await classificationByGroup();
-  // group.value.reverse();
-  // console.log("group.value", group.value);
   Alumnos.value = await getAlumnos();
   if (Alumnos.value !== 0) {
     return (loading.value = true);
@@ -45,12 +31,15 @@ onMounted(async () => {
 });
 </script>
 
+<!-- Resto del componente... -->
+
 <template>
   <div v-if="!loading" class="loading-container text-red-1">
     {{ nivel }}
     <div class="loading"></div>
   </div>
   <div v-else class="q-pa-md">
+    <MenuSecundario />
     <div class="row justify-between">
       <!-- System column -->
 
@@ -58,14 +47,13 @@ onMounted(async () => {
         <!-- <CarruselImagenes :mensaje="mensaje" /> -->
       </div>
       <div class="col-12 col-md-6 col-sm-12">
-        <MenuSecundario />
-        <div class="row justify-center" v-if="$q.screen.width > 1024">
+        <div class="row justify-center">
           <AgruparPorGenero />
           <PoblacionAlumnos />
-          <LapsoAsistencias />
         </div>
       </div>
     </div>
+    <LapsoAsistencias />
     <!-- if screen xl -->
     <main v-for="(grupo, index) in group" :key="index">
       <ListadoHorizontal :grupo="grupo" :Alumnos="Alumnos" />

@@ -44,21 +44,21 @@ let Botones = ref([
     value: "",
     auth: auth.currentUser.displayName >= 0 ? true : false,
   },
+  // {
+  //   icon: "rule",
+  //   to: "/Nuevo-Alumno",
+  //   value: "Nuevo-Alumno",
+  //   auth:
+  //     auth.currentUser.displayName === 0
+  //       ? true
+  //       : auth.currentUser.displayName === 1
+  //       ? true
+  //       : false,
+  // },
   {
-    icon: "rule",
-    to: "/Nuevo-Alumno",
-    value: "Nuevo-Alumno",
-    auth:
-      auth.currentUser.displayName === 0
-        ? true
-        : auth.currentUser.displayName === 1
-        ? true
-        : false,
-  },
-  {
-    icon: "search",
-    to: "/Buscar",
-    value: "buscar",
+    icon: "group",
+    to: "/Asistencia",
+    value: "Asistencia",
     auth: auth.currentUser.displayName >= 0,
   },
   {

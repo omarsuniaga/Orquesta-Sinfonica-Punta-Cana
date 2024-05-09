@@ -18,7 +18,10 @@ const routes = [
     name: "lapso",
     component: () => import("layouts/MainLayout.vue"),
     children: [
-      { path: "", component: () => import("src/components/LapsoAsistencias.vue") },
+      {
+        path: "",
+        component: () => import("src/components/LapsoAsistencias.vue"),
+      },
     ],
     meta: { requiresAuth: true },
   },
@@ -29,20 +32,13 @@ const routes = [
   },
 
   {
-    path: "/Modulo-Asistencia",
-    name: "Modulo-Asistencia",
+    path: "/Asistencia",
+    name: "Asistencia",
     component: () => import("layouts/MainLayout.vue"),
 
     children: [
       { path: "", component: () => import("pages/Modulo-Asistencia.vue") },
     ],
-    meta: { requiresAuth: true },
-  },
-  {
-    path: "/Nuevo-Alumno",
-    name: "Nuevo-Alumno",
-    component: () => import("layouts/MainLayout.vue"),
-    children: [{ path: "", component: () => import("pages/Nuevo-Alumno.vue") }],
     meta: { requiresAuth: true },
   },
   {
@@ -52,6 +48,13 @@ const routes = [
     children: [
       { path: "", component: () => import("pages/Dashboard_Index.vue") },
     ],
+    meta: { requiresAuth: true },
+  },
+  {
+    path: "/Nuevo-Alumno",
+    name: "Nuevo-Alumno",
+    component: () => import("layouts/MainLayout.vue"),
+    children: [{ path: "", component: () => import("pages/Nuevo-Alumno.vue") }],
     meta: { requiresAuth: true },
   },
   {
@@ -103,7 +106,6 @@ const routes = [
     ],
     meta: { requiresAuth: true },
   },
-
 ];
 
 export default routes;

@@ -73,7 +73,15 @@ let meses = [
 let Fecha = moment().format("LLLL");
 let mesHoy = new Date(Fecha).getMonth() + 1;
 let arr = ref([]);
-let Dia = ["Lunes", "Martes", "Miercoles", "Jueves", "Viernes", "Sabado", "Domingo"];
+let Dia = [
+  "Lunes",
+  "Martes",
+  "Miercoles",
+  "Jueves",
+  "Viernes",
+  "Sabado",
+  "Domingo",
+];
 let MesesRegistrados = ref({});
 let separator = ref("cell");
 let rows = ref([]);
@@ -134,7 +142,15 @@ const columns = [
 ];
 const ObtenerDia = (dia) => {
   let f = moment(dia).day();
-  let Semana = ["Domingo", "Lunes", "Martes", "Miercoles", "Jueves", "Viernes", "Sabado"];
+  let Semana = [
+    "Domingo",
+    "Lunes",
+    "Martes",
+    "Miercoles",
+    "Jueves",
+    "Viernes",
+    "Sabado",
+  ];
   f = Semana.filter((e, i) => (i === f ? e : null));
   return f;
 };
@@ -147,7 +163,9 @@ const BuscarAlumno = (id) => {
 };
 const BuscarGrupo = (id) => {
   let grupo = "";
-  Alumnos.value.filter((elem) => (elem.id === id ? (grupo = elem.grupo) : null));
+  Alumnos.value.filter((elem) =>
+    elem.id === id ? (grupo = elem.grupo) : null
+  );
   return grupo;
 };
 const DatosColumna = (listado) => {
@@ -166,7 +184,9 @@ const DatosColumna = (listado) => {
       Dia: Dia[weekday],
     };
   });
-  return rows.value.sort((a, b) => a.Fecha.split("-")[2] - b.Fecha.split("-")[2]);
+  return rows.value.sort(
+    (a, b) => a.Fecha.split("-")[2] - b.Fecha.split("-")[2]
+  );
 };
 
 //Segun el mes, se crea un objeto con los alumnos presentes y ausentes.
@@ -198,53 +218,53 @@ const _a = (mes = mes + 1) => {
     return acc;
   }, {});
   console.log(counters);
-  // console.log("filteredArray", filteredArray);
+  console.log("filteredArray", filteredArray);
   //Filtrar todos los registros donde el mes sea igual al seleccionado
-  // ListadoMes = _l.value.filter((elem) => {
-  //   if (elem.Fecha === null) {
-  //     return null;
-  //   } else {
-  //     if (elem.Fecha.split("-")[1] === mes.toString()) {
-  //       let { ausentes, presentes } = elem.Data;
-  //       presentes.map((elem) => PRESENTES.push(elem));
-  //       ausentes.map((elem) => AUSENTES.push(elem));
-  //       return ausentes, presentes;
-  //     } else {
-  //       return null;
-  //     }
-  //   }
-  // });
+  ListadoMes = _l.value.filter((elem) => {
+    if (elem.Fecha === null) {
+      return null;
+    } else {
+      if (elem.Fecha.split("-")[1] === mes.toString()) {
+        let { ausentes, presentes } = elem.Data;
+        presentes.map((elem) => PRESENTES.push(elem));
+        ausentes.map((elem) => AUSENTES.push(elem));
+        return ausentes, presentes;
+      } else {
+        return null;
+      }
+    }
+  });
 
   //Ordenan los registros
-  // Listado = PRESENTES.reduce(
-  //   (prev, cur) => ((prev[cur] = prev[cur] + 1 || 1), prev),
-  //   {}
-  // );
-  // ListadoAusentes = AUSENTES.sort((a, b) => a + b).reduce(
-  //   (prev, cur) => ((prev[cur] = prev[cur] + 1 || 1), prev),
-  //   {}
-  // );
-  // for (let id in ListadoAusentes) {
-  //   ListadoAusentes[id] = {
-  //     id: id,
-  //     Inasistencias: ListadoAusentes[id],
-  //   };
-  // }
+  Listado = PRESENTES.reduce(
+    (prev, cur) => ((prev[cur] = prev[cur] + 1 || 1), prev),
+    {}
+  );
+  ListadoAusentes = AUSENTES.sort((a, b) => a + b).reduce(
+    (prev, cur) => ((prev[cur] = prev[cur] + 1 || 1), prev),
+    {}
+  );
+  for (let id in ListadoAusentes) {
+    ListadoAusentes[id] = {
+      id: id,
+      Inasistencias: ListadoAusentes[id],
+    };
+  }
 
   // //crea objeto de los registros
-  // for (let clave in Listado) {
-  //   Listado[clave] = {
-  //     id: clave,
-  //     nombre: BuscarAlumno(clave),
-  //     asistencias: Listado[clave],
-  //     grupo: BuscarGrupo(clave),
-  //   };
-  //   Object.entries(ListadoAusentes).forEach(([key, value]) =>
-  //     key === clave
-  //       ? (Listado[clave].inasistencias = value.Inasistencias)
-  //       : null
-  //   );
-  // }
+  for (let clave in Listado) {
+    Listado[clave] = {
+      id: clave,
+      nombre: BuscarAlumno(clave),
+      asistencias: Listado[clave],
+      grupo: BuscarGrupo(clave),
+    };
+    Object.entries(ListadoAusentes).forEach(([key, value]) =>
+      key === clave
+        ? (Listado[clave].inasistencias = value.Inasistencias)
+        : null
+    );
+  }
 
   //insertar la asistencia de cada uno en el listado mensual
   MesesRegistrados.value[mes].Listado = counters;
@@ -257,7 +277,9 @@ let pagination = ref({
 
 onMounted(async () => {
   _l.value = await Mostrar_todo().then((elem) => elem.map((e) => e.data()));
-  Alumnos.value = await Mostrar_Listado().then((elem) => elem.map((e) => e.data()));
+  Alumnos.value = await Mostrar_Listado().then((elem) =>
+    elem.map((e) => e.data())
+  );
 
   //Iniciar meses registrados
   _l.value.filter((elem) =>
@@ -278,16 +300,16 @@ onMounted(async () => {
   }
 
   //Iniciar Graficas
-  // let ausentesCoro = [];
+  let ausentesCoro = [];
   let presentesCoro = [];
-  // let ausentesOrquesta = [];
+  let ausentesOrquesta = [];
   let presentesOrquesta = [];
 
   //Jalando asistencias
 
   let Graficar = _l.value.filter((elem) => !!elem.Fecha);
 
-  // Graficar = Graficar.sort((a, b) => a.fecha - b.fecha);
+  Graficar = Graficar.sort((a, b) => a.fecha - b.fecha);
 
   Graficar = Graficar.filter((e) => {
     if (e.grupo === "Coro") {
@@ -312,7 +334,9 @@ onMounted(async () => {
   });
 
   let nuevoArrayPresentes = ref([...presentesCoro, ...presentesOrquesta]);
-  nuevoArrayPresentes.value = nuevoArrayPresentes.value.sort((a, b) => a.fecha - b.fecha);
+  nuevoArrayPresentes.value = nuevoArrayPresentes.value.sort(
+    (a, b) => a.fecha - b.fecha
+  );
   nuevoArrayPresentes.value.map((elem) =>
     linea.value.chartOptions.xaxis.categories.push(elem.fecha.toString())
   );
@@ -342,7 +366,11 @@ watchEffect(async () => {});
         caption="Meses Registrados"
         default-opened
       >
-        <div v-for="(item, i) of MesesRegistrados" :key="item.id" @click="_a(i)">
+        <div
+          v-for="(item, i) of MesesRegistrados"
+          :key="item.id"
+          @click="_a(i)"
+        >
           <q-expansion-item>
             <template v-slot:header>
               <q-item-section avatar>
@@ -353,7 +381,11 @@ watchEffect(async () => {});
 
               <q-item-section side>
                 <div class="row items-center">
-                  <q-badge rounded color="primary" :label="item.registros"></q-badge>
+                  <q-badge
+                    rounded
+                    color="primary"
+                    :label="item.registros"
+                  ></q-badge>
                 </div>
               </q-item-section>
             </template>
@@ -383,9 +415,15 @@ watchEffect(async () => {});
                         </q-item-section>
 
                         <q-item-section>
-                          <q-item-label lines="1">{{ user.name }} </q-item-label>
+                          <q-item-label lines="1"
+                            >{{ user.name }}
+                          </q-item-label>
                           <q-item-label caption lines="2">
-                            <q-badge rounded color="green" :label="user.asistio">
+                            <q-badge
+                              rounded
+                              color="green"
+                              :label="user.asistio"
+                            >
                             </q-badge>
                             <q-badge
                               v-if="user.falto != null"
@@ -396,7 +434,9 @@ watchEffect(async () => {});
                             </q-badge>
                           </q-item-label>
                           <q-item-label caption lines="3">
-                            <span class="text-weight-bold">{{ user.grupo }}</span>
+                            <span class="text-weight-bold">{{
+                              user.grupo
+                            }}</span>
                           </q-item-label>
                         </q-item-section>
                       </q-item>

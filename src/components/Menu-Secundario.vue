@@ -24,7 +24,7 @@ const $router = useRouter();
 const MenuSecundario = ref([
   {
     icon: "ssid_chart",
-    to: "/Modulo-Asistencia",
+    to: "/Asistencia",
     value: "Asistencia",
   },
   {

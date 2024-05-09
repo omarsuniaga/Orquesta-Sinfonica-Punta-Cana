@@ -6,21 +6,44 @@
           <div class="col-auto q-mx-sm">
             <q-btn-group>
               <q-btn color="blue-6" icon="today" @click="visible = !visible" />
-              <q-btn color="blue-6" icon-right="save" @click="guardar" :disable="Presentes.length === 0" />
+              <q-btn
+                color="blue-6"
+                icon-right="save"
+                @click="guardar"
+                :disable="Presentes.length === 0"
+              />
             </q-btn-group>
           </div>
           <div class="row">
-            <BuscarAlumnos :text="text" style="width: 100%" @onFire="eventEmittedFromChild"></BuscarAlumnos>
+            <BuscarAlumnos
+              :text="text"
+              style="width: 100%"
+              @onFire="eventEmittedFromChild"
+            ></BuscarAlumnos>
           </div>
         </div>
-        <div class="justify-center flex row" style="min-width: 375px; width: 100%">
-          <q-btn-toggle class="col-auto flex justify-around" v-model="grupo" rounded spread stack no-caps no-wrap
-            toggle-color="primary" color="green" text-color="white" :options="[
+        <div
+          class="justify-center flex row"
+          style="min-width: 375px; width: 100%"
+        >
+          <q-btn-toggle
+            class="col-auto flex justify-around"
+            v-model="grupo"
+            rounded
+            spread
+            stack
+            no-caps
+            no-wrap
+            toggle-color="primary"
+            color="green"
+            text-color="white"
+            :options="[
               { label: 'Inicio 1', value: 'Iniciacion 1' },
               { label: 'Inicio 2', value: 'Iniciacion 2' },
               { label: 'Coro', value: 'Coro' },
               { label: 'Orquesta', value: 'Orquesta' },
-            ]">
+            ]"
+          >
           </q-btn-toggle>
         </div>
       </div>
@@ -31,20 +54,48 @@
           <div style="width: 100%; max-width: 400px; min-width: 100px">
             <div class="q-pa-md">
               <div class="q-gutter-md row items-center">
-                <q-date v-model="date" :events="events" minimal today-btn mask="YYYY-MM-DD" />
+                <q-date
+                  v-model="date"
+                  :events="events"
+                  minimal
+                  today-btn
+                  mask="YYYY-MM-DD"
+                />
               </div>
             </div>
           </div>
         </div>
       </div>
-      <div class="q-px-md flex justify-center" v-else style="min-width: 375px; width: 100%">
-        <q-btn @click="visible = !visible" flat color="white" :label="date" size="18px" />
+      <div
+        class="q-px-md flex justify-center"
+        v-else
+        style="min-width: 375px; width: 100%"
+      >
+        <q-btn
+          @click="visible = !visible"
+          flat
+          color="white"
+          :label="date"
+          size="18px"
+        />
 
-        <q-btn color="white" text-color="black" label="Hoy" @click="Nuevo_Listado()" v-if="date !== hoy" round />
+        <q-btn
+          color="white"
+          text-color="black"
+          label="Hoy"
+          @click="Nuevo_Listado()"
+          v-if="date !== hoy"
+          round
+        />
       </div>
-      <div v-if="grupo === 'All'" class="q-pa-xl flex justify-center text-weight-regular"
-        style="min-width: 375px; width: 100%">
-        <span class="text-white">Para pasar la asistencia, selecciona un grupo </span>
+      <div
+        v-if="grupo === 'All'"
+        class="q-pa-xl flex justify-center text-weight-regular"
+        style="min-width: 375px; width: 100%"
+      >
+        <span class="text-white"
+          >Para pasar la asistencia, selecciona un grupo
+        </span>
       </div>
 
       <div v-else class="q-pa-xs" style="min-width: 375px; width: 100%">
@@ -54,16 +105,38 @@
             <div v-if="Loading">
               <q-spinner-cube color="indigo" />
             </div>
-            <div v-else class="row flex justify-center scrollList" ref="chatRef">
-              <div v-if="Resultado_Busqueda.length > 0" style="width: 100%; max-width: 700px; min-width: 140px">
-                <q-card class="q-ma-xs bg-red-3" v-for="(item, index) in Resultado_Busqueda" :key="index"
-                  @click="comprobar(item)" v-touch-hold:2000.mouse="handleHold">
+            <div
+              v-else
+              class="row flex justify-center scrollList"
+              ref="chatRef"
+            >
+              <div
+                v-if="Resultado_Busqueda.length > 0"
+                style="
+                  width: 100%;
+                  max-width: 700px;
+                  min-width: 140px scrollList;
+                "
+              >
+                <q-card
+                  class="q-ma-xs bg-red-3"
+                  v-for="(item, index) in Resultado_Busqueda"
+                  :key="index"
+                  @click="comprobar(item)"
+                  v-touch-hold:2000.mouse="handleHold"
+                >
                   <q-item v-if="!item.asistencia" :id="item.id">
                     <q-item-section>
-                      <q-item-label class="">{{ item.nombre }}
-                        {{ $q.screen.gt.sm ? item.apellido : "" }}</q-item-label>
+                      <q-item-label class=""
+                        >{{ item.nombre }}
+                        {{ $q.screen.gt.sm ? item.apellido : "" }}</q-item-label
+                      >
                       <q-item-label class="">
-                        <q-virtual-scroll :items="item.grupo" virtual-scroll-horizontal v-slot="{ item, index }">
+                        <q-virtual-scroll
+                          :items="item.grupo"
+                          virtual-scroll-horizontal
+                          v-slot="{ item, index }"
+                        >
                           <div :key="index" :class="item.class" class="q-px-sm">
                             <q-badge top color="red" :label="item" />
                           </div>
@@ -74,23 +147,42 @@
                 </q-card>
               </div>
               <div v-else>
-                <q-card class="q-ma-xs bg-red-3" v-for="(item, index) in Listado" :key="index" @click="agregar(item)"
-                  v-touch-hold:2000.mouse="handleHold">
+                <q-card
+                  class="q-ma-xs bg-red-3"
+                  v-for="(item, index) in Listado"
+                  :key="index"
+                  @click="agregar(item)"
+                  v-touch-hold:2000.mouse="handleHold"
+                >
                   <q-item v-if="!item.asistencia" :id="item.id">
                     <q-item-section avatar>
                       <q-avatar>
                         <!-- <img :src="item.avatar !== null ? item.avatar : 'https://cdn.quasar.dev/img/avatar2.jpg'" /> -->
                         <!-- Add initial name -->
-                        <q-icon :name="item.nombre[0]" size="sm"
-                          style="background-color: rgba(152, 80, 54, 0.685); border-radius: 50%; padding: 10px;  align-items: center; color: white;" />
-
+                        <q-icon
+                          :name="item.nombre[0]"
+                          size="sm"
+                          style="
+                            background-color: rgba(152, 80, 54, 0.685);
+                            border-radius: 50%;
+                            padding: 10px;
+                            align-items: center;
+                            color: white;
+                          "
+                        />
                       </q-avatar>
                     </q-item-section>
                     <q-item-section>
-                      <q-item-label class="text-weight-regular">{{ item.nombre }}
-                        {{ $q.screen.gt.xs ? item.apellido : "" }}</q-item-label>
+                      <q-item-label class="text-weight-regular"
+                        >{{ item.nombre }}
+                        {{ $q.screen.gt.xs ? item.apellido : "" }}</q-item-label
+                      >
                       <q-item-label>
-                        <q-virtual-scroll :items="item.grupo" virtual-scroll-horizontal v-slot="{ item, index }">
+                        <q-virtual-scroll
+                          :items="item.grupo"
+                          virtual-scroll-horizontal
+                          v-slot="{ item, index }"
+                        >
                           <div :key="index" :class="item.class" class="q-ma-xs">
                             <q-badge top color="red-6" :label="item" />
                           </div>
@@ -105,26 +197,51 @@
           <div class="col-6">
             <span class="text-body1 text-white">Presentes</span>
             <div class="row flex justify-center scrollList" ref="chatRef">
-              <div style="width: 100%; max-width: 700px; min-width: 140px scrollList">
+              <div
+                style="
+                  width: 100%;
+                  max-width: 700px;
+                  min-width: 140px scrollList;
+                "
+              >
                 <q-card v-if="Presentes.length === 0" class="q-ma-xs bg-white">
                   <q-item> No hay registros </q-item>
                 </q-card>
-                <q-card v-else class="q-ma-xs bg-green-3" v-for="(item, index) in Presentes" :key="index"
-                  v-touch-hold:2000.mouse="handleHold" @click="quitar(item)">
+                <q-card
+                  v-else
+                  class="q-ma-xs bg-green-3"
+                  v-for="(item, index) in Presentes"
+                  :key="index"
+                  v-touch-hold:2000.mouse="handleHold"
+                  @click="quitar(item)"
+                >
                   <q-item :id="item.id">
                     <q-item-section avatar>
                       <q-avatar>
-
-                        <q-icon :name="item.nombre[0]" size="sm"
-                          style="background-color: rgba(46, 119, 63, 0.685); border-radius: 50%; padding: 10px;  align-items: center; color: white;" />
+                        <q-icon
+                          :name="item.nombre[0]"
+                          size="sm"
+                          style="
+                            background-color: rgba(46, 119, 63, 0.685);
+                            border-radius: 50%;
+                            padding: 10px;
+                            align-items: center;
+                            color: white;
+                          "
+                        />
                       </q-avatar>
                     </q-item-section>
                     <q-item-section class="text-weight-regular">
                       <q-item-label>
                         {{ item.nombre }}
-                        {{ $q.screen.gt.xs ? item.apellido : "" }}</q-item-label>
+                        {{ $q.screen.gt.xs ? item.apellido : "" }}</q-item-label
+                      >
                       <q-item-label caption>
-                        <q-virtual-scroll :items="item.grupo" virtual-scroll-horizontal v-slot="{ item, index }">
+                        <q-virtual-scroll
+                          :items="item.grupo"
+                          virtual-scroll-horizontal
+                          v-slot="{ item, index }"
+                        >
                           <div :key="index" :class="item.class" class="q-ma-xs">
                             <q-badge top color="green-6" :label="item" />
                           </div>
@@ -190,11 +307,11 @@ const comprobar = async (item) => {
   let index = Presentes.value.findIndex((e) => e.id === item.id);
   index !== -1
     ? $q.notify({
-      message: "Ya esta en la lista de presentes",
-      color: "red-2",
-      textColor: "red-9",
-      icon: "priority_high",
-    })
+        message: "Ya esta en la lista de presentes",
+        color: "red-2",
+        textColor: "red-9",
+        icon: "priority_high",
+      })
     : agregar(item);
 };
 const agregar = async (item) => {
@@ -244,7 +361,9 @@ const resetear = () => {
 const Filtrar = async (fecha, res) => {
   visible.value = false;
   let r = await Buscar_Grupo(fecha, res).then((e) => e);
-  let Alumnos = await Mostrar_Listado().then((elem) => elem.map((e) => e.data()));
+  let Alumnos = await Mostrar_Listado().then((elem) =>
+    elem.map((e) => e.data())
+  );
   if (r) {
     resetear();
     const { presentes, ausentes } = await Buscar_Grupo(fecha, res).then(
@@ -269,7 +388,9 @@ const Filtrar = async (fecha, res) => {
           elem.grupo.filter((e) =>
             e === "Orquesta"
               ? Listado.value.push({ ...elem, asistencia: false }) &&
-              Listado.value.reverse().sort((a, b) => a.nombre.localeCompare(b.nombre))
+                Listado.value
+                  .reverse()
+                  .sort((a, b) => a.nombre.localeCompare(b.nombre))
               : null
           )
         );
@@ -280,7 +401,9 @@ const Filtrar = async (fecha, res) => {
           elem.grupo.find((e) =>
             e === "Coro"
               ? Listado.value.push({ ...elem, asistencia: false }) &&
-              Listado.value.reverse().sort((a, b) => a.nombre.localeCompare(b.nombre))
+                Listado.value
+                  .reverse()
+                  .sort((a, b) => a.nombre.localeCompare(b.nombre))
               : null
           )
         );
@@ -291,7 +414,9 @@ const Filtrar = async (fecha, res) => {
           elem.grupo.find((e) =>
             e === "Iniciacion 2"
               ? Listado.value.push({ ...elem, asistencia: false }) &&
-              Listado.value.reverse().sort((a, b) => a.nombre.localeCompare(b.nombre))
+                Listado.value
+                  .reverse()
+                  .sort((a, b) => a.nombre.localeCompare(b.nombre))
               : null
           )
         );
@@ -303,7 +428,9 @@ const Filtrar = async (fecha, res) => {
           elem.grupo.find((e) =>
             e === "Iniciacion 1"
               ? Listado.value.push({ ...elem, asistencia: false }) &&
-              Listado.value.reverse().sort((a, b) => a.nombre.localeCompare(b.nombre))
+                Listado.value
+                  .reverse()
+                  .sort((a, b) => a.nombre.localeCompare(b.nombre))
               : null
           )
         );
@@ -315,8 +442,8 @@ const Buscar = async () => {
     Data !== null
       ? resetear() && (visible.value = false)
       : date.value === hoy.value
-        ? (visible.value = false)
-        : null;
+      ? (visible.value = false)
+      : null;
   });
 };
 watchEffect(async () => {
@@ -326,7 +453,9 @@ watchEffect(async () => {
 });
 onMounted(async () => {
   events.value = await Eventos_Calendario();
-  Listado.value = Listado.value.sort((a, b) => a.nombre.localeCompare(b.nombre));
+  Listado.value = Listado.value.sort((a, b) =>
+    a.nombre.localeCompare(b.nombre)
+  );
 });
 </script>
 

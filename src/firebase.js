@@ -44,7 +44,6 @@ import {
 
 import moment from "moment";
 
-
 export const firebaseConfig = {
   apiKey: import.meta.env.VITE_APP_API_KEY,
   authDomain: import.meta.env.VITE_APP_AUTH_DOMAIN,
@@ -154,29 +153,25 @@ export const getUserState = () =>
 async function ConConexion() {
   await enableNetwork(db);
   console.log("Network disabled!", db);
-  // Do online actions
-  // ...
 }
 async function SinConexion() {
   await disableNetwork(db);
   console.log("Network disabled!");
-
-  // Do offline actions
 }
-enableIndexedDbPersistence(db).catch((err) => {
-  if (err.code == "failed-precondition") {
-    console.log(err.code);
-    ConConexion();
-    // Multiple tabs open, persistence can only be enabled
-    // in one tab at a a time.
-    // ...
-  } else if (err.code == "unimplemented") {
-    SinConexion();
-    // The current browser does not support all of the
-    // features required to enable persistence
-    // ...
-  }
-});
+
+if (db && db.enablePersistence) {
+  db.enablePersistence({ synchronizeTabs: true }).catch(function (err) {
+    if (err.code == "failed-precondition") {
+      console.log(
+        "Persistencia no habilitada. Múltiples pestañas abiertas, persistencia solo habilitada en una pestaña."
+      );
+    } else if (err.code == "unimplemented") {
+      console.log(
+        "El navegador actual no soporta todas las características necesarias para habilitar la persistencia"
+      );
+    }
+  });
+}
 export const Crear_Alumnos = async (alumno) => {
   try {
     await setDoc(doc(db, "ALUMNOS", alumno.id.toString()), alumno).then();
@@ -288,75 +283,44 @@ export const getAsistencias = async () => {
 };
 
 export const Generar_Asistencias_Global = async () => {
-  let Obj = [];
-  let nom = "";
-  let Alumnos = await getAlumnos();
-  let _l = await getAsistencias();
+  const Alumnos = await getAlumnos();
+  const _l = await getAsistencias();
 
-  //Busca al alumnos segun su id
-  const BuscarNombre = (id) => {
-    Alumnos.filter((elem) =>
-      elem.id === id ? (nom = elem.nombre + " " + elem.apellido) : null
-    );
-    return nom;
-  };
+  const AlumnosMap = Alumnos.reduce((acc, alumno) => {
+    acc[alumno.id] = {
+      nombre: alumno.nombre + " " + alumno.apellido,
+      grupo: alumno.grupo,
+    };
+    return acc;
+  }, {});
 
-  const BuscarGrupo = (id) => {
-    let grupo = "";
-    Alumnos.filter((elem) => (elem.id === id ? (grupo = elem.grupo) : []));
-    return grupo;
-  };
-
-  //Itera las fechas que existen
-  _l.filter((elem) => {
-    if (!!elem.Fecha) {
-      let { presentes } = elem.Data;
-      let { ausentes } = elem.Data;
-      presentes.map((el) =>
-        Obj.push({
-          id: el,
-          name: BuscarNombre(el),
-          date: elem.Fecha,
-          grupo: BuscarGrupo(el),
-          attended: true,
-        })
-      );
-      ausentes.map((el) =>
-        Obj.push({
-          id: el,
-          name: BuscarNombre(el),
-          date: elem.Fecha,
-          grupo: BuscarGrupo(el),
-          attended: false,
-        })
-      );
-
-      return { presentes, ausentes };
-    }
-    return Obj;
+  const Obj = _l.flatMap((elem) => {
+    if (!elem.Fecha || !elem.Data) return [];
+    const presentes = elem.Data.presentes.map((el) => ({
+      id: el,
+      name: AlumnosMap[el]?.nombre,
+      date: elem.Fecha,
+      grupo: AlumnosMap[el]?.grupo,
+      attended: true,
+    }));
+    const ausentes = elem.Data.ausentes.map((el) => ({
+      id: el,
+      name: AlumnosMap[el]?.nombre,
+      date: elem.Fecha,
+      grupo: AlumnosMap[el]?.grupo,
+      attended: false,
+    }));
+    return [...presentes, ...ausentes];
   });
 
-  //Función para comparar dos objetos
-  function compare(a, b) {
-    if (a.date < b.date) return -1;
-    if (a.date > b.date) return 1;
-    return 0;
-  }
+  Obj.sort((a, b) => (a.date < b.date ? -1 : a.date > b.date ? 1 : 0));
 
-  Obj.sort(compare);
+  const result = Obj.filter(
+    ({ name, date }, index, self) =>
+      index === self.findIndex((t) => t.name === name && t.date === date)
+  );
 
-  //Utiliza reduce para agrupar objetos con el mismo nombre y fecha
-  const result = Obj.reduce((acc, curr) => {
-    const existing = acc.find(
-      ({ name, date }) => name === curr.name && date === curr.date
-    );
-    if (existing) {
-      return acc;
-    }
-    return [...acc, curr];
-  }, []);
-  Obj = result;
-  return Obj;
+  return result;
 };
 
 export const diasTrabajados = async () => {
@@ -417,6 +381,8 @@ export const Buscar_Por_Fecha = async (Fecha) => {
   let listadoRef = collection(db, "ASISTENCIAS");
   let q = query(listadoRef, where("Fecha", "==", Fecha)); //"2022-08-03"
   let querySnapshot = await getDocs(q);
+  // Obtener el nombre del documento
+  // querySnapshot.docs.map((e) => console.log("querySnapshot...", e.id));
   if (querySnapshot.empty) {
     return null;
   } else {
@@ -597,9 +563,9 @@ export const Buscar_Asistencias_id = async (id, mes) => {
     !!elem.Fecha
       ? elem.Fecha.split("-")[1] === mes.toString()
         ? elem.Data.presentes.filter((el) =>
-          el === id ? PRESENTES++ : null
-        ) &&
-        elem.Data.ausentes.filter((el) => (el === id ? AUSENTES++ : null))
+            el === id ? PRESENTES++ : null
+          ) &&
+          elem.Data.ausentes.filter((el) => (el === id ? AUSENTES++ : null))
         : null
       : null
   );
@@ -753,7 +719,7 @@ export const Clasificacion_Generos = async () => {
     const masculino = await getDocs(ConsultaMasculino);
     femenino.empty === false || masculino === false
       ? (generos.femenino = femenino.docs.length) &&
-      (generos.masculino = masculino.docs.length)
+        (generos.masculino = masculino.docs.length)
       : false;
   } catch (error) {
     console.log(error);
@@ -787,8 +753,6 @@ export const guardarRegistroEnFirebase = (id, nombreTema, observacion) => {
     }
   });
 };
-
-
 
 Iniciar_Automaticamente();
 Leer_Alumnos();
