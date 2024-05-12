@@ -14,7 +14,7 @@
 
 <script setup>
 import { ref, onMounted } from "vue";
-import { generarResumenGlobalDeAsistencias } from "../FirebaseService/database";
+import { generarResumenGlobalDeAsistencias } from "../../database";
 import { Generar_Asistencias_Global } from "../firebase";
 import * as XLSX from "xlsx";
 import { QBtn } from "quasar";

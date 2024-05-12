@@ -1,4 +1,4 @@
-import { db } from "./constants";
+import { db } from "./src/FirebaseService/constants";
 import {
   collection,
   getDocs,
