@@ -43,15 +43,35 @@ import {
 
 import moment from "moment";
 
-export const firebaseConfig = {
-  apiKey: import.meta.env.VITE_APP_API_KEY,
-  authDomain: import.meta.env.VITE_APP_AUTH_DOMAIN,
-  databaseURL: import.meta.env.VITE_APP_DATABASE_URL,
-  projectId: import.meta.env.VITE_APP_PROJECT_ID,
-  storageBucket: import.meta.env.VITE_APP_STORAGE_BUCKET,
-  appId: import.meta.env.VITE_APP_APP_ID,
-  messagingSenderId: import.meta.env.VITE_APP_MESSAGING_SENDER_ID,
+// export const firebaseConfig = {
+//   apiKey: import.meta.env.VITE_APP_API_KEY,
+//   authDomain: import.meta.env.VITE_APP_AUTH_DOMAIN,
+//   databaseURL: import.meta.env.VITE_APP_DATABASE_URL,
+//   projectId: import.meta.env.VITE_APP_PROJECT_ID,
+//   storageBucket: import.meta.env.VITE_APP_STORAGE_BUCKET,
+//   appId: import.meta.env.VITE_APP_APP_ID,
+//   messagingSenderId: import.meta.env.VITE_APP_MESSAGING_SENDER_ID,
+// };
+// Import the functions you need from the SDKs you need
+import { getAnalytics } from "firebase/analytics";
+// TODO: Add SDKs for Firebase products that you want to use
+// https://firebase.google.com/docs/web/setup#available-libraries
+
+// Your web app's Firebase configuration
+// For Firebase JS SDK v7.20.0 and later, measurementId is optional
+const firebaseConfig = {
+  apiKey: "AIzaSyBt5afq5tLeVC1-M5YGp2eql3kISJPBZ90",
+  authDomain: "proyecto-uno-9b46e.firebaseapp.com",
+  databaseURL: "https://proyecto-uno-9b46e-default-rtdb.firebaseio.com",
+  projectId: "proyecto-uno-9b46e",
+  storageBucket: "proyecto-uno-9b46e.appspot.com",
+  messagingSenderId: "817861032607",
+  appId: "1:817861032607:web:cbebdf43b2029dc5cf80aa",
+  measurementId: "G-1YCKB70W0X",
 };
+
+// Initialize Firebase
+const analytics = getAnalytics(app);
 
 const app = initializeApp(firebaseConfig);
 export const auth = getAuth(app);
@@ -403,21 +423,21 @@ export const Buscar_Por_Fecha = async (fecha) => {
   let q = query(listadoRef, where("Fecha", "==", fecha));
   let querySnapshot = await getDocs(q);
 
-  if (querySnapshot.empty) {
-    console.log("No hay registros para esta fecha en Firebase.");
-    return null; // Manejar como creas conveniente
-  } else {
-    // Suponiendo que cada fecha solo tiene un documento, ajusta según tu caso de uso
-    let data = querySnapshot.docs.map((doc) => ({
-      id: doc.id,
-      data: doc.data().Data,
-    }));
+  // if (querySnapshot.empty) {
+  //   console.log("No hay registros para esta fecha en Firebase.");
+  //   return null; // Manejar como creas conveniente
+  // } else {
+  //   // Suponiendo que cada fecha solo tiene un documento, ajusta según tu caso de uso
+  //   let data = querySnapshot.docs.map((doc) => ({
+  //     id: doc.id,
+  //     data: doc.data().Data,
+  //   }));
 
-    // Guardar en localStorage para uso futuro
-    localStorage.setItem(`asistencias_${fecha}`, JSON.stringify(data));
+  //   // Guardar en localStorage para uso futuro
+  //   localStorage.setItem(`asistencias_${fecha}`, JSON.stringify(data));
 
-    return data;
-  }
+  //   return data;
+  // }
 };
 
 /*
