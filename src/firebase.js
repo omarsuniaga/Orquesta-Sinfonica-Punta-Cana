@@ -43,35 +43,17 @@ import {
 
 import moment from "moment";
 
-// export const firebaseConfig = {
-//   apiKey: import.meta.env.VITE_APP_API_KEY,
-//   authDomain: import.meta.env.VITE_APP_AUTH_DOMAIN,
-//   databaseURL: import.meta.env.VITE_APP_DATABASE_URL,
-//   projectId: import.meta.env.VITE_APP_PROJECT_ID,
-//   storageBucket: import.meta.env.VITE_APP_STORAGE_BUCKET,
-//   appId: import.meta.env.VITE_APP_APP_ID,
-//   messagingSenderId: import.meta.env.VITE_APP_MESSAGING_SENDER_ID,
-// };
-// Import the functions you need from the SDKs you need
-import { getAnalytics } from "firebase/analytics";
-// TODO: Add SDKs for Firebase products that you want to use
-// https://firebase.google.com/docs/web/setup#available-libraries
-// For Firebase JS SDK v7.20.0 and later, measurementId is optional
-const firebaseConfig = {
-  apiKey: "AIzaSyBt5afq5tLeVC1-M5YGp2eql3kISJPBZ90",
-  authDomain: "proyecto-uno-9b46e.firebaseapp.com",
-  databaseURL: "https://proyecto-uno-9b46e-default-rtdb.firebaseio.com",
-  projectId: "proyecto-uno-9b46e",
-  storageBucket: "proyecto-uno-9b46e.appspot.com",
-  messagingSenderId: "817861032607",
-  appId: "1:817861032607:web:cbebdf43b2029dc5cf80aa",
-  measurementId: "G-1YCKB70W0X",
+export const firebaseConfig = {
+  apiKey: import.meta.env.VITE_APP_API_KEY,
+  authDomain: import.meta.env.VITE_APP_AUTH_DOMAIN,
+  databaseURL: import.meta.env.VITE_APP_DATABASE_URL,
+  projectId: import.meta.env.VITE_APP_PROJECT_ID,
+  storageBucket: import.meta.env.VITE_APP_STORAGE_BUCKET,
+  appId: import.meta.env.VITE_APP_APP_ID,
+  messagingSenderId: import.meta.env.VITE_APP_MESSAGING_SENDER_ID,
 };
 
-// Initialize Firebase
 const app = initializeApp(firebaseConfig);
-const analytics = getAnalytics(app);
-
 export const auth = getAuth(app);
 auth.languageCode = "es";
 export const db = getFirestore(app);
