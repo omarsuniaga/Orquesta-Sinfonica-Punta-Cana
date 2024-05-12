@@ -56,8 +56,6 @@ import moment from "moment";
 import { getAnalytics } from "firebase/analytics";
 // TODO: Add SDKs for Firebase products that you want to use
 // https://firebase.google.com/docs/web/setup#available-libraries
-
-// Your web app's Firebase configuration
 // For Firebase JS SDK v7.20.0 and later, measurementId is optional
 const firebaseConfig = {
   apiKey: "AIzaSyBt5afq5tLeVC1-M5YGp2eql3kISJPBZ90",
@@ -71,9 +69,9 @@ const firebaseConfig = {
 };
 
 // Initialize Firebase
+const app = initializeApp(firebaseConfig);
 const analytics = getAnalytics(app);
 
-const app = initializeApp(firebaseConfig);
 export const auth = getAuth(app);
 auth.languageCode = "es";
 export const db = getFirestore(app);
