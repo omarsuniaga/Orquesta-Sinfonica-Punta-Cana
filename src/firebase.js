@@ -43,14 +43,24 @@ import {
 
 import moment from "moment";
 
-export const firebaseConfig = {
-  apiKey: import.meta.env.VITE_APP_API_KEY,
-  authDomain: import.meta.env.VITE_APP_AUTH_DOMAIN,
-  databaseURL: import.meta.env.VITE_APP_DATABASE_URL,
-  projectId: import.meta.env.VITE_APP_PROJECT_ID,
-  storageBucket: import.meta.env.VITE_APP_STORAGE_BUCKET,
-  appId: import.meta.env.VITE_APP_APP_ID,
-  messagingSenderId: import.meta.env.VITE_APP_MESSAGING_SENDER_ID,
+// export const firebaseConfig = {
+//   apiKey: import.meta.env.VITE_APP_API_KEY,
+//   authDomain: import.meta.env.VITE_APP_AUTH_DOMAIN,
+//   databaseURL: import.meta.env.VITE_APP_DATABASE_URL,
+//   projectId: import.meta.env.VITE_APP_PROJECT_ID,
+//   storageBucket: import.meta.env.VITE_APP_STORAGE_BUCKET,
+//   appId: import.meta.env.VITE_APP_APP_ID,
+//   messagingSenderId: import.meta.env.VITE_APP_MESSAGING_SENDER_ID,
+// };
+const firebaseConfig = {
+  apiKey: "AIzaSyBt5afq5tLeVC1-M5YGp2eql3kISJPBZ90",
+  authDomain: "proyecto-uno-9b46e.firebaseapp.com",
+  databaseURL: "https://proyecto-uno-9b46e-default-rtdb.firebaseio.com",
+  projectId: "proyecto-uno-9b46e",
+  storageBucket: "proyecto-uno-9b46e.appspot.com",
+  messagingSenderId: "817861032607",
+  appId: "1:817861032607:web:cbebdf43b2029dc5cf80aa",
+  measurementId: "G-1YCKB70W0X",
 };
 
 const app = initializeApp(firebaseConfig);
