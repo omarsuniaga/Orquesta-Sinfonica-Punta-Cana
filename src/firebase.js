@@ -18,16 +18,15 @@ import {
   doc,
   setDoc,
   getDocs,
+  getDoc,
   updateDoc,
   query,
   deleteDoc,
-  onSnapshot,
-  orderBy,
-  limit,
   where,
   enableIndexedDbPersistence,
   disableNetwork,
   enableNetwork,
+  onSnapshot,
 } from "firebase/firestore";
 import {
   getDatabase,
@@ -223,6 +222,16 @@ export const Mover_Alumnos = async (alumno) => {
 /**ALUMNOS */
 //getAlumnos
 export const getAlumnos = async () => {
+  let Alumnos = JSON.parse(localStorage.getItem("ALUMNOS"));
+
+  // if (!Alumnos) {
+  //   Alumnos = await fetchAlumnosFromFirebase();
+  //   localStorage.setItem("ALUMNOS", JSON.stringify(Alumnos));
+  // }
+
+  return Alumnos;
+};
+export const fetchAlumnosFromFirebase = async () => {
   try {
     let listadoRef = collection(db, "ALUMNOS");
     let q = query(listadoRef);
@@ -269,8 +278,18 @@ export const classificationByGroup = async () => {
 };
 
 /**ASISTENCIAS */
-//getAsistencias
+
 export const getAsistencias = async () => {
+  let asistencias = JSON.parse(localStorage.getItem("ASISTENCIAS"));
+
+  // if (!asistencias) {
+  //   asistencias = await fetchAsistenciasFromFirebase();
+  //   localStorage.setItem("ASISTENCIAS", JSON.stringify(asistencias));
+  // }
+
+  return asistencias;
+};
+export const fetchAsistenciasFromFirebase = async () => {
   try {
     let listadoRef = collection(db, "ASISTENCIAS");
     let q = query(listadoRef);
@@ -284,7 +303,7 @@ export const getAsistencias = async () => {
 
 export const Generar_Asistencias_Global = async () => {
   const Alumnos = await getAlumnos();
-  const _l = await getAsistencias();
+  const asistencias = await getAsistencias();
 
   const AlumnosMap = Alumnos.reduce((acc, alumno) => {
     acc[alumno.id] = {
@@ -294,33 +313,28 @@ export const Generar_Asistencias_Global = async () => {
     return acc;
   }, {});
 
-  const Obj = _l.flatMap((elem) => {
-    if (!elem.Fecha || !elem.Data) return [];
-    const presentes = elem.Data.presentes.map((el) => ({
-      id: el,
-      name: AlumnosMap[el]?.nombre,
-      date: elem.Fecha,
-      grupo: AlumnosMap[el]?.grupo,
-      attended: true,
-    }));
-    const ausentes = elem.Data.ausentes.map((el) => ({
-      id: el,
-      name: AlumnosMap[el]?.nombre,
-      date: elem.Fecha,
-      grupo: AlumnosMap[el]?.grupo,
-      attended: false,
-    }));
-    return [...presentes, ...ausentes];
+  const uniqueAttendance = {};
+
+  asistencias.forEach((elem) => {
+    if (!elem.Fecha || !elem.Data) return;
+    const presentes = elem.Data.presentes;
+    const ausentes = elem.Data.ausentes;
+
+    [...presentes, ...ausentes].forEach((el) => {
+      const key = `${el}-${elem.Fecha}`;
+      if (!uniqueAttendance[key]) {
+        uniqueAttendance[key] = {
+          id: el,
+          name: AlumnosMap[el]?.nombre,
+          date: elem.Fecha,
+          grupo: AlumnosMap[el]?.grupo,
+          attended: presentes.includes(el),
+        };
+      }
+    });
   });
 
-  Obj.sort((a, b) => (a.date < b.date ? -1 : a.date > b.date ? 1 : 0));
-
-  const result = Obj.filter(
-    ({ name, date }, index, self) =>
-      index === self.findIndex((t) => t.name === name && t.date === date)
-  );
-
-  return result;
+  return Object.values(uniqueAttendance);
 };
 
 export const diasTrabajados = async () => {
@@ -339,10 +353,10 @@ export const diasTrabajados = async () => {
  */
 export const Buscar_Alumno = async (id) => {
   try {
-    let RefColeccion = collection(db, "ALUMNOS");
-    let q = query(RefColeccion, where("id", "==", id));
-    const querySnapshot = await getDocs(q);
-    return querySnapshot.docs[0].data();
+    //  buscar alumno en localstorage
+    let alumnos = await getAlumnos();
+    let res = alumnos.find((e) => e.id == id);
+    return res;
   } catch (error) {
     console.log(error);
   }
@@ -377,19 +391,32 @@ export const Eventos_Calendario = async () => {
   eventos = eventos.map((e) => (e === null ? "" : e.split("-").join("/")));
   return eventos;
 };
-export const Buscar_Por_Fecha = async (Fecha) => {
+export const Buscar_Por_Fecha = async (fecha) => {
+  // Intentar obtener los datos de localStorage primero
+  const asistenciasLocalStorage = localStorage.getItem(`asistencias_${fecha}`);
+  if (asistenciasLocalStorage) {
+    return JSON.parse(asistenciasLocalStorage); // Asegúrate de manejar errores de parseo
+  }
+
+  // Consulta a Firebase si no se encuentra en localStorage
   let listadoRef = collection(db, "ASISTENCIAS");
-  let q = query(listadoRef, where("Fecha", "==", Fecha)); //"2022-08-03"
+  let q = query(listadoRef, where("Fecha", "==", fecha));
   let querySnapshot = await getDocs(q);
-  // Obtener el nombre del documento
-  // querySnapshot.docs.map((e) => console.log("querySnapshot...", e.id));
+
   if (querySnapshot.empty) {
-    return null;
+    console.log("No hay registros para esta fecha en Firebase.");
+    return null; // Manejar como creas conveniente
   } else {
-    let { ausentes, presentes } = querySnapshot.docs[0].data().Data;
-    Lista_Presentes = presentes;
-    Lista_Ausentes = ausentes;
-    return querySnapshot.docs[0].data();
+    // Suponiendo que cada fecha solo tiene un documento, ajusta según tu caso de uso
+    let data = querySnapshot.docs.map((doc) => ({
+      id: doc.id,
+      data: doc.data().Data,
+    }));
+
+    // Guardar en localStorage para uso futuro
+    localStorage.setItem(`asistencias_${fecha}`, JSON.stringify(data));
+
+    return data;
   }
 };
 
@@ -483,29 +510,61 @@ export const Buscar_Grupo = async (fecha, grupo) => {
   }
   return null;
 };
+
+// export const Buscar_Grupo = async (fecha, grupo) => {
+//   try {
+//     const docId = `${fecha}_${grupo}`;
+//     const docRef = doc(db, "ASISTENCIAS", docId);
+//     const docSnapshot = await getDoc(docRef);
+//     if (docSnapshot.exists()) {
+//       return docSnapshot.data();
+//     } else {
+//       return false;
+//     }
+//   } catch (error) {
+//     console.log(error);
+//     return null;
+//   }
+// };
+// export const Asistencia_de_Hoy = async (presentes, ausentes, Fecha_de_Hoy, grupo) => {
+//   try {
+//     const grupoEncontrado = await Buscar_Grupo(Fecha_de_Hoy, grupo);
+//     const asistenciaData = {
+//       Fecha: Fecha_de_Hoy,
+//       Data: { presentes, ausentes },
+//       grupo,
+//     };
+
+//     if (grupoEncontrado?.id === undefined) {
+//       return await addDoc(collection(db, "ASISTENCIAS"), asistenciaData);
+//     } else {
+//       const Ref = doc(db, "ASISTENCIAS", grupoEncontrado.id);
+//       return await setDoc(Ref, asistenciaData);
+//     }
+//   } catch (error) {
+//     console.error(error);
+//   }
+// };
 export const Asistencia_de_Hoy = async (
   presentes,
   ausentes,
   Fecha_de_Hoy,
   grupo
 ) => {
-  let res = await Buscar_Grupo(Fecha_de_Hoy, grupo).then((e) =>
-    e.id === undefined ? null : e.id
-  );
   try {
-    if (res === null) {
-      return await addDoc(collection(db, "ASISTENCIAS"), {
-        Fecha: Fecha_de_Hoy,
-        Data: { presentes, ausentes },
-        grupo,
-      });
+    const docId = `${Fecha_de_Hoy}_${grupo}`;
+    const docRef = doc(db, "ASISTENCIAS", docId);
+    const asistenciaData = {
+      Fecha: Fecha_de_Hoy,
+      grupo,
+      Data: { presentes, ausentes },
+    };
+
+    const docSnapshot = await getDoc(docRef);
+    if (docSnapshot.exists()) {
+      return await setDoc(docRef, asistenciaData);
     } else {
-      const Ref = doc(db, "ASISTENCIAS", res);
-      return await setDoc(Ref, {
-        Fecha: Fecha_de_Hoy,
-        Data: { presentes, ausentes },
-        grupo,
-      });
+      return await setDoc(docRef, asistenciaData);
     }
   } catch (error) {
     console.error(error);

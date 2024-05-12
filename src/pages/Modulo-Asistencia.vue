@@ -87,6 +87,9 @@
           v-if="date !== hoy"
           round
         />
+        <div v-if="pdf">
+          <DescargarAsistenciasPDF :fecha="date" :grupo="grupo" />
+        </div>
       </div>
       <div
         v-if="grupo === 'All'"
@@ -277,6 +280,7 @@ import { ref, onMounted, watchEffect, reactive } from "vue";
 import BuscarAlumnos from "src/components/Buscar-Alumnos.vue";
 import { useRouter } from "vue-router";
 import { Dialog, useQuasar } from "quasar";
+import DescargarAsistenciasPDF from "src/components/DescargarAsistenciasPDF.vue";
 const $q = reactive(useQuasar());
 // const store = useCounterStore();
 const router = useRouter();
@@ -291,6 +295,9 @@ let grupo = ref("All");
 let text = ref(null);
 let Loading = ref(false);
 let visible = ref(false);
+let pdf = ref(false);
+let Array_Ausentes = ref([]);
+let Array_Presentes = ref([]);
 function handleHold({ evt }) {
   let id = evt.path[2].id;
   return router.push(`/Detalles_Alumnos/${id}`);
@@ -450,6 +457,10 @@ watchEffect(async () => {
   // router.push(`/${grupo.value}`);
   date.value ? Buscar() : hoy.value;
   await Filtrar(date.value, grupo.value);
+  // si hay una fecha seleccionada  y un grupo seleccionado pdf.value = true
+  date.value && grupo.value !== "All"
+    ? (pdf.value = true)
+    : (pdf.value = false);
 });
 onMounted(async () => {
   events.value = await Eventos_Calendario();
