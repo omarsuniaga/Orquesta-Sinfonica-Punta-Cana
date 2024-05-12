@@ -1,6 +1,12 @@
 <template>
-  <div>
-    <q-btn label="PDF" color="secondary" @click="descargarPDF" />
+  <div class="q-pa-sm">
+    <q-btn
+      color="warning"
+      text-color="black"
+      label="PDF"
+      @click="descargarPDF"
+      round
+    />
   </div>
 </template>
 
@@ -99,8 +105,6 @@ onMounted(async () => {
     });
     // ordenar por grupo
     listadoGeneral.value.sort((a, b) => a.Grupo.localeCompare(b.Grupo));
-
-    console.log("Listado General:", listadoGeneral.value);
   });
 });
 </script>

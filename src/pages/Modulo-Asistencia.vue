@@ -79,14 +79,16 @@
           size="18px"
         />
 
-        <q-btn
-          color="white"
-          text-color="black"
-          label="Hoy"
-          @click="Nuevo_Listado()"
-          v-if="date !== hoy"
-          round
-        />
+        <div class="q-pa-sm">
+          <q-btn
+            v-if="date !== hoy"
+            color="green-3"
+            text-color="black"
+            label="Hoy"
+            @click="Nuevo_Listado()"
+            round
+          />
+        </div>
         <div v-if="pdf">
           <DescargarAsistenciasPDF :fecha="date" :grupo="grupo" />
         </div>
