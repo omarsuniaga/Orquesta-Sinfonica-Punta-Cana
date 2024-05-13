@@ -14,8 +14,8 @@
 
 <script setup>
 import { ref, onMounted } from "vue";
-import { generarResumenGlobalDeAsistencias } from "../../database";
-import { Generar_Asistencias_Global } from "../firebase";
+import { generarResumenGlobalDeAsistencias } from "../FirebaseService/database";
+// import { Generar_Asistencias_Global } from "../firebase";
 import * as XLSX from "xlsx";
 import { QBtn } from "quasar";
 import { jsPDF } from "jspdf";
@@ -82,8 +82,8 @@ async function loadData() {
 }
 
 async function calculateAbsences(periodStart, periodEnd) {
-  // let attendance = await generarResumenGlobalDeAsistencias();
-  let attendance = await Generar_Asistencias_Global();
+  let attendance = await generarResumenGlobalDeAsistencias();
+  // let attendance = await Generar_Asistencias_Global();
 
   let result = {};
   attendance.forEach(({ date, attended, name }) => {

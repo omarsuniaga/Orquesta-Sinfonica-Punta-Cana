@@ -1,5 +1,5 @@
 import { initializeApp } from "firebase/app";
-//Modulo del Autenticacion
+// //Modulo del Autenticacion
 import {
   getAuth,
   onAuthStateChanged,
@@ -8,9 +8,9 @@ import {
   setPersistence,
   browserSessionPersistence,
 } from "firebase/auth";
-//Modulo del Storage
+// //Modulo del Storage
 import { getStorage } from "firebase/storage";
-//Modulo de Base de Datos
+// //Modulo de Base de Datos
 import {
   collection,
   getFirestore,
@@ -43,25 +43,25 @@ import {
 
 import moment from "moment";
 
-// export const firebaseConfig = {
-//   apiKey: import.meta.env.VITE_APP_API_KEY,
-//   authDomain: import.meta.env.VITE_APP_AUTH_DOMAIN,
-//   databaseURL: import.meta.env.VITE_APP_DATABASE_URL,
-//   projectId: import.meta.env.VITE_APP_PROJECT_ID,
-//   storageBucket: import.meta.env.VITE_APP_STORAGE_BUCKET,
-//   appId: import.meta.env.VITE_APP_APP_ID,
-//   messagingSenderId: import.meta.env.VITE_APP_MESSAGING_SENDER_ID,
-// };
-const firebaseConfig = {
-  apiKey: "AIzaSyBt5afq5tLeVC1-M5YGp2eql3kISJPBZ90",
-  authDomain: "proyecto-uno-9b46e.firebaseapp.com",
-  databaseURL: "https://proyecto-uno-9b46e-default-rtdb.firebaseio.com",
-  projectId: "proyecto-uno-9b46e",
-  storageBucket: "proyecto-uno-9b46e.appspot.com",
-  messagingSenderId: "817861032607",
-  appId: "1:817861032607:web:cbebdf43b2029dc5cf80aa",
-  measurementId: "G-1YCKB70W0X",
+export const firebaseConfig = {
+  apiKey: import.meta.env.VITE_APP_API_KEY,
+  authDomain: import.meta.env.VITE_APP_AUTH_DOMAIN,
+  databaseURL: import.meta.env.VITE_APP_DATABASE_URL,
+  projectId: import.meta.env.VITE_APP_PROJECT_ID,
+  storageBucket: import.meta.env.VITE_APP_STORAGE_BUCKET,
+  appId: import.meta.env.VITE_APP_APP_ID,
+  messagingSenderId: import.meta.env.VITE_APP_MESSAGING_SENDER_ID,
 };
+// const firebaseConfig = {
+//   apiKey: "AIzaSyBt5afq5tLeVC1-M5YGp2eql3kISJPBZ90",
+//   authDomain: "proyecto-uno-9b46e.firebaseapp.com",
+//   databaseURL: "https://proyecto-uno-9b46e-default-rtdb.firebaseio.com",
+//   projectId: "proyecto-uno-9b46e",
+//   storageBucket: "proyecto-uno-9b46e.appspot.com",
+//   messagingSenderId: "817861032607",
+//   appId: "1:817861032607:web:cbebdf43b2029dc5cf80aa",
+//   measurementId: "G-1YCKB70W0X",
+// };
 
 const app = initializeApp(firebaseConfig);
 export const auth = getAuth(app);
@@ -406,28 +406,27 @@ export const Buscar_Por_Fecha = async (fecha) => {
   const asistenciasLocalStorage = localStorage.getItem(`asistencias_${fecha}`);
   if (asistenciasLocalStorage) {
     return JSON.parse(asistenciasLocalStorage); // Asegúrate de manejar errores de parseo
+  } else {
+    // Consulta a Firebase si no se encuentra en localStorage
+    let listadoRef = collection(db, "ASISTENCIAS");
+    let q = query(listadoRef, where("Fecha", "==", fecha));
+    let querySnapshot = await getDocs(q);
+    if (querySnapshot.empty) {
+      console.log("No hay registros para esta fecha en Firebase.");
+      return null; // Manejar como creas conveniente
+    } else {
+      // Suponiendo que cada fecha solo tiene un documento, ajusta según tu caso de uso
+      let data = querySnapshot.docs.map((doc) => ({
+        id: doc.id,
+        data: doc.data().Data,
+      }));
+
+      // Guardar en localStorage para uso futuro
+      localStorage.setItem(`asistencias_${fecha}`, JSON.stringify(data));
+
+      return data;
+    }
   }
-
-  // Consulta a Firebase si no se encuentra en localStorage
-  let listadoRef = collection(db, "ASISTENCIAS");
-  let q = query(listadoRef, where("Fecha", "==", fecha));
-  let querySnapshot = await getDocs(q);
-
-  // if (querySnapshot.empty) {
-  //   console.log("No hay registros para esta fecha en Firebase.");
-  //   return null; // Manejar como creas conveniente
-  // } else {
-  //   // Suponiendo que cada fecha solo tiene un documento, ajusta según tu caso de uso
-  //   let data = querySnapshot.docs.map((doc) => ({
-  //     id: doc.id,
-  //     data: doc.data().Data,
-  //   }));
-
-  //   // Guardar en localStorage para uso futuro
-  //   localStorage.setItem(`asistencias_${fecha}`, JSON.stringify(data));
-
-  //   return data;
-  // }
 };
 
 /*
@@ -491,8 +490,8 @@ export const Salir = async () => {
 };
 
 // export const Iniciar_Automaticamente = async () => {
-// new Promise((resolve, reject) => onAuthStateChanged(auth, resolve, reject));
-// console.log("Iniciar_Automaticamente");
+//   new Promise((resolve, reject) => onAuthStateChanged(auth, resolve, reject));
+//   console.log("Iniciar_Automaticamente");
 // };
 export const Crear_Progresos = async (alumno) => {
   try {
@@ -521,40 +520,40 @@ export const Buscar_Grupo = async (fecha, grupo) => {
   return null;
 };
 
-// export const Buscar_Grupo = async (fecha, grupo) => {
-//   try {
-//     const docId = `${fecha}_${grupo}`;
-//     const docRef = doc(db, "ASISTENCIAS", docId);
-//     const docSnapshot = await getDoc(docRef);
-//     if (docSnapshot.exists()) {
-//       return docSnapshot.data();
-//     } else {
-//       return false;
-//     }
-//   } catch (error) {
-//     console.log(error);
-//     return null;
-//   }
-// };
-// export const Asistencia_de_Hoy = async (presentes, ausentes, Fecha_de_Hoy, grupo) => {
-//   try {
-//     const grupoEncontrado = await Buscar_Grupo(Fecha_de_Hoy, grupo);
-//     const asistenciaData = {
-//       Fecha: Fecha_de_Hoy,
-//       Data: { presentes, ausentes },
-//       grupo,
-//     };
+// // export const Buscar_Grupo = async (fecha, grupo) => {
+// //   try {
+// //     const docId = `${fecha}_${grupo}`;
+// //     const docRef = doc(db, "ASISTENCIAS", docId);
+// //     const docSnapshot = await getDoc(docRef);
+// //     if (docSnapshot.exists()) {
+// //       return docSnapshot.data();
+// //     } else {
+// //       return false;
+// //     }
+// //   } catch (error) {
+// //     console.log(error);
+// //     return null;
+// //   }
+// // };
+// // export const Asistencia_de_Hoy = async (presentes, ausentes, Fecha_de_Hoy, grupo) => {
+// //   try {
+// //     const grupoEncontrado = await Buscar_Grupo(Fecha_de_Hoy, grupo);
+// //     const asistenciaData = {
+// //       Fecha: Fecha_de_Hoy,
+// //       Data: { presentes, ausentes },
+// //       grupo,
+// //     };
 
-//     if (grupoEncontrado?.id === undefined) {
-//       return await addDoc(collection(db, "ASISTENCIAS"), asistenciaData);
-//     } else {
-//       const Ref = doc(db, "ASISTENCIAS", grupoEncontrado.id);
-//       return await setDoc(Ref, asistenciaData);
-//     }
-//   } catch (error) {
-//     console.error(error);
-//   }
-// };
+// //     if (grupoEncontrado?.id === undefined) {
+// //       return await addDoc(collection(db, "ASISTENCIAS"), asistenciaData);
+// //     } else {
+// //       const Ref = doc(db, "ASISTENCIAS", grupoEncontrado.id);
+// //       return await setDoc(Ref, asistenciaData);
+// //     }
+// //   } catch (error) {
+// //     console.error(error);
+// //   }
+// // };
 export const Asistencia_de_Hoy = async (
   presentes,
   ausentes,
