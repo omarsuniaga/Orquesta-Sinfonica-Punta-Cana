@@ -1,22 +1,56 @@
 <script setup>
-import { ref, onMounted } from "vue";
-const listado = ref([]);
+import { ref, onMounted, defineProps, onUnmounted } from "vue";
+const listadoAgrupado = ref([]);
 let url = ref("https://picsum.photos/200/300");
 const props = defineProps(["grupo", "Alumnos"]);
-onMounted(async () => {
-  const TotalAlumnos = props.Alumnos;
-  listado.value = TotalAlumnos.filter((elem) =>
+const scrollContainer = ref(null);
+// Define el orden de los grupos
+const groupOrder = ["Coro", "Orquesta", "Iniciacion 1", "Iniciacion 2"];
+
+function handleScroll() {
+  const { scrollLeft, scrollWidth, clientWidth } = scrollContainer.value;
+  // Carga más datos si estás a 100px del final del scroll
+  if (scrollLeft + clientWidth >= scrollWidth - 100) {
+    cargarMasDatos();
+  }
+}
+
+async function cargarMasDatos() {
+  // Aquí tu lógica para cargar más datos
+  // Simulando una carga de datos
+  const nuevosDatos = props.Alumnos.filter((elem) =>
     elem.grupo.find((e) => e === props.grupo)
-  ).sort((a, b) => a.nombre.localeCompare(b.nombre));
+  ); // Filtrar y añadir más datos
+  listadoAgrupado.value.push(...nuevosDatos);
+}
+
+onMounted(() => {
+  listadoAgrupado.value = props.Alumnos.filter((elem) =>
+    elem.grupo.find((e) => e === props.grupo)
+  ).sort((a, b) => {
+    return (
+      groupOrder.indexOf(a.grupo.find((g) => groupOrder.includes(g))) -
+      groupOrder.indexOf(b.grupo.find((g) => groupOrder.includes(g)))
+    );
+  });
+  if (scrollContainer.value) {
+    scrollContainer.value.addEventListener("scroll", handleScroll);
+  }
+});
+
+onUnmounted(() => {
+  if (scrollContainer.value) {
+    scrollContainer.value.removeEventListener("scroll", handleScroll);
+  }
 });
 </script>
 
 <template>
   <h5 class="text-white q-mx-sm">{{ grupo }}</h5>
-  <div class="container">
+  <div class="container" ref="scrollContainer">
     <q-scroll-area class="horizontal">
       <div class="row no-wrap">
-        <div v-for="(item, index) of listado" :key="index">
+        <div v-for="(item, index) in listadoAgrupado" :key="index">
           <button id="alumnos">
             <div class="profile">
               <q-img

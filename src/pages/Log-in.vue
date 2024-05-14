@@ -29,7 +29,7 @@
           <q-btn label="Entrar" type="submit" color="green" />
         </div>
         <div class="inline-block">
-          <q-link to="" class="text-white">Version 2024</q-link>
+          <span class="text-white">Version 2024</span>
           <!-- <q-link to="/" class="text-white">Politica?</q-link> -->
         </div>
         <q-space />
@@ -39,56 +39,53 @@
 </template>
 
 <script setup>
+import { ref, onMounted } from "vue";
 import { useRouter } from "vue-router";
-import { ref } from "vue";
-import { iniciarSesion } from "../firebase";
 import { useQuasar } from "quasar";
-import { useNivelStore } from "../stores/Niveles";
-const store = useNivelStore();
-
+import { signIn, watchAuthState } from "../FirebaseService/auth"; // Asegúrate de importar tu función signIn y watchAuthState
 const router = useRouter();
+const $q = useQuasar();
 const username = ref("");
 const password = ref("");
 
-const $q = useQuasar();
-// const { nivel } = storeToRefs(store);
+const notifyUser = (message, color = "red-4", icon = "cloud_done") => {
+  $q.notify({
+    message,
+    color,
+    textColor: "white",
+    icon,
+  });
+};
+
 const onSubmit = async () => {
   try {
-    const email = `${username.value}@gmail.com`;
-
-    let res = await iniciarSesion(email, password.value);
+    const email = `${username.value}`;
+    const res = await signIn(email, password.value);
     if (res._tokenResponse.registered) {
-      store.setNivel(email);
       return router.push("/");
     }
   } catch (error) {
-    error.code === "auth/user-not-found"
-      ? $q.notify({
-          message: "Usuario no encontrado",
-          color: "red-4",
-          textColor: "white",
-          icon: "cloud_done",
-        })
-      : error.code === "auth/wrong-password"
-      ? $q.notify({
-          message: "Contraseña incorrecta",
-          color: "red-4",
-          textColor: "white",
-          icon: "cloud_done",
-        })
-      : $q.notify({
-          message: "Credenciales invalidas",
-          color: "red-4",
-          textColor: "white",
-          icon: "cloud_done",
-        });
+    switch (error.code) {
+      case "auth/user-not-found":
+        notifyUser("Usuario no encontrado");
+        break;
+      case "auth/wrong-password":
+        notifyUser("Contraseña incorrecta");
+        break;
+      default:
+        notifyUser("Ocurrió un error inesperado");
+        break;
+    }
   }
 };
 
-const onReset = () => {
-  email.value = null;
-  pass.value = null;
-};
+onMounted(() => {
+  watchAuthState((user) => {
+    if (user) {
+      router.push("/");
+    }
+  });
+});
 </script>
 <style>
 .container {

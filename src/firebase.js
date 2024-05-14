@@ -89,44 +89,44 @@ export {
   __VALIDACION,
 };
 
-export const Iniciar_Automaticamente = () => {
-  return new Promise((resolve, reject) => {
-    onAuthStateChanged(auth, (user) => {
-      if (user) {
-        SolicitarCredenciales(user.email).then((nivel) => {
-          user.phoneNumber = nivel;
-        });
+// export const Iniciar_Automaticamente = () => {
+//   return new Promise((resolve, reject) => {
+//     onAuthStateChanged(auth, (user) => {
+//       if (user) {
+//         SolicitarCredenciales(user.email).then((nivel) => {
+//           user.phoneNumber = nivel;
+//         });
 
-        // __SESION = true;
-        resolve(true);
-        const connectedRef = ref(realdb, ".info/connected");
-        const myConnectionsRef = ref(realdb, `users/${user.uid}/connections`);
-        // almacena la marca de tiempo de mi última desconexión (la última vez que me vieron en línea)
-        const lastOnlineRef = ref(realdb, `users/${user.uid}/connections`);
+//         // __SESION = true;
+//         resolve(true);
+//         const connectedRef = ref(realdb, ".info/connected");
+//         const myConnectionsRef = ref(realdb, `users/${user.uid}/connections`);
+//         // almacena la marca de tiempo de mi última desconexión (la última vez que me vieron en línea)
+//         const lastOnlineRef = ref(realdb, `users/${user.uid}/connections`);
 
-        onValue(connectedRef, (snap) => {
-          if (snap.val() === true) {
-            // ¡Estamos conectados (o reconectados)! Haga cualquier cosa aquí que debería suceder solo si está en línea (o al volver a conectarse)
-            const con = push(myConnectionsRef);
+//         onValue(connectedRef, (snap) => {
+//           if (snap.val() === true) {
+//             // ¡Estamos conectados (o reconectados)! Haga cualquier cosa aquí que debería suceder solo si está en línea (o al volver a conectarse)
+//             const con = push(myConnectionsRef);
 
-            // Cuando desconecto, elimino este dispositivo
-            onDisconnect(con).remove();
+//             // Cuando desconecto, elimino este dispositivo
+//             onDisconnect(con).remove();
 
-            // Agregar este dispositivo a mi lista de conexiones
-            // este valor podría contener información sobre el dispositivo o también una marca de tiempo
-            set(con, true);
+//             // Agregar este dispositivo a mi lista de conexiones
+//             // este valor podría contener información sobre el dispositivo o también una marca de tiempo
+//             set(con, true);
 
-            // Cuando me desconecto, actualizo la última vez que me vieron en línea
-            onDisconnect(lastOnlineRef).set(serverTimestamp());
-          }
-        });
-      } else {
-        // __SESION = false;
-        resolve(false);
-      }
-    });
-  });
-};
+//             // Cuando me desconecto, actualizo la última vez que me vieron en línea
+//             onDisconnect(lastOnlineRef).set(serverTimestamp());
+//           }
+//         });
+//       } else {
+//         // __SESION = false;
+//         resolve(false);
+//       }
+//     });
+//   });
+// };
 
 export const useSignOut = async () => {
   try {
@@ -233,11 +233,10 @@ export const Mover_Alumnos = async (alumno) => {
 //getAlumnos
 export const getAlumnos = async () => {
   let Alumnos = JSON.parse(localStorage.getItem("ALUMNOS"));
-
-  // if (!Alumnos) {
-  //   Alumnos = await fetchAlumnosFromFirebase();
-  //   localStorage.setItem("ALUMNOS", JSON.stringify(Alumnos));
-  // }
+  if (!Alumnos) {
+    Alumnos = await fetchAlumnosFromFirebase();
+    localStorage.setItem("ALUMNOS", JSON.stringify(Alumnos));
+  }
 
   return Alumnos;
 };
@@ -280,22 +279,21 @@ export const classificationByGroup = async () => {
   try {
     const alumnos = await getAlumnos();
     let set = new Set();
-    alumnos.forEach((alumno) => alumno.grupo.map((g) => set.add(g)));
+    alumnos.forEach((alumno) => alumno.grupo.forEach((g) => set.add(g)));
     return [...set];
   } catch (error) {
     console.log(error);
   }
 };
-
 /**ASISTENCIAS */
 
 export const getAsistencias = async () => {
   let asistencias = JSON.parse(localStorage.getItem("ASISTENCIAS"));
-
-  // if (!asistencias) {
-  //   asistencias = await fetchAsistenciasFromFirebase();
-  //   localStorage.setItem("ASISTENCIAS", JSON.stringify(asistencias));
-  // }
+  console.log("asistencias", asistencias);
+  if (!asistencias) {
+    asistencias = await fetchAsistenciasFromFirebase();
+    localStorage.setItem("ASISTENCIAS", JSON.stringify(asistencias));
+  }
 
   return asistencias;
 };
@@ -313,7 +311,7 @@ export const fetchAsistenciasFromFirebase = async () => {
 
 export const Generar_Asistencias_Global = async () => {
   const Alumnos = await getAlumnos();
-  const asistencias = await getAsistencias();
+  const Asistencias = await getAsistencias();
 
   const AlumnosMap = Alumnos.reduce((acc, alumno) => {
     acc[alumno.id] = {
@@ -325,7 +323,7 @@ export const Generar_Asistencias_Global = async () => {
 
   const uniqueAttendance = {};
 
-  asistencias.forEach((elem) => {
+  Asistencias.forEach((elem) => {
     if (!elem.Fecha || !elem.Data) return;
     const presentes = elem.Data.presentes;
     const ausentes = elem.Data.ausentes;
@@ -343,7 +341,6 @@ export const Generar_Asistencias_Global = async () => {
       }
     });
   });
-
   return Object.values(uniqueAttendance);
 };
 
@@ -403,9 +400,14 @@ export const Eventos_Calendario = async () => {
 };
 export const Buscar_Por_Fecha = async (fecha) => {
   // Intentar obtener los datos de localStorage primero
-  const asistenciasLocalStorage = localStorage.getItem(`asistencias_${fecha}`);
+  const asistenciasLocalStorage = localStorage.getItem(`ASISTENCIA`);
   if (asistenciasLocalStorage) {
-    return JSON.parse(asistenciasLocalStorage); // Asegúrate de manejar errores de parseo
+    // buscar en localStorage si existe la propiedad Fecha
+    // comprobar que Fecha sea igual a la fecha que se busca
+    //devolver el valor de la propiedad Data y grupo en la variable resultado
+    return JSON.parse(asistenciasLocalStorage).find(
+      (asistencia) => asistencia.Fecha === fecha
+    );
   } else {
     // Consulta a Firebase si no se encuentra en localStorage
     let listadoRef = collection(db, "ASISTENCIAS");
@@ -422,7 +424,7 @@ export const Buscar_Por_Fecha = async (fecha) => {
       }));
 
       // Guardar en localStorage para uso futuro
-      localStorage.setItem(`asistencias_${fecha}`, JSON.stringify(data));
+      // localStorage.setItem(`asistencias_${fecha}`, JSON.stringify(data));
 
       return data;
     }
@@ -489,20 +491,32 @@ export const Salir = async () => {
   return console.log("Usuario Deslogeado");
 };
 
-// export const Iniciar_Automaticamente = async () => {
-//   new Promise((resolve, reject) => onAuthStateChanged(auth, resolve, reject));
-//   console.log("Iniciar_Automaticamente");
-// };
-export const Crear_Progresos = async (alumno) => {
-  try {
-    const Ref = doc(db, "ORQUESTA", alumno.id);
-    await setDoc(Ref, alumno);
-  } catch (error) {
-    console.log(error);
-  }
+export const Iniciar_Automaticamente = async () => {
+  new Promise((resolve, reject) => onAuthStateChanged(auth, resolve, reject));
+  console.log("Iniciar_Automaticamente");
 };
+// export const Crear_Progresos = async (alumno) => {
+//   try {
+//     const Ref = doc(db, "ORQUESTA", alumno.id);
+//     await setDoc(Ref, alumno);
+//   } catch (error) {
+//     console.log(error);
+//   }
+// };
 export const Buscar_Grupo = async (fecha, grupo) => {
   try {
+    // Primero, intenta obtener los datos del localStorage
+    const asistencias = await getAsistencias();
+    if (asistencias) {
+      const asistencia = asistencias.find(
+        (asistencia) => asistencia.Fecha === fecha && asistencia.grupo === grupo
+      );
+      if (asistencia) {
+        return asistencia;
+      }
+    }
+    console.log("Solicitando a Firebase");
+    // Si no se encontraron los datos en el localStorage, haz la consulta a Firebase
     let q = query(
       collection(db, "ASISTENCIAS"),
       where("Fecha", "==", fecha),
@@ -519,7 +533,6 @@ export const Buscar_Grupo = async (fecha, grupo) => {
   }
   return null;
 };
-
 // // export const Buscar_Grupo = async (fecha, grupo) => {
 // //   try {
 // //     const docId = `${fecha}_${grupo}`;
@@ -561,6 +574,7 @@ export const Asistencia_de_Hoy = async (
   grupo
 ) => {
   try {
+    console.log("Solicitando a Firebase");
     const docId = `${Fecha_de_Hoy}_${grupo}`;
     const docRef = doc(db, "ASISTENCIAS", docId);
     const asistenciaData = {
@@ -579,48 +593,49 @@ export const Asistencia_de_Hoy = async (
     console.error(error);
   }
 };
-export const Mostrar_Carrusel = async () => {
-  try {
-    let listadoRef = collection(db, "CARRUSEL");
-    let q = query(listadoRef);
-    let querySnapshot = await getDocs(q);
-    let res = querySnapshot.docs.map((e) => e.data());
-    return res;
-  } catch (error) {
-    console.log(error);
-  }
-};
-export const Mostrar_Listado = async () => {
-  try {
-    let listadoRef = collection(db, "ALUMNOS");
-    let q = query(listadoRef);
-    let querySnapshot = await getDocs(q);
-    let res = querySnapshot.docs.map((e) => e.data());
-    return querySnapshot.docs;
-  } catch (error) {
-    console.log(error);
-  }
-};
-export const Mostrar_Listado_Inactivos = async () => {
-  try {
-    let listadoRef = collection(db, "INACTIVOS");
-    let q = query(listadoRef);
-    let querySnapshot = await getDocs(q);
-    return querySnapshot.docs;
-  } catch (error) {
-    console.log(error);
-  }
-};
-export const Mostrar_todo = async () => {
-  try {
-    let asistenciasRef = collection(db, "ASISTENCIAS");
-    let q = query(asistenciasRef);
-    let asistencia = await getDocs(q);
-    return asistencia.docs;
-  } catch (error) {
-    console.log(error);
-  }
-};
+
+// export const Mostrar_Carrusel = async () => {
+//   try {
+//     let listadoRef = collection(db, "CARRUSEL");
+//     let q = query(listadoRef);
+//     let querySnapshot = await getDocs(q);
+//     let res = querySnapshot.docs.map((e) => e.data());
+//     return res;
+//   } catch (error) {
+//     console.log(error);
+//   }
+// };
+// export const Mostrar_Listado = async () => {
+//   try {
+//     let listadoRef = collection(db, "ALUMNOS");
+//     let q = query(listadoRef);
+//     let querySnapshot = await getDocs(q);
+//     let res = querySnapshot.docs.map((e) => e.data());
+//     return querySnapshot.docs;
+//   } catch (error) {
+//     console.log(error);
+//   }
+// };
+// export const Mostrar_Listado_Inactivos = async () => {
+//   try {
+//     let listadoRef = collection(db, "INACTIVOS");
+//     let q = query(listadoRef);
+//     let querySnapshot = await getDocs(q);
+//     return querySnapshot.docs;
+//   } catch (error) {
+//     console.log(error);
+//   }
+// };
+// export const Mostrar_todo = async () => {
+//   try {
+//     let asistenciasRef = collection(db, "ASISTENCIAS");
+//     let q = query(asistenciasRef);
+//     let asistencia = await getDocs(q);
+//     return asistencia.docs;
+//   } catch (error) {
+//     console.log(error);
+//   }
+// };
 export const Buscar_Asistencias_id = async (id, mes) => {
   let RESULTADO = {};
   let PRESENTES = 0;
@@ -823,4 +838,4 @@ export const guardarRegistroEnFirebase = (id, nombreTema, observacion) => {
 };
 
 Iniciar_Automaticamente();
-Leer_Alumnos();
+// Leer_Alumnos();

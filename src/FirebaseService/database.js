@@ -1,14 +1,17 @@
 import { db } from "./constants.js";
 import {
   collection,
+  query as firestoreQuery,
   getDocs,
   doc,
   setDoc,
   deleteDoc,
-  query,
   where,
   updateDoc,
   getDoc,
+  orderBy,
+  startAfter,
+  limit as firestoreLimit,
 } from "firebase/firestore";
 
 /**
@@ -26,22 +29,45 @@ export async function guardarAlumno(alumno) {
     throw error;
   }
 }
-
 /**
  * Obtiene todos los alumnos de la base de datos.
  * @returns {Promise<Array>} - Una promesa que resuelve en un array de objetos alumno.
  */
 export async function obtenerAlumnos() {
-  const alumnosRef = collection(db, "ALUMNOS");
-  try {
-    const snapshot = await getDocs(alumnosRef);
-    return snapshot.docs.map((doc) => doc.data());
-  } catch (error) {
-    console.error("Error al obtener alumnos: ", error);
-    throw error;
+  let Alumnos = JSON.parse(localStorage.getItem("ALUMNOS"));
+  if (!Alumnos) {
+    Alumnos = await fetchAlumnosFromFirebase();
+    localStorage.setItem("ALUMNOS", JSON.stringify(Alumnos));
   }
+
+  return Alumnos;
 }
 
+/**
+ * Obtiene todos los alumnos de la base de datos.
+ * @returns {Promise<Array>} - Una promesa que resuelve en un array de objetos alumno.
+ */
+export const fetchAlumnosFromFirebase = async () => {
+  try {
+    let listadoRef = collection(db, "ALUMNOS");
+    let q = query(
+      listadoRef,
+      where("instrumento", "!=", null),
+      where("grupo", "!=", null)
+    );
+    let querySnapshot = await getDocs(q);
+    let res = querySnapshot.docs
+      .map((e) => e.data())
+      .filter(
+        (alumno) =>
+          (alumno.instrumento && alumno.instrumento.length > 0) ||
+          (alumno.grupo && alumno.grupo.length > 0)
+      );
+    return res;
+  } catch (error) {
+    console.log(error);
+  }
+};
 /**
  * Elimina un alumno de la base de datos.
  * @param {string} id - ID del alumno a eliminar.
@@ -100,17 +126,17 @@ export async function registrarAsistenciaDeHoy(
   try {
     await setDoc(docRef, asistenciaData);
     console.log("Asistencia registrada exitosamente.");
+
+    // Actualizar localStorage
+    let asistencias = JSON.parse(localStorage.getItem("ASISTENCIAS")) || [];
+    asistencias.push(asistenciaData);
+    localStorage.setItem("ASISTENCIAS", JSON.stringify(asistencias));
+    console.log("Asistencia guardada en localStorage.");
   } catch (error) {
     console.error("Error al registrar asistencia: ", error);
     throw error;
   }
 }
-
-/**
- * Obtiene un listado de todos los alumnos.
- * @returns {Promise<Array>} - Promesa que resuelve en un array de objetos de alumnos.
- */
-
 /**
  * Busca asistencias por ID de alumno y mes.
  * @param {string} id - ID del alumno.
@@ -144,20 +170,47 @@ export async function buscarAsistenciasPorIdYMensualidad(id, mes) {
   }
 }
 
+// metodo para buscar por grupo usando ASISTENCIAS de localstorage o firebase si no existe
+export async function buscarAsistenciasPorGrupo(grupo) {
+  const key = `ASISTENCIAS_${grupo}`;
+  let asistencias = JSON.parse(localStorage.getItem(key));
+
+  if (!asistencias) {
+    const asistenciasRef = collection(db, "ASISTENCIAS");
+    const q = query(asistenciasRef, where("Grupo", "==", grupo));
+    const snapshot = await getDocs(q);
+    asistencias = snapshot.docs.map((doc) => doc.data());
+    localStorage.setItem(key, JSON.stringify(asistencias));
+  }
+
+  return asistencias;
+}
+
 /**
  * Obtiene todas las asistencias de la base de datos.
  * @returns {Promise<Array>} - Una promesa que resuelve en un array de todas las asistencias.
  */
 export async function obtenerAsistencias() {
-  const asistenciasRef = collection(db, "ASISTENCIAS");
-  try {
-    const snapshot = await getDocs(asistenciasRef);
-    return snapshot.docs.map((doc) => doc.data());
-  } catch (error) {
-    console.error("Error al obtener asistencias: ", error);
-    throw error;
+  // llamar a fetctItems para obtener los datos de la base de datos
+  let asistencias = JSON.parse(localStorage.getItem("ASISTENCIAS"));
+  if (!asistencias) {
+    asistencias = await fetchAsistenciasFromFirebase();
+    localStorage.setItem("ASISTENCIAS", JSON.stringify(asistencias));
   }
+  return asistencias;
 }
+
+export const fetchAsistenciasFromFirebase = async () => {
+  try {
+    let listadoRef = collection(db, "ASISTENCIAS");
+    let q = query(listadoRef);
+    let querySnapshot = await getDocs(q);
+    let res = querySnapshot.docs.map((e) => e.data());
+    return res;
+  } catch (error) {
+    console.log(error);
+  }
+};
 
 /**
  * Busca información de un alumno por su ID.
@@ -165,58 +218,32 @@ export async function obtenerAsistencias() {
  * @returns {Promise<Object>} - Una promesa que resuelve en el objeto de datos del alumno.
  */
 export async function buscarAlumnoPorId(id) {
-  const alumnoRef = doc(db, "ALUMNOS", id);
-  try {
-    const alumnoDoc = await getDoc(alumnoRef);
-    if (!alumnoDoc.exists()) {
-      throw new Error("Alumno no encontrado");
-    }
-    return alumnoDoc.data();
-  } catch (error) {
-    console.error("Error al buscar alumno por ID: ", error);
-    throw error;
+  const alumnos = await obtenerAlumnos();
+  return alumnos.find((alumno) => alumno.id === id);
+}
+
+// Función para buscar asistencias por fecha y grupo
+
+export const buscarAsistenciasPorFechaYGrupo = async (fecha, grupo) => {
+  let asistencias = await obtenerAsistencias();
+  asistencias = asistencias.data.filter(
+    (asistencia) => asistencia.Fecha === fecha && asistencia.grupo === grupo
+  );
+
+  if (!asistencias) {
+    const asistenciasRef = collection(db, "ASISTENCIAS");
+    const q = query(
+      asistenciasRef,
+      where("Fecha", "==", fecha),
+      where("Grupo", "==", grupo)
+    );
+    const snapshot = await getDocs(q);
+    asistencias = snapshot.docs.map((doc) => doc.data());
+    localStorage.setItem(key, JSON.stringify(asistencias));
   }
-}
 
-/**
- * Genera un resumen global de asistencias combinando información de alumnos y asistencias.
- * @returns {Promise<Object>} - Un objeto con asistencias mapeadas por ID de alumno y fecha.
- */
-export async function generarResumenGlobalDeAsistencias() {
-  const Alumnos = await obtenerAlumnos();
-  const asistencias = await obtenerAsistencias(); // Asegúrate de que esta función devuelve lo que esperas
-
-  const AlumnosMap = Alumnos.reduce((acc, alumno) => {
-    acc[alumno.id] = {
-      nombre: alumno.nombre + " " + alumno.apellido,
-      grupo: alumno.grupo,
-    };
-    return acc;
-  }, {});
-
-  const uniqueAttendance = {};
-
-  asistencias.forEach((elem) => {
-    if (!elem.Fecha || !elem.Data) return;
-    const presentes = elem.Data.presentes;
-    const ausentes = elem.Data.ausentes;
-
-    [...presentes, ...ausentes].forEach((el) => {
-      const key = `${el}-${elem.Fecha}`;
-      if (!uniqueAttendance[key]) {
-        uniqueAttendance[key] = {
-          id: el,
-          name: AlumnosMap[el]?.nombre,
-          date: elem.Fecha,
-          grupo: AlumnosMap[el]?.grupo,
-          attended: presentes.includes(el),
-        };
-      }
-    });
-  });
-
-  return Object.values(uniqueAttendance);
-}
+  return asistencias;
+};
 
 /**
  * Solicita las credenciales de un usuario para verificar su nivel de acceso.
@@ -418,4 +445,203 @@ export async function obtenerAsistenciasPorFechaYGrupo(fecha, grupo) {
     console.error("Error al obtener asistencias por fecha y grupo: ", error);
     throw error;
   }
+}
+
+// Función para buscar asistencias por fecha
+
+export const buscarAsistenciasPorFecha = async (fecha) => {
+  let asistencias = await obtenerAsistencias();
+  asistencias = asistencias.data.filter(
+    (asistencia) => asistencia.Fecha === fecha
+  );
+  if (!asistencias) {
+    const asistenciasRef = collection(db, "ASISTENCIAS");
+    const q = query(asistenciasRef, where("Fecha", "==", fecha));
+    const snapshot = await getDocs(q);
+    asistencias = snapshot.docs.map((doc) => doc.data());
+    localStorage.setItem(key, JSON.stringify(asistencias));
+  }
+
+  return asistencias;
+};
+
+// buscar nombre del alumno segun nombre o apellido
+export async function buscarAlumnoPorNombre(nombre) {
+  const alumnosRef = collection(db, "ALUMNOS");
+  try {
+    const snapshot = await getDocs(alumnosRef);
+    return snapshot.docs
+      .map((doc) => doc.data())
+      .filter(
+        (alumno) =>
+          alumno.nombre.toLowerCase().includes(nombre.toLowerCase()) ||
+          alumno.apellido.toLowerCase().includes(nombre.toLowerCase())
+      );
+  } catch (error) {
+    console.error("Error al buscar alumno por nombre: ", error);
+    throw error;
+  }
+}
+
+/**
+ * Genera un resumen global de asistencias combinando información de alumnos y asistencias.
+ * @returns {Promise<Object>} - Un objeto con asistencias mapeadas por ID de alumno y fecha.
+ */
+const TTL = 86400000; // Tiempo de vida en milisegundos, p.ej., 1 día
+
+const saveToLocalStorage = (key, data) => {
+  const now = new Date().getTime();
+  const item = {
+    data: data,
+    timestamp: now,
+  };
+  localStorage.setItem(key, JSON.stringify(item));
+};
+
+const loadFromLocalStorage = (key) => {
+  const itemStr = localStorage.getItem(key);
+  if (!itemStr) {
+    return null;
+  }
+  const item = JSON.parse(itemStr);
+  const now = new Date().getTime();
+  if (now - item.timestamp > TTL) {
+    // Datos vencidos
+    localStorage.removeItem(key);
+    return null;
+  }
+  return item.data;
+};
+
+export async function generarResumenGlobalDeAsistencias() {
+  let items = loadFromLocalStorage("ASISTENCIAS");
+  if (!items) {
+    items = await fetchItemsFromFirebase();
+    saveToLocalStorage("ASISTENCIAS", items);
+  }
+
+  const Alumnos = await obtenerAlumnos();
+
+  try {
+    if (!Array.isArray(items)) {
+      console.error("Asistencias no es un array:", items);
+      return;
+    }
+    const uniqueAttendance = {};
+    const AlumnosMap = Alumnos.reduce((acc, alumno) => {
+      acc[alumno.id] = {
+        nombre: `${alumno.nombre} ${alumno.apellido}`,
+        grupo: alumno.grupo,
+      };
+      return acc;
+    }, {});
+
+    items.forEach((elem) => {
+      if (!elem.Fecha || !elem.Data) return;
+      const { presentes, ausentes } = elem.Data;
+      [...presentes, ...ausentes].forEach((el) => {
+        const key = `${el}-${elem.Fecha}`;
+        if (!uniqueAttendance[key] && AlumnosMap[el]) {
+          uniqueAttendance[key] = {
+            id: el,
+            name: AlumnosMap[el].nombre,
+            date: elem.Fecha,
+            grupo: AlumnosMap[el].grupo,
+            attended: presentes.includes(el),
+          };
+        }
+      });
+    });
+
+    return Object.values(uniqueAttendance);
+  } catch (error) {
+    console.error("Error al generar resumen global de asistencias: ", error);
+    throw error;
+  }
+}
+
+const fetchItemsFromFirebase = async () => {
+  const tresMesesAtras = new Date();
+  tresMesesAtras.setMonth(tresMesesAtras.getMonth() - 3);
+  const fechaFiltro = tresMesesAtras.toISOString().split("T")[0];
+
+  const myQuery = firestoreQuery(
+    collection(db, "ASISTENCIAS"),
+    orderBy("Fecha", "desc"),
+    where("Fecha", ">=", fechaFiltro)
+  );
+
+  const snapshot = await getDocs(myQuery);
+  const items = snapshot.docs.map((doc) => ({ id: doc.id, ...doc.data() }));
+
+  return items;
+};
+/**
+ * Obtiene un lote de documentos de la base de datos.
+ * @param {Object} lastVisibleItem - El último documento visible en la lista.
+ * @returns {Promise<Object>} - Una promesa que resuelve en un objeto con los documentos cargados y el último documento visible.
+ */
+export const fetchItems = async (lastVisibleItem, limit = 10) => {
+  let items = loadFromLocalStorage("ASISTENCIAS");
+  let lastVisible = null;
+  const tresMesesAtras = new Date();
+  tresMesesAtras.setMonth(tresMesesAtras.getMonth() - 3);
+  const fechaFiltro = tresMesesAtras.toISOString().split("T")[0];
+
+  if (!items) {
+    let myQuery = firestoreQuery(
+      collection(db, "ASISTENCIAS"),
+      orderBy("Fecha", "desc"),
+      where("Fecha", ">=", fechaFiltro)
+    );
+
+    if (lastVisibleItem) {
+      myQuery = firestoreQuery(
+        collection(db, "ASISTENCIAS"),
+        orderBy("Fecha", "desc"),
+        where("Fecha", ">=", fechaFiltro),
+        startAfter(lastVisibleItem)
+      );
+    }
+
+    const snapshot = await getDocs(myQuery);
+    lastVisible = snapshot.docs[snapshot.docs.length - 1];
+    items = snapshot.docs.map((doc) => ({ id: doc.id, ...doc.data() }));
+
+    saveToLocalStorage("ASISTENCIAS", items);
+  }
+
+  return { items, lastVisible };
+};
+
+// funcion que recibe el formato de fecha y lo cambia
+function cambiarFormatoFecha(fecha) {
+  return fecha.split("-").join("/");
+}
+
+// historial de asistencias
+export async function obtenerMarcasDelCalendario() {
+  const asistencias = await obtenerAsistencias();
+  const historial = {};
+  // itera las asistencias y obtiene las fechas únicas
+  asistencias.data.forEach((asistencia) => {
+    const fecha = asistencia.Fecha;
+    // cambiar formato de fecha de 'YYYY-MM-DD' a 'YYYY/MM/DD'
+    const fechaFormateada = cambiarFormatoFecha(fecha);
+    if (fechaFormateada) {
+      if (!historial[fechaFormateada]) {
+        historial[fechaFormateada] = [];
+      }
+      historial[fechaFormateada].push(asistencia);
+    }
+  });
+  // convierte el objeto historial en un array de fechas
+  const fechas = Object.keys(historial);
+  return fechas;
+  // }
+  //   let listadoRef = collection(db, "ASISTENCIAS");
+  //   let fechas = await getDocs(listadoRef);
+  //   let eventos = fechas.docs.map((e) => e.data().Fecha); //"2022/11/01"
+  //   eventos = eventos.map((e) => (e === null ? "" : e.split("-").join("/")));
+  //   return eventos;
 }

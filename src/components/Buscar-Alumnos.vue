@@ -25,7 +25,8 @@
 </template>
 <script setup>
 import { ref, watchEffect } from "vue";
-import { Buscar_Alumno_Nombre } from "../firebase";
+import { defineProps, defineEmits } from "vue";
+import { buscarAlumnoPorNombre } from "../FirebaseService/database";
 const props = defineProps({
   text: String,
 });
@@ -40,7 +41,7 @@ const Resetear = () => {
   emit("onFire", (res.value.length = []));
 };
 const Buscar = async () => {
-  res.value = await Buscar_Alumno_Nombre(text.value.toLowerCase()).then();
+  res.value = await buscarAlumnoPorNombre(text.value.toLowerCase()).then();
   emit("onFire", res.value);
 };
 

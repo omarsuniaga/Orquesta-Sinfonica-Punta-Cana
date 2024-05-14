@@ -15,9 +15,7 @@
 <script setup>
 import { ref, onMounted } from "vue";
 import { generarResumenGlobalDeAsistencias } from "../FirebaseService/database";
-// import { Generar_Asistencias_Global } from "../firebase";
 import * as XLSX from "xlsx";
-import { QBtn } from "quasar";
 import { jsPDF } from "jspdf";
 import "jspdf-autotable";
 
@@ -53,73 +51,99 @@ const columns = ref([
     sortable: true,
   },
 ]);
-let loading = ref(false);
+const loading = ref(false);
 
 async function loadData() {
   loading.value = true;
-  const today = new Date();
-  const weekStart = new Date(
-    today.setDate(
-      today.getDate() - today.getDay() + (today.getDay() === 0 ? -6 : 1)
-    )
-  );
-  const monthStart = new Date(today.getFullYear(), today.getMonth(), 1);
-  const trimesterStart = new Date(today.getFullYear(), today.getMonth() - 2, 1);
+  try {
+    const today = new Date();
+    const weekStart = new Date(today);
+    weekStart.setDate(today.getDate() - today.getDay()); // Set start to Monday
+    // weekStart.setDate(today.getDate() - today.getDay() + 1); // Set start to Monday
 
-  const weekAbsences = await calculateAbsences(weekStart, new Date());
-  const monthAbsences = await calculateAbsences(monthStart, new Date());
-  const trimesterAbsences = await calculateAbsences(trimesterStart, new Date());
+    const monthStart = new Date(today.getFullYear(), today.getMonth(), 1);
+    const trimesterStart = new Date(
+      today.getFullYear(),
+      today.getMonth() - 2,
+      1
+    );
 
-  ObjetoGlobal.value = Object.values(weekAbsences).map((student) => ({
-    name: student.name,
-    Semanal: student.Semanal,
-    Mensual: monthAbsences[student.name]?.Mensual || 0,
-    Trimestral: trimesterAbsences[student.name]?.Trimestral || 0,
-  }));
+    const weekAbsences = await calculateAbsences(weekStart, today);
+    const monthAbsences = await calculateAbsences(monthStart, today);
+    const trimesterAbsences = await calculateAbsences(trimesterStart, today);
 
-  ObjetoGlobal.value.sort((a, b) => b.Mensual - a.Mensual); // Sort data by 'Mensual'
-  loading.value = false;
+    const combinedAbsences = {};
+
+    const combineAbsences = (absences, period) => {
+      Object.entries(absences).forEach(([name, data]) => {
+        if (!combinedAbsences[name]) {
+          combinedAbsences[name] = {
+            name,
+            Semanal: 0,
+            Mensual: 0,
+            Trimestral: 0,
+          };
+        }
+        combinedAbsences[name][period] += data[period];
+      });
+    };
+
+    combineAbsences(weekAbsences, "Semanal");
+    combineAbsences(monthAbsences, "Mensual");
+    combineAbsences(trimesterAbsences, "Trimestral");
+
+    ObjetoGlobal.value = Object.values(combinedAbsences);
+    ObjetoGlobal.value.sort((a, b) => b.Mensual - a.Mensual);
+  } catch (error) {
+    console.error("Error in loadData:", error);
+  } finally {
+    loading.value = false;
+  }
 }
 
 async function calculateAbsences(periodStart, periodEnd) {
-  let attendance = await generarResumenGlobalDeAsistencias();
-  // let attendance = await Generar_Asistencias_Global();
+  try {
+    const attendance = await generarResumenGlobalDeAsistencias();
+    const result = {};
 
-  let result = {};
-  attendance.forEach(({ date, attended, name }) => {
-    let attendanceDate = new Date(date);
-    if (
-      !attended &&
-      attendanceDate >= periodStart &&
-      attendanceDate <= periodEnd
-    ) {
-      if (!result[name])
-        result[name] = { name, Semanal: 0, Mensual: 0, Trimestral: 0 };
-      result[name][periodStart === periodEnd ? "Semanal" : "Mensual"]++;
-      if (periodEnd.getMonth() - periodStart.getMonth() >= 2) {
-        result[name].Trimestral++;
+    attendance.forEach(({ date, attended, name }) => {
+      const attendanceDate = new Date(date);
+      if (
+        !attended &&
+        attendanceDate >= periodStart &&
+        attendanceDate <= periodEnd
+      ) {
+        if (!result[name])
+          result[name] = { name, Semanal: 0, Mensual: 0, Trimestral: 0 };
+
+        const daysDiff = (periodEnd - periodStart) / (1000 * 60 * 60 * 24);
+        if (daysDiff <= 7) result[name].Semanal++;
+        if (attendanceDate.getMonth() === periodStart.getMonth())
+          result[name].Mensual++;
+        if (daysDiff > 60) result[name].Trimestral++;
       }
-    }
-  });
+    });
 
-  return result;
+    return result;
+  } catch (error) {
+    console.error("Error in calculateAbsences:", error);
+    return {};
+  }
 }
 
 function descargarExcel() {
   const today = new Date();
-  const weekStart = new Date(
-    today.setDate(
-      today.getDate() - today.getDay() + (today.getDay() === 0 ? -6 : 1)
-    )
-  );
+  const weekStart = new Date(today);
+  weekStart.setDate(today.getDate() - today.getDay() + 1);
   const weekEnd = new Date(weekStart);
   weekEnd.setDate(weekStart.getDate() + 6);
+
   const monthStart = new Date(today.getFullYear(), today.getMonth(), 1);
   const monthEnd = new Date(today.getFullYear(), today.getMonth() + 1, 0);
+
   const trimesterStart = new Date(today.getFullYear(), today.getMonth() - 2, 1);
   const trimesterEnd = new Date(today.getFullYear(), today.getMonth() + 1, 0);
 
-  // Formatear fechas para mostrar
   const dateFormat = { year: "numeric", month: "long", day: "numeric" };
   const weekRange = `${weekStart.toLocaleDateString(
     undefined,
@@ -134,11 +158,9 @@ function descargarExcel() {
     dateFormat
   )} - ${trimesterEnd.toLocaleDateString(undefined, dateFormat)}`;
 
-  // Crear hoja de Excel
-  const ws = XLSX.utils.json_to_sheet(ObjetoGlobal.value, { origin: "A7" }); // Dejar espacio para el encabezado
+  const ws = XLSX.utils.json_to_sheet(ObjetoGlobal.value, { origin: "A7" });
   const wb = XLSX.utils.book_new();
 
-  // Añadir información adicional en la parte superior de la hoja
   XLSX.utils.sheet_add_json(
     ws,
     [
@@ -152,50 +174,39 @@ function descargarExcel() {
   XLSX.utils.book_append_sheet(wb, ws, "Inasistencias");
   XLSX.writeFile(wb, "Inasistencias_Importantes.xlsx");
 }
+
 function descargarPDF() {
   const doc = new jsPDF();
 
-  // Agregar logo de la empresa
-  // Supongamos que el logo está en formato base64 o puedes cargarlo de un URL
-  const imgData = "../src/assets/LogoElSistemaPuntaCana.jpeg"; // Debes reemplazar esto con el path correcto a tu logo
-  // quiero el logo centrado a la derecha
-  doc.addImage(imgData, "JPEG", 170, 10, 30, 15);
+  const imgData = "../src/assets/LogoElSistemaPuntaCana.jpg";
+  doc.addImage(imgData, "JPEG", 80, 10, 50, 20);
 
-  // Calcula fechas
   const today = new Date();
-  const monthName = today.toLocaleString("default", { month: "long" });
-  const weekStart = new Date(
-    today.setDate(
-      today.getDate() - today.getDay() + (today.getDay() === 0 ? -6 : 1)
-    )
-  );
+  const weekStart = new Date(today);
+  weekStart.setDate(today.getDate() - today.getDay() + 1);
   const weekEnd = new Date(weekStart);
   weekEnd.setDate(weekStart.getDate() + 6);
+
   const weekRange = `${weekStart.toLocaleDateString()} - ${weekEnd.toLocaleDateString()}`;
 
-  // Título del documento
-  doc.setFontSize(18);
-  // quiero el título centrado
-  doc.text(`Semana: ${weekRange}`, 50, 35);
+  doc.setFontSize(15);
+  doc.text(`Listado de Asistencias de la Semana: ${weekRange}`, 50, 35);
 
-  // Datos para la tabla
-  const headers = [["Alumnos", `${weekRange}`, `${monthName}`]];
+  const headers = [["Alumnos", "Semanal", "Mensual", "Trimestral"]];
 
   const data = ObjetoGlobal.value.map((item) => [
     item.name,
     item.Semanal.toString(),
     item.Mensual.toString(),
-    // item.Trimestral.toString(),
+    item.Trimestral.toString(),
   ]);
 
-  // Añadir tabla
   doc.autoTable({
     head: headers,
     body: data,
     startY: 40,
   });
 
-  // Descargar el PDF
   doc.save(`Asistencia_${weekRange}.pdf`);
 }
 

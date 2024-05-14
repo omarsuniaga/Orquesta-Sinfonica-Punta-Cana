@@ -15,7 +15,7 @@ import { jsPDF } from "jspdf";
 import "jspdf-autotable";
 import { onMounted, ref } from "vue";
 import { defineProps } from "vue";
-import { Buscar_Por_Fecha, Buscar_Alumno } from "src/firebase";
+import { buscarAlumnoPorId } from "../FirebaseService/database";
 import moment from "moment";
 import "moment/locale/es"; // Importar localización en español
 
@@ -31,80 +31,73 @@ function convertDateFormatToSpanish(fecha) {
 const props = defineProps({
   fecha: String,
   grupo: String,
+  ausentes: Array,
+  presentes: Array,
 });
 
 const listadoGeneral = ref([]);
 
-function descargarPDF() {
-  if (props.fecha === "") {
+async function descargarPDF() {
+  if (!props.fecha || !props.grupo || !props.ausentes || !props.presentes) {
     console.error("Datos de ausentes o presentes no disponibles.");
     return; // Detener la ejecución si los datos necesarios no están disponibles
   }
 
-  const doc = new jsPDF();
-  const imgData = "../src/assets/LogoElSistemaPuntaCana.jpg"; // Debes reemplazar esto con el path correcto a tu logo
-  // quiero el logo centrado a la derecha
-  doc.addImage(imgData, "JPEG", 135, 10, 60, 30);
-  // tamaño de la imagen 30x15
-
-  doc.setFontSize(18);
-  doc.text(`Asistencia de ${convertDateFormatToSpanish(props.fecha)}`, 15, 30);
-  doc.setFontSize(12);
-  doc.text(`Grupo: ${props.grupo}`, 15, 40);
-
-  const columns = [
-    { header: "Alumno", dataKey: "nombre" },
-    { header: "Grupo", dataKey: "grupo" },
-    { header: "Asistencia", dataKey: "asistencia" },
-  ];
-
-  const data = [
-    ...listadoGeneral.value.map((alumno) => ({
-      nombre: alumno.Nombre,
-      grupo: alumno.Grupo,
-      asistencia: alumno.Asistencia,
-    })),
-  ];
-
-  doc.autoTable({
-    columns: columns,
-    body: data,
-    startY: 50,
-  });
-
-  doc.save(`Asistencia_${convertDateFormat(props.fecha)}.pdf`);
-}
-
-onMounted(async () => {
-  let asistenciasDelDia = await Buscar_Por_Fecha(props.fecha);
-  // Asegúrate de que asistenciasDelDia es un array y no está vacío
-  if (asistenciasDelDia.length === 0) {
-    console.log("No hay registros para esta fecha.");
-    return;
+  // iterar ausentes y presentes para obtener los datos de los alumnos, su nombre y apellido y id de alumno
+  const alumnos = props.ausentes.concat(props.presentes);
+  for (const alumno of alumnos) {
+    const doc = await buscarAlumnoPorId(alumno.id);
+    if (doc && doc.id === alumno.id) {
+      listadoGeneral.value.push({
+        Nombre: doc.nombre + " " + doc.apellido,
+        Asistencia: alumno.asistencia ? "Presente" : "Ausente",
+        grupo: doc.grupo,
+        instrumento: doc.instrumento,
+      });
+    }
   }
-  // Iterar sobre cada asistencia del día
 
-  asistenciasDelDia.forEach((asistencia) => {
-    asistencia.data.presentes.forEach((p) => {
-      Buscar_Alumno(p).then((alumno) => {
-        listadoGeneral.value.push({
-          Nombre: alumno.nombre + " " + alumno.apellido,
-          Grupo: alumno.grupo,
-          Asistencia: "Presente",
-        });
-      });
+  // Ordenar listadoGeneral por asistencia, los presentes primero
+  listadoGeneral.value.sort((a, b) => (a.Asistencia === "Presente" ? -1 : 1));
+
+  try {
+    // Crear el PDF
+    const doc = new jsPDF();
+    const imgData = "../src/assets/LogoElSistemaPuntaCana.jpg"; // Debes reemplazar esto con el path correcto a tu logo
+    doc.addImage(imgData, "JPEG", 135, 10, 60, 30);
+
+    doc.setFontSize(18);
+    doc.text(
+      `Asistencia de ${convertDateFormatToSpanish(props.fecha)}`,
+      15,
+      30
+    );
+    doc.setFontSize(12);
+    doc.text(`Grupo: ${props.grupo}`, 15, 40);
+
+    const columns = [
+      { header: "Alumno", dataKey: "nombre" },
+      { header: "Grupo", dataKey: "grupo" },
+      { header: "Instrumento", dataKey: "instrumento" },
+      { header: "Asistencia", dataKey: "asistencia" },
+    ];
+
+    const data = listadoGeneral.value.map((alumno) => ({
+      nombre: alumno.Nombre,
+      asistencia: alumno.Asistencia,
+      grupo: alumno.grupo,
+      instrumento: alumno.instrumento,
+    }));
+
+    doc.autoTable({
+      columns: columns,
+      body: data,
+      startY: 50,
     });
-    asistencia.data.ausentes.forEach((a) => {
-      Buscar_Alumno(a).then((alumno) => {
-        listadoGeneral.value.push({
-          Nombre: alumno.nombre + " " + alumno.apellido,
-          Grupo: alumno.grupo,
-          Asistencia: "Ausente",
-        });
-      });
-    });
-    // ordenar por grupo
-    listadoGeneral.value.sort((a, b) => a.Grupo.localeCompare(b.Grupo));
-  });
-});
+
+    doc.save(`Asistencia_${convertDateFormat(props.fecha)}.pdf`);
+  } catch (error) {
+    console.error("Error al descargar el PDF:", error);
+  }
+}
 </script>

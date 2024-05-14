@@ -18,7 +18,6 @@
 
 <script setup>
 import { ref } from "vue";
-// importar router
 import { useRouter } from "vue-router";
 const $router = useRouter();
 const MenuSecundario = ref([
@@ -28,7 +27,7 @@ const MenuSecundario = ref([
     value: "Asistencia",
   },
   {
-    icon: "event",
+    icon: "user",
     to: "/Nuevo-Alumno",
     value: "Eventos",
   },

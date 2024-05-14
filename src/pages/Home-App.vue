@@ -1,50 +1,32 @@
 <script setup>
 import { onMounted, ref, computed } from "vue";
-import { getAlumnos, classificationByGroup, __NIVEL, auth } from "src/firebase";
-import { useNivelStore } from "../stores/Niveles";
-import useAuthState from "./useAuthState"; // Mover la lógica de autenticación a un compositor
-
-import CarruselImagenes from "src/components/Carrusel-imagenes.vue";
+import { getAlumnos, classificationByGroup } from "src/firebase";
 import MenuSecundario from "src/components/Menu-Secundario.vue";
 import ListadoHorizontal from "src/components/Listado-Horizontal.vue";
 import AgruparPorGenero from "src/components/Poblacion-Genero.vue";
 import PoblacionAlumnos from "src/components/Poblacion-Alumnos.vue";
 import LapsoAsistencias from "src/components/LapsoAsistencias.vue";
 
-const store = useNivelStore();
 const Alumnos = ref([]);
-const group = ref([]); // Cambiar a const
-const id = ref();
-const loading = ref(false);
-const nivel = ref("");
-const mensaje = ref("Carrusel");
-
-const { user, error, isAuthenticated } = useAuthState(); // Usar el compositor de autenticación
+const Grupos = ref([]);
+const loading = ref(true);
 
 onMounted(async () => {
-  nivel.value = await auth.currentUser.phoneNumber;
-  group.value = await classificationByGroup();
+  Grupos.value = await classificationByGroup();
   Alumnos.value = await getAlumnos();
-  if (Alumnos.value !== 0) {
-    return (loading.value = true);
-  }
+  loading.value = Alumnos.value.length === 0;
 });
 </script>
 
-<!-- Resto del componente... -->
-
 <template>
-  <div v-if="!loading" class="loading-container text-red-1">
-    {{ nivel }}
+  <div v-if="loading" class="loading-container text-red-1">
     <div class="loading"></div>
   </div>
   <div v-else class="q-pa-md">
     <MenuSecundario />
     <div class="row justify-center">
-      <!-- System column -->
       <div class="col-12 col-md-6 col-sm-12">
         <LapsoAsistencias />
-        <!-- <CarruselImagenes :mensaje="mensaje" /> -->
       </div>
       <div class="col-12 col-md-6 col-sm-12">
         <div class="row justify-center">
@@ -53,9 +35,7 @@ onMounted(async () => {
         </div>
       </div>
     </div>
-
-    <!-- if screen xl -->
-    <main v-for="(grupo, index) in group" :key="index">
+    <main v-for="(grupo, index) in Grupos" :key="index">
       <ListadoHorizontal :grupo="grupo" :Alumnos="Alumnos" />
     </main>
   </div>

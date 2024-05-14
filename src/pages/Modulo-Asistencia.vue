@@ -56,7 +56,7 @@
               <div class="q-gutter-md row items-center">
                 <q-date
                   v-model="date"
-                  :events="events"
+                  :events="marcas"
                   minimal
                   today-btn
                   mask="YYYY-MM-DD"
@@ -78,7 +78,6 @@
           :label="date"
           size="18px"
         />
-
         <div class="q-pa-sm">
           <q-btn
             v-if="date !== hoy"
@@ -90,7 +89,12 @@
           />
         </div>
         <div v-if="pdf">
-          <DescargarAsistenciasPDF :fecha="date" :grupo="grupo" />
+          <DescargarAsistenciasPDF
+            :fecha="date"
+            :grupo="grupo"
+            :ausentes="Listado"
+            :presentes="Presentes"
+          />
         </div>
       </div>
       <div
@@ -99,14 +103,21 @@
         style="min-width: 375px; width: 100%"
       >
         <span class="text-white"
-          >Para pasar la asistencia, selecciona un grupo
-        </span>
+          >Para pasar la asistencia, selecciona un grupo</span
+        >
       </div>
-
       <div v-else class="q-pa-xs" style="min-width: 375px; width: 100%">
         <div class="row col-12">
           <div class="col-6">
             <span class="text-body1 text-white">Ausentes</span>
+            <div class="row justify-start">
+              <q-btn
+                icon="sort"
+                @click="sortAusentes"
+                class="q-ma-sm"
+                color="red-3"
+              />
+            </div>
             <div v-if="Loading">
               <q-spinner-cube color="indigo" />
             </div>
@@ -162,8 +173,6 @@
                   <q-item v-if="!item.asistencia" :id="item.id">
                     <q-item-section avatar>
                       <q-avatar>
-                        <!-- <img :src="item.avatar !== null ? item.avatar : 'https://cdn.quasar.dev/img/avatar2.jpg'" /> -->
-                        <!-- Add initial name -->
                         <q-icon
                           :name="item.nombre[0]"
                           size="sm"
@@ -200,7 +209,15 @@
             </div>
           </div>
           <div class="col-6">
-            <span class="text-body1 text-white">Presentes</span>
+            <span class="text-body1 row text-white justify-end">Presentes</span>
+            <div class="row justify-end">
+              <q-btn
+                icon="sort"
+                @click="sortPresentes"
+                class="q-ma-sm"
+                color="green-3"
+              />
+            </div>
             <div class="row flex justify-center scrollList" ref="chatRef">
               <div
                 style="
@@ -237,8 +254,8 @@
                       </q-avatar>
                     </q-item-section>
                     <q-item-section class="text-weight-regular">
-                      <q-item-label>
-                        {{ item.nombre }}
+                      <q-item-label
+                        >{{ item.nombre }}
                         {{ $q.screen.gt.xs ? item.apellido : "" }}</q-item-label
                       >
                       <q-item-label caption>
@@ -260,90 +277,122 @@
           </div>
         </div>
       </div>
-
       <router-view />
     </q-page-container>
   </q-layout>
 </template>
 
 <script setup>
-// import { useCounterStore } from "src/stores/example-store";
 import {
-  Asistencia_de_Hoy,
-  Buscar_Por_Fecha,
-  Buscar_Alumno,
-  Mostrar_Listado,
-  Eventos_Calendario,
-  Buscar_Grupo,
-} from "../firebase";
+  registrarAsistenciaDeHoy,
+  buscarAsistenciasPorFecha,
+  buscarAlumnoPorId,
+  obtenerMarcasDelCalendario,
+  buscarAsistenciasPorFechaYGrupo,
+  obtenerAlumnos,
+} from "../FirebaseService/database";
 import moment from "moment";
 import { ref, onMounted, watchEffect, reactive } from "vue";
-// import HistorialAsistencias from "src/components/Historial-Asistencias.vue";
 import BuscarAlumnos from "src/components/Buscar-Alumnos.vue";
 import { useRouter } from "vue-router";
 import { Dialog, useQuasar } from "quasar";
 import DescargarAsistenciasPDF from "src/components/DescargarAsistenciasPDF.vue";
+
 const $q = reactive(useQuasar());
-// const store = useCounterStore();
 const router = useRouter();
-// let posicion = useRouter().currentRoute._rawValue.params.posicion;
+
 let date = ref(moment().format("YYYY-MM-DD"));
 let hoy = ref(moment().format("YYYY-MM-DD"));
 let Resultado_Busqueda = ref([]);
 let Presentes = ref([]);
 let Listado = ref([]);
-let events = ref([]);
+let marcas = ref([]);
 let grupo = ref("All");
 let text = ref(null);
 let Loading = ref(false);
 let visible = ref(false);
 let pdf = ref(false);
-let Array_Ausentes = ref([]);
-let Array_Presentes = ref([]);
-function handleHold({ evt }) {
-  let id = evt.path[2].id;
-  return router.push(`/Detalles_Alumnos/${id}`);
-}
-const eventEmittedFromChild = (res) => {
-  if (res.length != 0) {
-    Resultado_Busqueda.value = res.map((e) => ({ ...e }));
-    return Resultado_Busqueda.value;
-  } else {
-    Resultado_Busqueda.value.length = 0;
+let clickCountAusentes = ref(0);
+let clickCountPresentes = ref(0);
+
+const sortPresentes = () => {
+  clickCountPresentes.value = (clickCountPresentes.value + 1) % 2;
+  switch (clickCountPresentes.value) {
+    case 0:
+      Presentes.value.sort((a, b) => a.nombre.localeCompare(b.nombre));
+      break;
+    case 1:
+      Presentes.value.sort((a, b) => b.nombre.localeCompare(a.nombre));
+      break;
   }
 };
-const comprobar = async (item) => {
-  let index = Presentes.value.findIndex((e) => e.id === item.id);
-  index !== -1
-    ? $q.notify({
-        message: "Ya esta en la lista de presentes",
-        color: "red-2",
-        textColor: "red-9",
-        icon: "priority_high",
-      })
-    : agregar(item);
+
+const sortAusentes = () => {
+  clickCountAusentes.value = (clickCountAusentes.value + 1) % 2;
+  switch (clickCountAusentes.value) {
+    case 0:
+      Listado.value.sort((a, b) => a.nombre.localeCompare(b.nombre));
+      break;
+    case 1:
+      Listado.value.sort((a, b) => b.nombre.localeCompare(a.nombre));
+      break;
+  }
 };
-const agregar = async (item) => {
-  let index = Listado.value.findIndex((e) => e.id === item.id);
-  index !== -1 ? Listado.value.splice(index, 1) : null;
+
+function handleHold({ evt }) {
+  const id = evt.path[2].id;
+  return router.push(`/Detalles_Alumnos/${id}`);
+}
+
+const eventEmittedFromChild = (res) => {
+  if (res.length !== 0) {
+    Resultado_Busqueda.value = res.map((e) => ({ ...e }));
+  } else {
+    Resultado_Busqueda.value = [];
+  }
+};
+
+const comprobar = (item) => {
+  const index = Presentes.value.findIndex((e) => e.id === item.id);
+  if (index !== -1) {
+    $q.notify({
+      message: "Ya está en la lista de presentes",
+      color: "red-2",
+      textColor: "red-9",
+      icon: "priority_high",
+    });
+  } else {
+    agregar(item);
+  }
+};
+
+const agregar = (item) => {
+  const index = Listado.value.findIndex((e) => e.id === item.id);
+  if (index !== -1) {
+    Listado.value.splice(index, 1);
+  }
   Presentes.value.unshift({ ...item, asistencia: true });
   Listado.value = Listado.value.filter((e) => e.id !== item.id);
 };
+
 const quitar = (item) => {
-  let index = Presentes.value.findIndex((e) => e.id === item.id);
-  index !== -1 ? Presentes.value.splice(index, 1) : null;
+  const index = Presentes.value.findIndex((e) => e.id === item.id);
+  if (index !== -1) {
+    Presentes.value.splice(index, 1);
+  }
   Listado.value.unshift({ ...item, asistencia: false });
   Presentes.value = Presentes.value.filter((e) => e.id !== item.id);
 };
+
 const guardar = async () => {
-  let Array_Ausentes = Listado.value.map((e) => e.id);
-  let Array_Presentes = Presentes.value.map((e) => e.id);
-  let Fecha = date.value;
-  let Grupo = grupo.value;
-  await Asistencia_de_Hoy(Array_Presentes, Array_Ausentes, Fecha, Grupo)
+  const Array_Ausentes = Listado.value.map((e) => e.id);
+  const Array_Presentes = Presentes.value.map((e) => e.id);
+  const Fecha = date.value;
+  const Grupo = grupo.value;
+  await registrarAsistenciaDeHoy(Array_Presentes, Array_Ausentes, Fecha, Grupo)
     .then(() => {
       $q.notify({
-        message: "Listado Guardado con exito",
+        message: "Listado Guardado con éxito",
         color: "green-4",
         textColor: "white",
         icon: "cloud_done",
@@ -351,128 +400,103 @@ const guardar = async () => {
     })
     .catch((error) => {
       $q.notify({
-        message: `Ha ocurrido un Error ${error}`,
+        message: `Ha ocurrido un Error: ${error}`,
         color: "red-4",
         textColor: "white",
         icon: "priority_high",
       });
     });
 };
-const Nuevo_Listado = async () => {
+
+const Nuevo_Listado = () => {
   resetear();
   date.value = hoy.value;
   Buscar();
 };
+
 const resetear = () => {
-  Presentes.value.length = 0;
-  Listado.value.length = 0;
+  Presentes.value = [];
+  Listado.value = [];
 };
-const Filtrar = async (fecha, res) => {
-  visible.value = false;
-  let r = await Buscar_Grupo(fecha, res).then((e) => e);
-  let Alumnos = await Mostrar_Listado().then((elem) =>
-    elem.map((e) => e.data())
-  );
-  if (r) {
-    resetear();
-    const { presentes, ausentes } = await Buscar_Grupo(fecha, res).then(
-      (e) => e.data().Data
-    );
-    await presentes.map((e) =>
-      Buscar_Alumno(e).then((doc) =>
-        doc.id === e ? Presentes.value.push({ ...doc, asistencia: true }) : null
-      )
-    );
-    await ausentes.map((e) =>
-      Buscar_Alumno(e).then((doc) =>
-        doc.id === e ? Listado.value.push({ ...doc, asistencia: false }) : null
-      )
-    );
+
+const Filtrar = async (fecha, grupo) => {
+  if (!fecha || !grupo) {
+    console.error("La fecha o el grupo están indefinidos");
     return;
-  } else {
-    switch (res) {
-      case "Orquesta":
-        resetear();
-        await Alumnos.filter((elem) =>
-          elem.grupo.filter((e) =>
-            e === "Orquesta"
-              ? Listado.value.push({ ...elem, asistencia: false }) &&
-                Listado.value
-                  .reverse()
-                  .sort((a, b) => a.nombre.localeCompare(b.nombre))
-              : null
-          )
-        );
-        break;
-      case "Coro":
-        resetear();
-        (await Alumnos).filter((elem) =>
-          elem.grupo.find((e) =>
-            e === "Coro"
-              ? Listado.value.push({ ...elem, asistencia: false }) &&
-                Listado.value
-                  .reverse()
-                  .sort((a, b) => a.nombre.localeCompare(b.nombre))
-              : null
-          )
-        );
-        break;
-      case "Iniciacion 2":
-        resetear();
-        (await Alumnos).filter((elem) =>
-          elem.grupo.find((e) =>
-            e === "Iniciacion 2"
-              ? Listado.value.push({ ...elem, asistencia: false }) &&
-                Listado.value
-                  .reverse()
-                  .sort((a, b) => a.nombre.localeCompare(b.nombre))
-              : null
-          )
-        );
-        break;
-      case "Iniciacion 1":
-        resetear();
-        Listado.value.length = 0;
-        (await Alumnos).filter((elem) =>
-          elem.grupo.find((e) =>
-            e === "Iniciacion 1"
-              ? Listado.value.push({ ...elem, asistencia: false }) &&
-                Listado.value
-                  .reverse()
-                  .sort((a, b) => a.nombre.localeCompare(b.nombre))
-              : null
-          )
-        );
+  }
+
+  visible.value = false;
+  resetear();
+
+  try {
+    let registros = await buscarAsistenciasPorFechaYGrupo(fecha, grupo);
+    let Alumnos = await obtenerAlumnos();
+
+    if (registros && registros.length > 0) {
+      const { presentes, ausentes } = registros[0].Data;
+
+      await Promise.all([
+        ...presentes.map((id) => agregarAlumnoALista(id, true)),
+        ...ausentes.map((id) => agregarAlumnoALista(id, false)),
+      ]);
+    } else {
+      mostrarAusentes(Alumnos, grupo);
     }
+    pdf.value = fecha && grupo !== "All";
+  } catch (error) {
+    console.error("Error al filtrar asistencias:", error);
   }
 };
-const Buscar = async () => {
-  Buscar_Por_Fecha(date.value).then((Data) => {
-    Data !== null
-      ? resetear() && (visible.value = false)
-      : date.value === hoy.value
-      ? (visible.value = false)
-      : null;
-  });
-};
-watchEffect(async () => {
-  // router.push(`/${grupo.value}`);
-  date.value ? Buscar() : hoy.value;
-  await Filtrar(date.value, grupo.value);
-  // si hay una fecha seleccionada  y un grupo seleccionado pdf.value = true
-  date.value && grupo.value !== "All"
-    ? (pdf.value = true)
-    : (pdf.value = false);
-});
-onMounted(async () => {
-  events.value = await Eventos_Calendario();
-  Listado.value = Listado.value.sort((a, b) =>
-    a.nombre.localeCompare(b.nombre)
+
+const mostrarAusentes = (Alumnos, grupo) => {
+  let alumnosFiltrados = Alumnos.filter((elem) => elem.grupo.includes(grupo));
+  alumnosFiltrados.forEach((elem) =>
+    Listado.value.push({ ...elem, asistencia: false })
   );
+  Listado.value.sort((a, b) => a.nombre.localeCompare(b.nombre));
+};
+
+const agregarAlumnoALista = async (id, asistencia) => {
+  try {
+    const doc = await buscarAlumnoPorId(id);
+    if (doc && doc.id === id) {
+      const lista = asistencia ? Presentes.value : Listado.value;
+      lista.push({ ...doc, asistencia });
+    }
+  } catch (error) {
+    console.error("Error al agregar alumno a la lista:", error);
+  }
+};
+
+const Buscar = async (fecha) => {
+  try {
+    const Data = await buscarAsistenciasPorFecha(fecha);
+    if (Data !== null || date.value === hoy.value) {
+      resetear();
+      visible.value = false;
+    }
+  } catch (error) {
+    console.error("Error al buscar asistencias por fecha:", error);
+  }
+};
+
+watchEffect(async () => {
+  date.value ? Buscar(date.value) : hoy.value;
+  await Filtrar(date.value, grupo.value);
+  // si presentes esta vacio entonces ocultar boton de  pdf
+  Presentes.value.length === 0 ? (pdf.value = false) : (pdf.value = true);
+});
+
+onMounted(async () => {
+  try {
+    marcas.value = await obtenerMarcasDelCalendario();
+  } catch (error) {
+    console.error("Error al obtener marcas del calendario:", error);
+  }
 });
 </script>
 
-<style>
+<style scoped>
 .scrollList {
   height: calc(100vh - (60px + 60px));
   overflow-y: scroll;
