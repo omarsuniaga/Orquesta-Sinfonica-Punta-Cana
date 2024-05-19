@@ -12,6 +12,7 @@ import {
   orderBy,
   startAfter,
   limit as firestoreLimit,
+  limit,
 } from "firebase/firestore";
 
 /**
@@ -38,6 +39,9 @@ export async function obtenerAlumnos() {
   if (!Alumnos) {
     Alumnos = await fetchAlumnosFromFirebase();
     localStorage.setItem("ALUMNOS", JSON.stringify(Alumnos));
+  } else {
+    //  obtener alumnos de firebase
+    Alumnos = await fetchAlumnosFromFirebase();
   }
 
   return Alumnos;
@@ -50,10 +54,10 @@ export async function obtenerAlumnos() {
 export const fetchAlumnosFromFirebase = async () => {
   try {
     let listadoRef = collection(db, "ALUMNOS");
-    let q = query(
-      listadoRef,
-      where("instrumento", "!=", null),
-      where("grupo", "!=", null)
+    let q = firestoreQuery(
+      listadoRef
+      // where("instrumento", "!=", null),
+      // where("grupo", "!=", null)
     );
     let querySnapshot = await getDocs(q);
     let res = querySnapshot.docs
@@ -172,12 +176,13 @@ export async function buscarAsistenciasPorIdYMensualidad(id, mes) {
 
 // metodo para buscar por grupo usando ASISTENCIAS de localstorage o firebase si no existe
 export async function buscarAsistenciasPorGrupo(grupo) {
-  const key = `ASISTENCIAS_${grupo}`;
+  const key = `ASISTENCIAS`;
   let asistencias = JSON.parse(localStorage.getItem(key));
-
+  // extraer asistencias donde la propiedad grupo sea igual a la variable grupo
+  asistencias = asistencias.filter((asistencia) => asistencia.grupo === grupo);
   if (!asistencias) {
     const asistenciasRef = collection(db, "ASISTENCIAS");
-    const q = query(asistenciasRef, where("Grupo", "==", grupo));
+    const q = firestoreQuery(asistenciasRef, where("Grupo", "==", grupo));
     const snapshot = await getDocs(q);
     asistencias = snapshot.docs.map((doc) => doc.data());
     localStorage.setItem(key, JSON.stringify(asistencias));
@@ -191,19 +196,19 @@ export async function buscarAsistenciasPorGrupo(grupo) {
  * @returns {Promise<Array>} - Una promesa que resuelve en un array de todas las asistencias.
  */
 export async function obtenerAsistencias() {
-  // llamar a fetctItems para obtener los datos de la base de datos
-  let asistencias = JSON.parse(localStorage.getItem("ASISTENCIAS"));
+  let asistencias = JSON.parse(localStorage.getItem("ASISTENCIAS")).data;
   if (!asistencias) {
     asistencias = await fetchAsistenciasFromFirebase();
+    console.log("de Firebase", asistencias);
     localStorage.setItem("ASISTENCIAS", JSON.stringify(asistencias));
   }
+
   return asistencias;
 }
-
 export const fetchAsistenciasFromFirebase = async () => {
   try {
     let listadoRef = collection(db, "ASISTENCIAS");
-    let q = query(listadoRef);
+    let q = firestoreQuery(listadoRef);
     let querySnapshot = await getDocs(q);
     let res = querySnapshot.docs.map((e) => e.data());
     return res;
@@ -226,13 +231,20 @@ export async function buscarAlumnoPorId(id) {
 
 export const buscarAsistenciasPorFechaYGrupo = async (fecha, grupo) => {
   let asistencias = await obtenerAsistencias();
-  asistencias = asistencias.data.filter(
-    (asistencia) => asistencia.Fecha === fecha && asistencia.grupo === grupo
-  );
-
+  console.log("obtenerAsistencias() parametros", fecha, grupo);
+  // si grupo = All o vacio, no realizar busqueda por grupo
+  if (grupo === "All" || grupo === "") {
+    console.log("Selecciona un grupo");
+  }
+  if (grupo !== "All" && grupo !== "") {
+    asistencias = asistencias.filter(
+      (asistencia) => asistencia.Fecha === fecha && asistencia.grupo === grupo
+    );
+    console.log("obtenerAsistencias() de localStorage", asistencias);
+  }
   if (!asistencias) {
     const asistenciasRef = collection(db, "ASISTENCIAS");
-    const q = query(
+    const q = firestoreQuery(
       asistenciasRef,
       where("Fecha", "==", fecha),
       where("Grupo", "==", grupo)
@@ -240,6 +252,7 @@ export const buscarAsistenciasPorFechaYGrupo = async (fecha, grupo) => {
     const snapshot = await getDocs(q);
     asistencias = snapshot.docs.map((doc) => doc.data());
     localStorage.setItem(key, JSON.stringify(asistencias));
+    console.log("buscarAsistenciasPorFechaYGrupo() de Firebase", asistencias);
   }
 
   return asistencias;
@@ -253,7 +266,10 @@ export const buscarAsistenciasPorFechaYGrupo = async (fecha, grupo) => {
 export async function solicitarCredenciales(email) {
   try {
     const usuariosRef = collection(db, "USUARIOS");
-    const queryUsuarios = query(usuariosRef, where("email", "==", email));
+    const queryUsuarios = firestoreQuery(
+      usuariosRef,
+      where("email", "==", email)
+    );
     const resultado = await getDocs(queryUsuarios);
 
     if (resultado.empty) {
@@ -451,12 +467,11 @@ export async function obtenerAsistenciasPorFechaYGrupo(fecha, grupo) {
 
 export const buscarAsistenciasPorFecha = async (fecha) => {
   let asistencias = await obtenerAsistencias();
-  asistencias = asistencias.data.filter(
-    (asistencia) => asistencia.Fecha === fecha
-  );
+
+  asistencias = asistencias.filter((asistencia) => asistencia.Fecha === fecha);
   if (!asistencias) {
     const asistenciasRef = collection(db, "ASISTENCIAS");
-    const q = query(asistenciasRef, where("Fecha", "==", fecha));
+    const q = firestoreQuery(asistenciasRef, where("Fecha", "==", fecha));
     const snapshot = await getDocs(q);
     asistencias = snapshot.docs.map((doc) => doc.data());
     localStorage.setItem(key, JSON.stringify(asistencias));
@@ -581,7 +596,7 @@ const fetchItemsFromFirebase = async () => {
  * @param {Object} lastVisibleItem - El último documento visible en la lista.
  * @returns {Promise<Object>} - Una promesa que resuelve en un objeto con los documentos cargados y el último documento visible.
  */
-export const fetchItems = async (lastVisibleItem, limit = 10) => {
+export const fetchItems = async (lastVisibleItem, firestoreLimit = 10) => {
   let items = loadFromLocalStorage("ASISTENCIAS");
   let lastVisible = null;
   const tresMesesAtras = new Date();
@@ -592,7 +607,8 @@ export const fetchItems = async (lastVisibleItem, limit = 10) => {
     let myQuery = firestoreQuery(
       collection(db, "ASISTENCIAS"),
       orderBy("Fecha", "desc"),
-      where("Fecha", ">=", fechaFiltro)
+      where("Fecha", ">=", fechaFiltro),
+      limit(firestoreLimit)
     );
 
     if (lastVisibleItem) {
@@ -600,7 +616,8 @@ export const fetchItems = async (lastVisibleItem, limit = 10) => {
         collection(db, "ASISTENCIAS"),
         orderBy("Fecha", "desc"),
         where("Fecha", ">=", fechaFiltro),
-        startAfter(lastVisibleItem)
+        startAfter(lastVisibleItem),
+        limit(firestoreLimit)
       );
     }
 
@@ -616,32 +633,46 @@ export const fetchItems = async (lastVisibleItem, limit = 10) => {
 
 // funcion que recibe el formato de fecha y lo cambia
 function cambiarFormatoFecha(fecha) {
+  if (!fecha) {
+    console.error("Error al cambiar el formato de la fecha: ", error);
+    return;
+  }
+  // cambiar formato de fecha de 'YYYY-MM-DD' a 'YYYY/MM/DD'
   return fecha.split("-").join("/");
 }
 
 // historial de asistencias
 export async function obtenerMarcasDelCalendario() {
   const asistencias = await obtenerAsistencias();
-  const historial = {};
-  // itera las asistencias y obtiene las fechas únicas
-  asistencias.data.forEach((asistencia) => {
-    const fecha = asistencia.Fecha;
-    // cambiar formato de fecha de 'YYYY-MM-DD' a 'YYYY/MM/DD'
-    const fechaFormateada = cambiarFormatoFecha(fecha);
-    if (fechaFormateada) {
-      if (!historial[fechaFormateada]) {
-        historial[fechaFormateada] = [];
+  // comprobar si hay datos en asistencias
+  if (!asistencias) {
+    console.error("No se pudieron obtener las asistencias");
+    return;
+  }
+
+  try {
+    const historial = {};
+    // itera las asistencias y obtiene las fechas únicas
+    asistencias.forEach((asistencia) => {
+      const fecha = asistencia.Fecha;
+      // cambiar formato de fecha de 'YYYY-MM-DD' a 'YYYY/MM/DD'
+      const fechaFormateada = cambiarFormatoFecha(fecha);
+      console.log("Cambiando formato - asistencias", fechaFormateada);
+      if (fechaFormateada) {
+        if (!historial[fechaFormateada]) {
+          historial[fechaFormateada] = [];
+        }
+        historial[fechaFormateada].push(asistencia);
       }
-      historial[fechaFormateada].push(asistencia);
-    }
-  });
-  // convierte el objeto historial en un array de fechas
-  const fechas = Object.keys(historial);
-  return fechas;
-  // }
-  //   let listadoRef = collection(db, "ASISTENCIAS");
-  //   let fechas = await getDocs(listadoRef);
-  //   let eventos = fechas.docs.map((e) => e.data().Fecha); //"2022/11/01"
-  //   eventos = eventos.map((e) => (e === null ? "" : e.split("-").join("/")));
-  //   return eventos;
+    });
+    // convierte el objeto historial en un array de fechas
+    const fechas = Object.keys(historial);
+    return fechas;
+  } catch (error) {
+    console.error(
+      "Error al obtener marcas del calendario de 'obtenerMarcasDelCalendario()' ",
+      error
+    );
+    throw error;
+  }
 }

@@ -19,7 +19,14 @@ import * as XLSX from "xlsx";
 import { jsPDF } from "jspdf";
 import "jspdf-autotable";
 
-const ObjetoGlobal = ref([]);
+const ObjetoGlobal = ref([
+  {
+    name: "Cargando...",
+    Semanal: 0,
+    Mensual: 0,
+    Trimestral: 0,
+  },
+]);
 const columns = ref([
   {
     name: "name",
@@ -54,8 +61,8 @@ const columns = ref([
 const loading = ref(false);
 
 async function loadData() {
-  loading.value = true;
   try {
+    loading.value = true;
     const today = new Date();
     const weekStart = new Date(today);
     weekStart.setDate(today.getDate() - today.getDay()); // Set start to Monday
@@ -94,6 +101,10 @@ async function loadData() {
 
     ObjetoGlobal.value = Object.values(combinedAbsences);
     ObjetoGlobal.value.sort((a, b) => b.Mensual - a.Mensual);
+    console.log(
+      "linea:104, function loadData(), ObjetoGlobal:",
+      ObjetoGlobal.value
+    );
   } catch (error) {
     console.error("Error in loadData:", error);
   } finally {
