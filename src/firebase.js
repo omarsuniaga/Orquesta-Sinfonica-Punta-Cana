@@ -583,38 +583,38 @@ export const Asistencia_de_Hoy = async (
   }
 };
 
-// export const Mostrar_Carrusel = async () => {
-//   try {
-//     let listadoRef = collection(db, "CARRUSEL");
-//     let q = query(listadoRef);
-//     let querySnapshot = await getDocs(q);
-//     let res = querySnapshot.docs.map((e) => e.data());
-//     return res;
-//   } catch (error) {
-//     console.log(error);
-//   }
-// };
-// export const Mostrar_Listado = async () => {
-//   try {
-//     let listadoRef = collection(db, "ALUMNOS");
-//     let q = query(listadoRef);
-//     let querySnapshot = await getDocs(q);
-//     let res = querySnapshot.docs.map((e) => e.data());
-//     return querySnapshot.docs;
-//   } catch (error) {
-//     console.log(error);
-//   }
-// };
-// export const Mostrar_Listado_Inactivos = async () => {
-//   try {
-//     let listadoRef = collection(db, "INACTIVOS");
-//     let q = query(listadoRef);
-//     let querySnapshot = await getDocs(q);
-//     return querySnapshot.docs;
-//   } catch (error) {
-//     console.log(error);
-//   }
-// };
+export const Mostrar_Carrusel = async () => {
+  try {
+    let listadoRef = collection(db, "CARRUSEL");
+    let q = query(listadoRef);
+    let querySnapshot = await getDocs(q);
+    let res = querySnapshot.docs.map((e) => e.data());
+    return res;
+  } catch (error) {
+    console.log(error);
+  }
+};
+export const Mostrar_Listado = async () => {
+  try {
+    let listadoRef = collection(db, "ALUMNOS");
+    let q = query(listadoRef);
+    let querySnapshot = await getDocs(q);
+    let res = querySnapshot.docs.map((e) => e.data());
+    return querySnapshot.docs;
+  } catch (error) {
+    console.log(error);
+  }
+};
+export const Mostrar_Listado_Inactivos = async () => {
+  try {
+    let listadoRef = collection(db, "INACTIVOS");
+    let q = query(listadoRef);
+    let querySnapshot = await getDocs(q);
+    return querySnapshot.docs;
+  } catch (error) {
+    console.log(error);
+  }
+};
 export const fetchAsistenciasFromFirebase = async () => {
   try {
     let listadoRef = collection(db, "ASISTENCIAS");
