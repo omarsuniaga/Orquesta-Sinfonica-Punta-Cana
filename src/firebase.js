@@ -297,17 +297,6 @@ export const getAsistencias = async () => {
 
   return asistencias;
 };
-export const fetchAsistenciasFromFirebase = async () => {
-  try {
-    let listadoRef = collection(db, "ASISTENCIAS");
-    let q = query(listadoRef);
-    let querySnapshot = await getDocs(q);
-    let res = querySnapshot.docs.map((e) => e.data());
-    return res;
-  } catch (error) {
-    console.log(error);
-  }
-};
 
 export const Generar_Asistencias_Global = async () => {
   const Alumnos = await getAlumnos();
@@ -626,16 +615,27 @@ export const Asistencia_de_Hoy = async (
 //     console.log(error);
 //   }
 // };
-// export const Mostrar_todo = async () => {
-//   try {
-//     let asistenciasRef = collection(db, "ASISTENCIAS");
-//     let q = query(asistenciasRef);
-//     let asistencia = await getDocs(q);
-//     return asistencia.docs;
-//   } catch (error) {
-//     console.log(error);
-//   }
-// };
+export const fetchAsistenciasFromFirebase = async () => {
+  try {
+    let listadoRef = collection(db, "ASISTENCIAS");
+    let q = firestoreQuery(listadoRef);
+    let querySnapshot = await getDocs(q);
+    let res = querySnapshot.docs.map((e) => e.data());
+    return res;
+  } catch (error) {
+    console.error(error);
+  }
+};
+export const Mostrar_todo = async () => {
+  let asistencias = JSON.parse(localStorage.getItem("ASISTENCIAS")).data;
+  if (!asistencias) {
+    asistencias = await fetchAsistenciasFromFirebase();
+    // console.log("de Firebase", asistencias);
+    localStorage.setItem("ASISTENCIAS", JSON.stringify(asistencias));
+  }
+
+  return asistencias;
+};
 export const Buscar_Asistencias_id = async (id, mes) => {
   let RESULTADO = {};
   let PRESENTES = 0;
