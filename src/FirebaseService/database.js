@@ -24,7 +24,7 @@ export async function guardarAlumno(alumno) {
   const alumnoRef = doc(db, "ALUMNOS", alumno.id);
   try {
     await setDoc(alumnoRef, alumno);
-    console.log("Alumno guardado/actualizado exitosamente.");
+    // console.log("Alumno guardado/actualizado exitosamente.");
   } catch (error) {
     console.error("Error al guardar el alumno: ", error);
     throw error;
@@ -69,7 +69,7 @@ export const fetchAlumnosFromFirebase = async () => {
       );
     return res;
   } catch (error) {
-    console.log(error);
+    console.error(error);
   }
 };
 /**
@@ -129,13 +129,13 @@ export async function registrarAsistenciaDeHoy(
 
   try {
     await setDoc(docRef, asistenciaData);
-    console.log("Asistencia registrada exitosamente.");
+    // console.log("Asistencia registrada exitosamente.");
 
     // Actualizar localStorage
     let asistencias = JSON.parse(localStorage.getItem("ASISTENCIAS")) || [];
     asistencias.push(asistenciaData);
     localStorage.setItem("ASISTENCIAS", JSON.stringify(asistencias));
-    console.log("Asistencia guardada en localStorage.");
+    // console.log("Asistencia guardada en localStorage.");
   } catch (error) {
     console.error("Error al registrar asistencia: ", error);
     throw error;
@@ -199,7 +199,7 @@ export async function obtenerAsistencias() {
   let asistencias = JSON.parse(localStorage.getItem("ASISTENCIAS")).data;
   if (!asistencias) {
     asistencias = await fetchAsistenciasFromFirebase();
-    console.log("de Firebase", asistencias);
+    // console.log("de Firebase", asistencias);
     localStorage.setItem("ASISTENCIAS", JSON.stringify(asistencias));
   }
 
@@ -213,7 +213,7 @@ export const fetchAsistenciasFromFirebase = async () => {
     let res = querySnapshot.docs.map((e) => e.data());
     return res;
   } catch (error) {
-    console.log(error);
+    console.error(error);
   }
 };
 
@@ -231,16 +231,16 @@ export async function buscarAlumnoPorId(id) {
 
 export const buscarAsistenciasPorFechaYGrupo = async (fecha, grupo) => {
   let asistencias = await obtenerAsistencias();
-  console.log("obtenerAsistencias() parametros", fecha, grupo);
+  // console.log("obtenerAsistencias() parametros", fecha, grupo);
   // si grupo = All o vacio, no realizar busqueda por grupo
   if (grupo === "All" || grupo === "") {
-    console.log("Selecciona un grupo");
+    // console.log("Selecciona un grupo");
   }
   if (grupo !== "All" && grupo !== "") {
     asistencias = asistencias.filter(
       (asistencia) => asistencia.Fecha === fecha && asistencia.grupo === grupo
     );
-    console.log("obtenerAsistencias() de localStorage", asistencias);
+    // console.log("obtenerAsistencias() de localStorage", asistencias);
   }
   if (!asistencias) {
     const asistenciasRef = collection(db, "ASISTENCIAS");
@@ -252,7 +252,7 @@ export const buscarAsistenciasPorFechaYGrupo = async (fecha, grupo) => {
     const snapshot = await getDocs(q);
     asistencias = snapshot.docs.map((doc) => doc.data());
     localStorage.setItem(key, JSON.stringify(asistencias));
-    console.log("buscarAsistenciasPorFechaYGrupo() de Firebase", asistencias);
+    // console.log("buscarAsistenciasPorFechaYGrupo() de Firebase", asistencias);
   }
 
   return asistencias;
@@ -273,7 +273,7 @@ export async function solicitarCredenciales(email) {
     const resultado = await getDocs(queryUsuarios);
 
     if (resultado.empty) {
-      console.log("No se encontró ningún usuario con ese correo electrónico.");
+      // console.log("No se encontró ningún usuario con ese correo electrónico.");
       return null; // Retorna null si no se encuentra el usuario
     } else {
       const { Nivel } = resultado.docs[0].data();
@@ -657,7 +657,7 @@ export async function obtenerMarcasDelCalendario() {
       const fecha = asistencia.Fecha;
       // cambiar formato de fecha de 'YYYY-MM-DD' a 'YYYY/MM/DD'
       const fechaFormateada = cambiarFormatoFecha(fecha);
-      console.log("Cambiando formato - asistencias", fechaFormateada);
+      // console.log("Cambiando formato - asistencias", fechaFormateada);
       if (fechaFormateada) {
         if (!historial[fechaFormateada]) {
           historial[fechaFormateada] = [];
