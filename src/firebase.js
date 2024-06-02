@@ -600,7 +600,7 @@ export const Mostrar_Listado = async () => {
     let q = query(listadoRef);
     let querySnapshot = await getDocs(q);
     let res = querySnapshot.docs.map((e) => e.data());
-    return querySnapshot.docs;
+    return res;
   } catch (error) {
     console.log(error);
   }
@@ -629,7 +629,6 @@ export const fetchAsistenciasFromFirebase = async () => {
 export const Mostrar_todo = async () => {
   let asistencias = JSON.parse(localStorage.getItem("ASISTENCIAS")).data;
   if (!asistencias) {
-
     asistencias = await fetchAsistenciasFromFirebase();
     // console.log("de Firebase", asistencias);
     localStorage.setItem("ASISTENCIAS", JSON.stringify(asistencias));

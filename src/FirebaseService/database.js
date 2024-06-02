@@ -209,7 +209,7 @@ export async function buscarAsistenciasPorGrupo(grupo) {
  * Obtiene todas las asistencias de la base de datos.
  * @returns {Promise<Array>} - Una promesa que resuelve en un array de todas las asistencias.
  */
-export async function obtenerAsistencias() {
+export const obtenerAsistencias = async () => {
   let asistencias = JSON.parse(localStorage.getItem("ASISTENCIAS")).data;
   if (!asistencias) {
     console.log("Extrayendo de Firebase", asistencias);
@@ -218,7 +218,7 @@ export async function obtenerAsistencias() {
   }
 
   return asistencias;
-}
+};
 export const fetchAsistenciasFromFirebase = async () => {
   try {
     let listadoRef = collection(db, "ASISTENCIAS");
@@ -690,3 +690,57 @@ export async function obtenerMarcasDelCalendario() {
     throw error;
   }
 }
+
+export const conteoGeneros = async () => {
+  // itera todos los alumnos y cuenta la cantidad de estudiantes por género
+  const alumnos = await obtenerAlumnos();
+  const masculinos =
+    alumnos.filter((alumno) => alumno.sexo === "Masculino").length + 1;
+  const femeninos =
+    alumnos.filter((alumno) => alumno.sexo === "Femenino").length + 1;
+  // total de alumnos
+  const totalAlumnos = alumnos.length + 1;
+
+  const femeninoCoro = alumnos.filter(
+    (alumno) => alumno.grupo.includes("Coro") && alumno.sexo === "Femenino"
+  ).length;
+  const masculinoCoro = alumnos.filter(
+    (alumno) => alumno.grupo.includes("Coro") && alumno.sexo === "Masculino"
+  ).length;
+  const femeninoOrquesta = alumnos.filter(
+    (alumno) => alumno.grupo.includes("Orquesta") && alumno.sexo === "Femenino"
+  ).length;
+  const masculinoOrquesta = alumnos.filter(
+    (alumno) => alumno.grupo.includes("Orquesta") && alumno.sexo === "Masculino"
+  ).length;
+  const femeninoIniciacion1 = alumnos.filter(
+    (alumno) =>
+      alumno.grupo.includes("Iniciacion 1") && alumno.sexo === "Femenino"
+  ).length;
+  const masculinoIniciacion1 = alumnos.filter(
+    (alumno) =>
+      alumno.grupo.includes("Iniciacion 1") && alumno.sexo === "Masculino"
+  ).length;
+  const femeninoIniciacion2 = alumnos.filter(
+    (alumno) =>
+      alumno.grupo.includes("Iniciacion 2") && alumno.sexo === "Femenino"
+  ).length;
+  const masculinoIniciacion2 = alumnos.filter(
+    (alumno) =>
+      alumno.grupo.includes("Iniciacion 2") && alumno.sexo === "Masculino"
+  ).length;
+
+  return {
+    masculinos,
+    femeninos,
+    totalAlumnos,
+    femeninoCoro,
+    masculinoCoro,
+    femeninoOrquesta,
+    masculinoOrquesta,
+    femeninoIniciacion1,
+    masculinoIniciacion1,
+    femeninoIniciacion2,
+    masculinoIniciacion2,
+  };
+};

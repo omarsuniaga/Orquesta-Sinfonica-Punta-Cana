@@ -9,7 +9,7 @@
     </q-header>
 
     <q-footer>
-      <div style="min-width: 460px; width: 100%">
+      <div style="min-width: 350px; width: 100%">
         <q-btn-toggle
           spread
           v-model="model"
