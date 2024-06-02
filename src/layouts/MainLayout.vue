@@ -9,16 +9,16 @@
     </q-header>
 
     <q-footer>
-      <div style="min-width: 360px; width: 100%">
+      <div style="min-width: 460px; width: 100%">
         <q-btn-toggle
           spread
           v-model="model"
-          toggle-color="grey-6"
+          toggle-color="green-6"
           color="white"
           no-caps
           stretch
           unelevated
-          text-color="grey-9"
+          text-color="green-9"
           :options="Botones"
           padding="10px"
         >
