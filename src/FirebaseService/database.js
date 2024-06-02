@@ -113,12 +113,13 @@ export async function actualizarAlumno(id, datosActualizados) {
  * @param {string} grupo - Identificador del grupo.
  * @returns {Promise<void>} - Una promesa que se resuelve una vez que la asistencia ha sido registrada.
  */
-export async function registrarAsistenciaDeHoy(
+
+export const registrarAsistenciaDeHoy = async (
   presentes,
   ausentes,
   fecha,
   grupo
-) {
+) => {
   const docId = `${fecha}_${grupo}`;
   const docRef = doc(db, "ASISTENCIAS", docId);
   const asistenciaData = {
@@ -128,19 +129,32 @@ export async function registrarAsistenciaDeHoy(
   };
 
   try {
-    await setDoc(docRef, asistenciaData);
-    // console.log("Asistencia registrada exitosamente.");
+    const docSnap = await getDoc(docRef);
+
+    if (docSnap.exists()) {
+      // El documento existe, actualízalo
+      await updateDoc(docRef, asistenciaData);
+      console.log("Asistencia actualizada exitosamente.");
+    } else {
+      // El documento no existe, créalo
+      await setDoc(docRef, asistenciaData);
+      console.log("Asistencia registrada exitosamente.");
+    }
 
     // Actualizar localStorage
-    let asistencias = JSON.parse(localStorage.getItem("ASISTENCIAS")) || [];
+    let asistencias = JSON.parse(localStorage.getItem("ASISTENCIAS"));
+    // Verificar si 'asistencias' es un array
+    if (!Array.isArray(asistencias)) {
+      asistencias = [];
+    }
     asistencias.push(asistenciaData);
     localStorage.setItem("ASISTENCIAS", JSON.stringify(asistencias));
-    // console.log("Asistencia guardada en localStorage.");
+    console.log("Asistencia guardada en localStorage.");
   } catch (error) {
     console.error("Error al registrar asistencia: ", error);
     throw error;
   }
-}
+};
 /**
  * Busca asistencias por ID de alumno y mes.
  * @param {string} id - ID del alumno.
@@ -198,8 +212,8 @@ export async function buscarAsistenciasPorGrupo(grupo) {
 export async function obtenerAsistencias() {
   let asistencias = JSON.parse(localStorage.getItem("ASISTENCIAS")).data;
   if (!asistencias) {
+    console.log("Extrayendo de Firebase", asistencias);
     asistencias = await fetchAsistenciasFromFirebase();
-    // console.log("de Firebase", asistencias);
     localStorage.setItem("ASISTENCIAS", JSON.stringify(asistencias));
   }
 

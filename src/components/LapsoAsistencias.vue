@@ -101,10 +101,6 @@ async function loadData() {
 
     ObjetoGlobal.value = Object.values(combinedAbsences);
     ObjetoGlobal.value.sort((a, b) => b.Mensual - a.Mensual);
-    console.log(
-      "linea:104, function loadData(), ObjetoGlobal:",
-      ObjetoGlobal.value
-    );
   } catch (error) {
     console.error("Error in loadData:", error);
   } finally {

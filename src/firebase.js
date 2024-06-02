@@ -629,6 +629,7 @@ export const fetchAsistenciasFromFirebase = async () => {
 export const Mostrar_todo = async () => {
   let asistencias = JSON.parse(localStorage.getItem("ASISTENCIAS")).data;
   if (!asistencias) {
+
     asistencias = await fetchAsistenciasFromFirebase();
     // console.log("de Firebase", asistencias);
     localStorage.setItem("ASISTENCIAS", JSON.stringify(asistencias));

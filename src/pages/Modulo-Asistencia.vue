@@ -390,6 +390,7 @@ const guardar = async () => {
   const Fecha = date.value;
   const Grupo = grupo.value;
   await registrarAsistenciaDeHoy(Array_Presentes, Array_Ausentes, Fecha, Grupo)
+  // cuando registrarAsistenciaDeHoy termine de ejecutarse, mostrar notificación
     .then(() => {
       $q.notify({
         message: "Listado Guardado con éxito",
