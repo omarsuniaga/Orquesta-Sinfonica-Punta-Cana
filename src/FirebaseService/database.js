@@ -744,3 +744,20 @@ export const conteoGeneros = async () => {
     masculinoIniciacion2,
   };
 };
+
+// Funcion que permite mover alumnos a la Coleccion Inactivos de firebase
+export async function moverAlumnoAInactivos(id) {
+  const alumnoRef = doc(db, "ALUMNOS", id);
+  const inactivosRef = doc(db, "INACTIVOS", id);
+  try {
+    const alumno = await getDoc(alumnoRef);
+    if (alumno.exists()) {
+      const data = alumno.data();
+      await setDoc(inactivosRef, data);
+      await deleteDoc(alumnoRef);
+    }
+  } catch (error) {
+    console.error("Error al mover alumno a inactivos: ", error);
+    throw error;
+  }
+}

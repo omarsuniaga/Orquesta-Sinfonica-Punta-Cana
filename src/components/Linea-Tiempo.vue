@@ -1,6 +1,5 @@
 <template>
   <div class="q-px-lg q-pb-md">
-    <h5>Reseña</h5>
     <span>{{ informacion }}</span>
     <q-timeline
       color="secondary"
@@ -111,9 +110,7 @@ onMounted(async () => {
   let alumno = await Buscar_Alumno(id);
   let instrumento = alumno.instrumento.split(" ")[0];
   let asistenciasAlumno = await Generar_Asistencias_Global().then((elem) =>
-    elem.filter((el) =>
-      el.id === id ? (el.attended === true ? el.id : 0) : null
-    )
+    elem.filter((el) => el.id === id)
   );
   let DiasRegistrados = await diasTrabajados();
   TotalAsistencia = Math.round(

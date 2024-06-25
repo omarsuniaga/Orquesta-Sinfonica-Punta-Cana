@@ -33,8 +33,8 @@ const MenuSecundario = ref([
   },
   {
     icon: "diversity_1",
-    to: "/Perfil_Alumnos/filter:All",
-    value: "Perfil_Alumnos",
+    to: "/Buscar",
+    value: "Buscar",
   },
 ]);
 </script>
