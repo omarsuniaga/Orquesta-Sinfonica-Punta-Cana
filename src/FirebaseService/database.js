@@ -14,6 +14,9 @@ import {
   limit as firestoreLimit,
   limit,
 } from "firebase/firestore";
+// Inicializa Firebase Storage
+import { getStorage, ref, uploadBytes, getDownloadURL } from "firebase/storage";
+const storage = getStorage();
 
 /**
  * Crea o actualiza la información de un alumno en la base de datos.
@@ -758,6 +761,56 @@ export async function moverAlumnoAInactivos(id) {
     }
   } catch (error) {
     console.error("Error al mover alumno a inactivos: ", error);
+    throw error;
+  }
+}
+
+// Sube múltiples fotos a Firebase Storage
+export async function subirFotos(instrumentId, fotos) {
+  try {
+    const urls = await Promise.all(
+      fotos.map(async (foto) => {
+        const storageRef = storage
+          .ref()
+          .child(`ALMACEN/${instrumentId}/${foto.name}`);
+        const snapshot = await uploadBytes(storageRef, foto);
+        return await snapshot.ref.getDownloadURL();
+      })
+    );
+
+    // Guarda las URLs en Firestore
+    const instrumentRef = db.collection("ALMACEN").doc(instrumentId);
+    await instrumentRef.update({
+      imageUrls: firebase.firestore.FieldValue.arrayUnion(...urls),
+    });
+
+    console.log("Fotos subidas exitosamente.");
+    return urls;
+  } catch (error) {
+    console.error("Error al subir fotos: ", error);
+    throw error;
+  }
+}
+
+// Obtén la URL de la foto
+export async function obtenerURLFoto(nombre) {
+  const storageRef = ref(storage, `ALMACEN/${nombre}`);
+  try {
+    const url = await getDownloadURL(storageRef);
+    return url;
+  } catch (error) {
+    console.error("Error al obtener URL de la foto: ", error);
+    throw error;
+  }
+}
+// Agregar Instrumentos a la Coleccion ALMACEN
+export async function agregarInstrumento(instrumento) {
+  const instrumentRef = doc(db, "ALMACEN", instrumento.id);
+  try {
+    await setDoc(instrumentRef, instrumento);
+    console.log("Instrumento agregado exitosamente.");
+  } catch (error) {
+    console.error("Error al agregar instrumento: ", error);
     throw error;
   }
 }

@@ -30,12 +30,10 @@ const routes = [
     name: "NotFound",
     component: () => import("src/pages/ErrorNotFound.vue"),
   },
-
   {
     path: "/Asistencia",
     name: "Asistencia",
     component: () => import("layouts/MainLayout.vue"),
-
     children: [
       { path: "", component: () => import("pages/Modulo-Asistencia.vue") },
     ],
@@ -103,6 +101,21 @@ const routes = [
     component: () => import("layouts/MainLayout.vue"),
     children: [
       { path: "", component: () => import("pages/Cerrar-Sesion.vue") },
+    ],
+    meta: { requiresAuth: true },
+  },
+  {
+    path: "/instruments",
+    name: "InstrumentDetails",
+    component: () => import("src/pages/InstrumentDetails.vue"),
+    meta: { requiresAuth: true }, // si necesitas autenticación para esta ruta
+  },
+  {
+    path: "/add-instrument",
+    name: "AddInstrument",
+    component: () => import("layouts/MainLayout.vue"),
+    children: [
+      { path: "", component: () => import("pages/AddInstrument.vue") },
     ],
     meta: { requiresAuth: true },
   },
