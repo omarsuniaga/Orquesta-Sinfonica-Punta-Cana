@@ -20,6 +20,7 @@
 import { ref } from "vue";
 import { useRouter } from "vue-router";
 const $router = useRouter();
+
 const MenuSecundario = ref([
   {
     icon: "ssid_chart",
@@ -27,14 +28,14 @@ const MenuSecundario = ref([
     value: "Asistencia",
   },
   {
-    icon: "user",
+    icon: "people",
     to: "/Nuevo-Alumno",
-    value: "Eventos",
+    value: "Nuevo Alumno",
   },
   {
-    icon: "diversity_1",
-    to: "/Perfil_Alumnos/filter:All",
-    value: "Perfil_Alumnos",
+    icon: "search",
+    to: "/instruments",
+    value: "InstrumentsDetails",
   },
 ]);
 </script>

@@ -9,6 +9,7 @@
 // https://v2.quasar.dev/quasar-cli-vite/quasar-config-js
 
 const { configure } = require("quasar/wrappers");
+const path = require("path");
 
 module.exports = configure(function (/* ctx */) {
   return {
@@ -48,9 +49,13 @@ module.exports = configure(function (/* ctx */) {
 
     // Full list of options: https://v2.quasar.dev/quasar-cli-vite/quasar-config-js#build
     build: {
-      target: {
-        browser: ["es2019", "edge88", "firefox78", "chrome87", "safari13.1"],
-        node: "node16",
+      vueRouterMode: "hash", // o 'history'
+      extendViteConf(viteConf) {
+        viteConf.resolve.alias = {
+          ...viteConf.resolve.alias,
+          "@": path.resolve(__dirname, "./src"),
+          src: path.resolve(__dirname, "./src"),
+        };
       },
 
       vueRouterMode: "hash", // available values: 'hash', 'history'
@@ -71,6 +76,20 @@ module.exports = configure(function (/* ctx */) {
 
       // extendViteConf (viteConf) {},
       // viteVuePluginOptions: {},
+
+      extendViteConf(viteConf) {
+        viteConf.resolve.alias = {
+          ...viteConf.resolve.alias,
+          src: path.resolve(__dirname, "./src"),
+          app: path.resolve(__dirname, "."),
+          components: path.resolve(__dirname, "./src/components"),
+          layouts: path.resolve(__dirname, "./src/layouts"),
+          pages: path.resolve(__dirname, "./src/pages"),
+          assets: path.resolve(__dirname, "./src/assets"),
+          boot: path.resolve(__dirname, "./src/boot"),
+          stores: path.resolve(__dirname, "./src/stores"),
+        };
+      },
 
       // vitePlugins: [
       //   [ 'package-name', { ..options.. } ]

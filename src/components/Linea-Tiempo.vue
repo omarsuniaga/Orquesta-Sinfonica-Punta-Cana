@@ -60,6 +60,7 @@
 import { ref, onMounted } from "vue";
 import { useRouter } from "vue-router";
 import { Nivel_Alumno } from "../data";
+import { obtenerAsistenciaPorId } from "../FirebaseService/database";
 import {
   Buscar_Alumno,
   Generar_Asistencias_Global,
@@ -110,15 +111,8 @@ onMounted(async () => {
   //extraer alumno segun id de firebase
   let alumno = await Buscar_Alumno(id);
   let instrumento = alumno.instrumento.split(" ")[0];
-  let asistenciasAlumno = await Generar_Asistencias_Global().then((elem) =>
-    elem.filter((el) =>
-      el.id === id ? (el.attended === true ? el.id : 0) : null
-    )
-  );
-  let DiasRegistrados = await diasTrabajados();
-  TotalAsistencia = Math.round(
-    (asistenciasAlumno.length / DiasRegistrados.length) * 100
-  );
+  let asistencias = await obtenerAsistenciaPorId(id);
+  console.log(asistencias, "asistencias");
 
   function convertirFecha(fecha) {
     const date = new Date(fecha);

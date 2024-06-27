@@ -744,3 +744,48 @@ export const conteoGeneros = async () => {
     masculinoIniciacion2,
   };
 };
+
+// obtener asistencia de un id de alumno
+export async function obtenerAsistenciaPorId(id) {
+  const asistencias = await obtenerAsistencias();
+  try {
+    let TotalAsistencias = 0;
+    asistencias.forEach((asistencia) =>
+      asistencia.Data === undefined
+        ? console.log("No hay asistencias")
+        : asistencia.Data.presentes.includes(id)
+        ? TotalAsistencias++
+        : asistencia.presentes.filter((e) => e.id === id).length > 0
+        ? TotalAsistencias++
+        : console.log("No hay asistencias")
+    );
+    return console.log("TotalAsistencias", TotalAsistencias);
+  } catch (error) {
+    console.error("Error al obtener asistencia por ID: ", error);
+    throw error;
+  }
+}
+
+// Registrar instrumento en la colección ALMACEN
+export async function registrarInstrumento(instrumento) {
+  const instrumentoRef = doc(db, "ALMACEN", instrumento.id);
+  try {
+    await setDoc(instrumentoRef, instrumento);
+    console.log("Instrumento registrado exitosamente.");
+  } catch (error) {
+    console.error("Error al registrar instrumento: ", error);
+    throw error;
+  }
+}
+
+// Actualizar instrumento en la colección ALMACEN
+export async function actualizarInstrumento(id, datosActualizados) {
+  const instrumentoRef = doc(db, "ALMACEN", id);
+  try {
+    await updateDoc(instrumentoRef, datosActualizados);
+    console.log("Instrumento actualizado exitosamente.");
+  } catch (error) {
+    console.error("Error al actualizar instrumento: ", error);
+    throw error;
+  }
+}

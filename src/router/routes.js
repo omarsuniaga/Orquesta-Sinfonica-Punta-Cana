@@ -14,30 +14,23 @@ const routes = [
     meta: { requiresAuth: true },
   },
   {
-    path: "/lapso",
-    name: "lapso",
+    path: "/AddInstrument",
+    name: "AddInstrument",
     component: () => import("layouts/MainLayout.vue"),
     children: [
       {
         path: "",
-        component: () => import("src/components/LapsoAsistencias.vue"),
+        component: () => import("src/pages/AddInstrument.vue"),
       },
     ],
     meta: { requiresAuth: true },
   },
   {
-    path: "/:pathMatch(.*)*",
-    name: "NotFound",
-    component: () => import("src/pages/ErrorNotFound.vue"),
-  },
-
-  {
     path: "/Asistencia",
     name: "Asistencia",
     component: () => import("layouts/MainLayout.vue"),
-
     children: [
-      { path: "", component: () => import("pages/Modulo-Asistencia.vue") },
+      { path: "", component: () => import("src/pages/Modulo-Asistencia.vue") },
     ],
     meta: { requiresAuth: true },
   },
@@ -46,7 +39,7 @@ const routes = [
     name: "Dashboard",
     component: () => import("layouts/MainLayout.vue"),
     children: [
-      { path: "", component: () => import("pages/Dashboard_Index.vue") },
+      { path: "", component: () => import("src/pages/Dashboard_Index.vue") },
     ],
     meta: { requiresAuth: true },
   },
@@ -54,7 +47,9 @@ const routes = [
     path: "/Nuevo-Alumno",
     name: "Nuevo-Alumno",
     component: () => import("layouts/MainLayout.vue"),
-    children: [{ path: "", component: () => import("pages/Nuevo-Alumno.vue") }],
+    children: [
+      { path: "", component: () => import("src/pages/Nuevo-Alumno.vue") },
+    ],
     meta: { requiresAuth: true },
   },
   {
@@ -62,7 +57,7 @@ const routes = [
     name: "Lista_Inactivos",
     component: () => import("layouts/MainLayout.vue"),
     children: [
-      { path: "", component: () => import("pages/Lista_Inactivos.vue") },
+      { path: "", component: () => import("src/pages/Lista_Inactivos.vue") },
     ],
     meta: { requiresAuth: true },
   },
@@ -72,7 +67,7 @@ const routes = [
     props: true,
     component: () => import("layouts/MainLayout.vue"),
     children: [
-      { path: "", component: () => import("pages/Buscar-Alumnos.vue") },
+      { path: "", component: () => import("src/pages/Buscar-Alumnos.vue") },
     ],
     meta: { requiresAuth: true },
   },
@@ -82,7 +77,7 @@ const routes = [
     props: true,
     component: () => import("layouts/MainLayout.vue"),
     children: [
-      { path: "", component: () => import("pages/Detalles_Alumnos.vue") },
+      { path: "", component: () => import("src/pages/Detalles_Alumnos.vue") },
     ],
     meta: { requiresAuth: true },
   },
@@ -92,7 +87,10 @@ const routes = [
     props: true,
     component: () => import("layouts/MainLayout.vue"),
     children: [
-      { path: "", component: () => import("pages/Calificacion-Alumno.vue") },
+      {
+        path: "",
+        component: () => import("src/pages/Calificacion-Alumno.vue"),
+      },
     ],
     meta: { requiresAuth: true },
   },
@@ -102,9 +100,24 @@ const routes = [
     props: true,
     component: () => import("layouts/MainLayout.vue"),
     children: [
-      { path: "", component: () => import("pages/Cerrar-Sesion.vue") },
+      { path: "", component: () => import("src/pages/Cerrar-Sesion.vue") },
     ],
     meta: { requiresAuth: true },
+  },
+  {
+    path: "/instruments",
+    name: "InstrumentDetails",
+    component: () => import("layouts/MainLayout.vue"),
+    children: [
+      { path: "", component: () => import("src/pages/InstrumentsDetails.vue") },
+    ],
+    meta: { requiresAuth: true },
+  },
+
+  {
+    path: "/:pathMatch(.*)*",
+    name: "NotFound",
+    component: () => import("src/pages/ErrorNotFound.vue"),
   },
 ];
 

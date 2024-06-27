@@ -16,7 +16,10 @@
       <div id="alumnos-container " v-for="item in listado" :key="item.id">
         <button id="alumnos" @click="buscar(item.id)">
           <div class="profile">
-            <q-img :src="url" @click="$router.push('/Detalles_Alumnos/' + item.id)">
+            <q-img
+              :src="url"
+              @click="$router.push('/Detalles_Alumnos/' + item.id)"
+            >
             </q-img>
           </div>
           <div class="title">
@@ -26,12 +29,18 @@
       </div>
     </div>
     <div class="resultados">
-      <h5 class="text-white q-mx-sm">Recientes</h5>
       <div class="container">
-        <div v-for="(item, index) in recientes" :key="index" id="alumnos-container">
+        <div
+          v-for="(item, index) in recientes"
+          :key="index"
+          id="alumnos-container"
+        >
           <button id="alumnos">
             <div class="profile">
-              <q-img :src="url" @click="$router.push('/Detalles_Alumnos/' + item.id)">
+              <q-img
+                :src="url"
+                @click="$router.push('/Detalles_Alumnos/' + item.id)"
+              >
               </q-img>
             </div>
             <div class="title">
@@ -45,7 +54,7 @@
 </template>
 <script setup>
 import { ref, onMounted, watchEffect } from "vue";
-import { getAlumnos } from "../firebase";
+import { obtenerAlumnos } from "../FirebaseService/database";
 import BuscarAlumnos from "../components/Buscar-Alumnos.vue";
 import { useRouter } from "vue-router";
 
@@ -60,7 +69,7 @@ let text = ref("");
 let url = ref("https://picsum.photos/200/300");
 
 onMounted(async () => {
-  Alumnos.value = await getAlumnos();
+  Alumnos.value = await obtenerAlumnos();
   if (Alumnos.value !== 0) {
     return (loading.value = true);
   }
@@ -74,8 +83,6 @@ data.value = {
 for (let id of data.value.ids) {
   data.value.acumuladores[id] = localStorage.getItem(`acumulador-${id}`);
 }
-console.log(data.value);
-
 const buscar = (id) => {
   // Revisar si el id existe en el localstorage
   let storedIds = JSON.parse(localStorage.getItem("ids")) || [];
