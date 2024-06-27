@@ -10,6 +10,7 @@ import {
 } from "firebase/auth";
 // //Modulo del Storage
 import { getStorage } from "firebase/storage";
+
 // //Modulo de Base de Datos
 import {
   collection,
@@ -289,7 +290,7 @@ export const classificationByGroup = async () => {
 
 export const getAsistencias = async () => {
   let asistencias = JSON.parse(localStorage.getItem("ASISTENCIAS"));
-  console.log("asistencias", asistencias);
+  // console.log("asistencias", asistencias);
   if (!asistencias) {
     asistencias = await fetchAsistenciasFromFirebase();
     localStorage.setItem("ASISTENCIAS", JSON.stringify(asistencias));

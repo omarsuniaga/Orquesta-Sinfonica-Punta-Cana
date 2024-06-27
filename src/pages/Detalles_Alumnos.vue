@@ -16,6 +16,8 @@ import { ref, uploadBytes, getDownloadURL } from "firebase/storage";
 import SubirFotos from "src/components/SubirFotos.vue";
 import { QBtn, QUploader } from "quasar";
 import CarruselImagenes from "src/components/Carrusel-imagenes.vue";
+import { Cloudinary } from '@cloudinary/url-gen'
+
 
 // import { useNivelStore } from "../stores/Niveles";
 // const store = useNivelStore();
@@ -27,9 +29,10 @@ const id = useRouter().currentRoute._rawValue.params.id;
 let _ = reactive({
   sexo: ["Masculino", "Femenino"],
   options: ["Orquesta", "Coro", "Iniciacion 2", "Iniciacion 1"],
-  nivel: auth.currentUser.phoneNumber,
+  // nivel: auth.currentUser.phoneNumber,
+  nivel: "0",
   alumno: {},
-  editable: false,
+  editable: true,
   file: null,
   loading: null,
   imagen: "",
@@ -38,7 +41,7 @@ let _ = reactive({
   destino: `galeria/${id}`,
   avatar: `avatar/${id}`,
   stars: 2,
-  ver: false,
+  ver: true,
 });
 
 /** @type {any} */
@@ -174,6 +177,7 @@ const mostrar_ficha = (id) => {
   });
 };
 
+
 const guardar = async (alumno) => {
   await Actualizar_Alumno(alumno)
     .then(() => {
@@ -183,7 +187,7 @@ const guardar = async (alumno) => {
         textColor: "white",
         icon: "cloud_done",
       });
-      _.editable = true;
+      _.editable = false;
     })
     .catch((error) => {
       $q.notify({
@@ -194,7 +198,7 @@ const guardar = async (alumno) => {
       });
     });
 };
-const eliminar = async () => {
+const eliminar = async (alumno) => {
   $q.dialog({
     title: "Confirmar",
     message: "Estas seguro que quieres eliminar este alumno?",
@@ -202,8 +206,8 @@ const eliminar = async () => {
     persistent: true,
   })
     .onOk(() =>
-      Mover_Alumnos(alumno).then(() =>
-        Eliminar_Alumno(id).then(() => router.replace({ path: "/" }))
+      moverAlumnoAInactivos(alumno).then(() =>
+        eliminarAlumno(id).then(() => router.replace({ path: "/" }))
       )
     )
     .onCancel(() => {
@@ -213,7 +217,7 @@ const eliminar = async () => {
 };
 const mostrar = () => {
   _.ver = !_.ver;
-};
+}
 </script>
 <template>
   <div class="q-ma-sm row justify-center bg-white" style="min-width: 375px">
@@ -253,35 +257,18 @@ const mostrar = () => {
           </div>
         </div>
         <div v-if="_.nivel === '0'" class="flex q-ma-sm justify-end wrap">
-          <q-btn
-            class="q-mx-xs"
-            color="primary"
-            icon="save"
-            size="sm"
-            @click="guardar(_.alumno)"
-          />
-          <q-btn
-            class="q-mx-xs"
-            color="orange-4"
-            icon="edit_note"
-            size="sm"
-            @click="mostrar()"
-          />
-          <q-btn
-            class="q-mx-xs"
-            color="red-4"
-            icon="remove_circle"
-            size="sm"
-            @click="eliminar()"
-          />
+          <q-btn class="q-mx-xs" color="primary" icon="save" size="sm" @click="guardar(_.alumno)" />
+          <q-btn class="q-mx-xs" color="orange-4" icon="edit_note" size="sm" @click=mostrar() />
+          <q-btn class="q-mx-xs" color="red-4" icon="remove_circle" size="sm" @click="eliminar()" />
         </div>
-        <div v-else></div>
+        <div v-else>
+        </div>
         <q-rating v-model="_.stars" :max="5" size="32px" />
       </q-card-section>
 
       <q-card-section class="q-pt-none">
         <div class="text-caption text-grey">
-          <LineaTiempo :disable="_.editable" />
+          <!-- <LineaTiempo /> -->
         </div>
       </q-card-section>
 
@@ -296,8 +283,8 @@ const mostrar = () => {
         </q-btn>
       </q-card-actions>
       <q-separator />
-      <main v-if="_.ver === true">
-        <q-list v-if="_.nivel === '0'" bordered separator style="width: 100%">
+      <main>
+        <q-list bordered separator style="width: 100%">
           <q-card>
             <q-card-section>
               <q-input
@@ -362,7 +349,7 @@ const mostrar = () => {
             stack-label
           />
         </q-list>
-        <div v-if="_.nivel === '0'" class="row q-mx-lg bg-white">
+        <div class="row q-mx-lg bg-white">
           <div class="col-5">
             <q-input
               v-model="_.alumno.edad"
@@ -456,7 +443,7 @@ const mostrar = () => {
             color="teal"
           />
         </div>
-        <q-list v-if="_.nivel === '0'" bordered separator style="width: 100%">
+        <q-list bordered separator style="width: 100%">
           <div class="row q-col-gutter-x-md flex justify-between q-ma-sm">
             <div class="col-auto q-ma-sm row no-wrap">
               <q-select

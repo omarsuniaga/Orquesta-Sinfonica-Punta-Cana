@@ -61,15 +61,15 @@
               <div class="instrument">{{ item.instrumento }}</div>
             </div>
 
-            <!-- <q-virtual-scroll
-                :items="item.grupo"
-                virtual-scroll-horizontal
-                v-slot="{ item, index }"
-              >
-                <span :key="index" :class="item.class">
-                  <q-badge top outline color="secondary" :label="item" />
-                </span>
-              </q-virtual-scroll> -->
+            <q-virtual-scroll
+              :items="item.grupo"
+              virtual-scroll-horizontal
+              v-slot="{ item, index }"
+            >
+              <span :key="index" :class="item.class">
+                <q-badge top outline color="secondary" :label="item" />
+              </span>
+            </q-virtual-scroll>
           </q-img>
         </div>
       </q-virtual-scroll>
@@ -158,7 +158,9 @@ const Filtrar = async (res) => {
       router.push(`/Perfil_Alumnos/All`);
       Listado.value.length = 0;
       Listado.value = await Mostrar_Listado().then((elem) =>
-        elem.map((e) => e.data()).sort((a, b) => a.nombre.localeCompare(b.nombre))
+        elem
+          .map((e) => e.data())
+          .sort((a, b) => a.nombre.localeCompare(b.nombre))
       );
       break;
     default:

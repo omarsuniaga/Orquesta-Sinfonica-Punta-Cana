@@ -1,6 +1,5 @@
 <template>
   <div class="q-px-lg q-pb-md">
-    <h5>Reseña</h5>
     <span>{{ informacion }}</span>
     <q-timeline
       color="secondary"
@@ -111,8 +110,18 @@ onMounted(async () => {
   //extraer alumno segun id de firebase
   let alumno = await Buscar_Alumno(id);
   let instrumento = alumno.instrumento.split(" ")[0];
+<<<<<<< HEAD
   let asistencias = await obtenerAsistenciaPorId(id);
   console.log(asistencias, "asistencias");
+=======
+  let asistenciasAlumno = await Generar_Asistencias_Global().then((elem) =>
+    elem.filter((el) => el.id === id)
+  );
+  let DiasRegistrados = await diasTrabajados();
+  TotalAsistencia = Math.round(
+    (asistenciasAlumno.length / DiasRegistrados.length) * 100
+  );
+>>>>>>> 3c50e3bba4af11843f054e40fcc9065212137fb0
 
   function convertirFecha(fecha) {
     const date = new Date(fecha);

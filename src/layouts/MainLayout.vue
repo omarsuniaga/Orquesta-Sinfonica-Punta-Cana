@@ -67,12 +67,6 @@ let Botones = ref([
     value: "dashboard",
     auth: auth.currentUser.displayName >= 0,
   },
-  {
-    icon: "search",
-    to: "/AddInstrument",
-    value: "AddInstrument",
-    auth: auth.currentUser.displayName >= 0,
-  },
 ]);
 Botones = Botones.value.filter((elem) => elem.auth === true);
 watchEffect(() => {

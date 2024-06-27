@@ -33,9 +33,15 @@ const MenuSecundario = ref([
     value: "Nuevo Alumno",
   },
   {
+<<<<<<< HEAD
     icon: "search",
     to: "/instruments",
     value: "InstrumentsDetails",
+=======
+    icon: "diversity_1",
+    to: "/Buscar",
+    value: "Buscar",
+>>>>>>> 3c50e3bba4af11843f054e40fcc9065212137fb0
   },
 ]);
 </script>
