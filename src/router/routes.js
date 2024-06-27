@@ -26,14 +26,11 @@ const routes = [
     meta: { requiresAuth: true },
   },
   {
-<<<<<<< HEAD
-=======
     path: "/:pathMatch(.*)*",
     name: "NotFound",
     component: () => import("src/pages/ErrorNotFound.vue"),
   },
   {
->>>>>>> 3c50e3bba4af11843f054e40fcc9065212137fb0
     path: "/Asistencia",
     name: "Asistencia",
     component: () => import("layouts/MainLayout.vue"),
@@ -115,33 +112,18 @@ const routes = [
   {
     path: "/instruments",
     name: "InstrumentDetails",
-<<<<<<< HEAD
-    component: () => import("layouts/MainLayout.vue"),
-    children: [
-      { path: "", component: () => import("src/pages/InstrumentsDetails.vue") },
-    ],
-    meta: { requiresAuth: true },
-  },
-
-  {
-    path: "/:pathMatch(.*)*",
-    name: "NotFound",
-    component: () => import("src/pages/ErrorNotFound.vue"),
-  },
-=======
     component: () => import("src/pages/InstrumentDetails.vue"),
     meta: { requiresAuth: true }, // si necesitas autenticación para esta ruta
   },
   {
-    path: "/add-instrument",
-    name: "AddInstrument",
+    path: "/AddInstrument",
+    name: "Add-Instrument",
     component: () => import("layouts/MainLayout.vue"),
     children: [
       { path: "", component: () => import("pages/AddInstrument.vue") },
     ],
     meta: { requiresAuth: true },
   },
->>>>>>> 3c50e3bba4af11843f054e40fcc9065212137fb0
 ];
 
 export default routes;
