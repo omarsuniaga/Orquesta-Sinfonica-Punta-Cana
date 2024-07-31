@@ -1,8 +1,8 @@
 <script setup>
 import { useRouter } from "vue-router";
 import { reactive, onMounted } from "vue";
-import ArbolHabilidadesVue from "src/components/Arbol-Habilidades.vue";
-import LineaTiempo from "src/components/Linea-Tiempo.vue";
+// import ArbolHabilidadesVue from "src/components/Arbol-Habilidades.vue";
+// import LineaTiempo from "src/components/Linea-Tiempo.vue";
 import {
   Buscar_Alumno,
   Actualizar_Alumno,
@@ -16,8 +16,7 @@ import { ref, uploadBytes, getDownloadURL } from "firebase/storage";
 import SubirFotos from "src/components/SubirFotos.vue";
 import { QBtn, QUploader } from "quasar";
 import CarruselImagenes from "src/components/Carrusel-imagenes.vue";
-import { Cloudinary } from '@cloudinary/url-gen'
-
+import { Cloudinary } from "@cloudinary/url-gen";
 
 // import { useNivelStore } from "../stores/Niveles";
 // const store = useNivelStore();
@@ -177,7 +176,6 @@ const mostrar_ficha = (id) => {
   });
 };
 
-
 const guardar = async (alumno) => {
   await Actualizar_Alumno(alumno)
     .then(() => {
@@ -217,7 +215,7 @@ const eliminar = async (alumno) => {
 };
 const mostrar = () => {
   _.ver = !_.ver;
-}
+};
 </script>
 <template>
   <div class="q-ma-sm row justify-center bg-white" style="min-width: 375px">
@@ -257,12 +255,29 @@ const mostrar = () => {
           </div>
         </div>
         <div v-if="_.nivel === '0'" class="flex q-ma-sm justify-end wrap">
-          <q-btn class="q-mx-xs" color="primary" icon="save" size="sm" @click="guardar(_.alumno)" />
-          <q-btn class="q-mx-xs" color="orange-4" icon="edit_note" size="sm" @click=mostrar() />
-          <q-btn class="q-mx-xs" color="red-4" icon="remove_circle" size="sm" @click="eliminar()" />
+          <q-btn
+            class="q-mx-xs"
+            color="primary"
+            icon="save"
+            size="sm"
+            @click="guardar(_.alumno)"
+          />
+          <q-btn
+            class="q-mx-xs"
+            color="orange-4"
+            icon="edit_note"
+            size="sm"
+            @click="mostrar()"
+          />
+          <q-btn
+            class="q-mx-xs"
+            color="red-4"
+            icon="remove_circle"
+            size="sm"
+            @click="eliminar()"
+          />
         </div>
-        <div v-else>
-        </div>
+        <div v-else></div>
         <q-rating v-model="_.stars" :max="5" size="32px" />
       </q-card-section>
 

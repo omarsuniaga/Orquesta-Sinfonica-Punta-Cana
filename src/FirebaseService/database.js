@@ -746,4 +746,14 @@ export const conteoGeneros = async () => {
     femeninoIniciacion2,
     masculinoIniciacion2,
   };
-}
+};
+
+export const obtenerAsistenciaPorId = async (id) => {
+  const asistencias = await obtenerAsistencias();
+  return asistencias.filter((asistencia) => {
+    return (
+      asistencia.Data.presentes.includes(id) ||
+      asistencia.Data.ausentes.includes(id)
+    );
+  });
+};
