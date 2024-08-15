@@ -1,11 +1,15 @@
 <script setup>
 import { ref, onMounted, defineProps, onUnmounted } from "vue";
-const listadoAgrupado = ref([]);
+import { obtenerConfiguraciones } from "../FirebaseService/database";
+const props = defineProps({
+  grupo: String,
+  Alumnos: Array,
+});
 let url = ref("https://picsum.photos/200/300");
-const props = defineProps(["grupo", "Alumnos"]);
+const listadoAgrupado = ref([]);
 const scrollContainer = ref(null);
 // Define el orden de los grupos
-const groupOrder = ["Coro", "Orquesta", "Iniciacion 1", "Iniciacion 2"];
+const groupOrder = ref([]);
 
 function handleScroll() {
   const { scrollLeft, scrollWidth, clientWidth } = scrollContainer.value;
@@ -16,21 +20,25 @@ function handleScroll() {
 }
 
 async function cargarMasDatos() {
-  // Aquí tu lógica para cargar más datos
-  // Simulando una carga de datos
   const nuevosDatos = props.Alumnos.filter((elem) =>
     elem.grupo.find((e) => e === props.grupo)
   ); // Filtrar y añadir más datos
   listadoAgrupado.value.push(...nuevosDatos);
 }
 
-onMounted(() => {
+onMounted(async () => {
+  // obtener datos de obtenerConfiguraciones
+  groupOrder.value = await obtenerConfiguraciones();
   listadoAgrupado.value = props.Alumnos.filter((elem) =>
     elem.grupo.find((e) => e === props.grupo)
   ).sort((a, b) => {
     return (
-      groupOrder.indexOf(a.grupo.find((g) => groupOrder.includes(g))) -
-      groupOrder.indexOf(b.grupo.find((g) => groupOrder.includes(g)))
+      groupOrder.value.indexOf(
+        a.grupo.find((g) => groupOrder.value.includes(g))
+      ) -
+      groupOrder.value.indexOf(
+        b.grupo.find((g) => groupOrder.value.includes(g))
+      )
     );
   });
   if (scrollContainer.value) {
@@ -46,8 +54,8 @@ onUnmounted(() => {
 </script>
 
 <template>
-  <h5 class="text-white q-mx-sm">{{ grupo }}</h5>
   <div class="container" ref="scrollContainer">
+    <span class="text-white">{{ grupo }}</span>
     <q-scroll-area class="horizontal">
       <div class="row no-wrap">
         <div v-for="(item, index) in listadoAgrupado" :key="index">
@@ -72,25 +80,28 @@ onUnmounted(() => {
 .container .horizontal {
   height: 35vh;
   width: 100vw;
+  overflow-x: auto;
+  overflow-y: hidden;
+  white-space: nowrap;
 }
 #alumnos-container {
-  padding: 10px 0;
+  padding: 1px 10px;
 }
 #alumnos {
-  border: 0;
+  border: 1px solid transparent;
   background-color: transparent;
   cursor: pointer;
-  margin: 0;
+  margin: auto;
 }
 #alumnos .profile {
-  background: rgb(34, 181, 181);
+  background: rgb(10, 11, 11);
   background: linear-gradient(
     150deg,
     rgb(97, 124, 233) 10%,
-    rgb(140, 255, 146) 50%,
-    rgb(23, 157, 74) 80%
+    rgb(144, 54, 234) 50%,
+    rgb(23, 74, 157) 80%
   );
-  padding: 9px;
+  padding: 10px;
   box-sizing: border-box;
   width: 120px;
   height: 120px;
@@ -100,17 +111,16 @@ onUnmounted(() => {
   width: 100px;
   height: 100px;
   border-radius: 50%;
-  padding: 0;
+  padding: 1px;
   margin: 0;
-  border: 2px solid rgb(248, 248, 248);
   object-fit: cover;
   /* estirar imagen */
 }
 #alumnos .title {
   text-align: center;
-  padding: 15px 0;
+  padding: 1px 0;
   color: #fff;
-  font-size: 1.2rem;
+  font-size: 1.1rem;
 }
 
 /* pantalla para moviles */
@@ -120,22 +130,32 @@ onUnmounted(() => {
     background: linear-gradient(
       150deg,
       rgb(97, 124, 233) 10%,
-      rgb(140, 255, 146) 50%,
-      rgb(23, 157, 74) 80%
+      rgb(144, 54, 234) 50%,
+      rgb(23, 74, 157) 80%
     );
-    padding: 4px;
+    padding: 4.3px;
     box-sizing: border-box;
     width: 75px;
     height: 75px;
     border-radius: 60%;
   }
+  .container .horizontal {
+    height: 35vh;
+    width: 100vw;
+    overflow-y: hidden;
+  }
   #alumnos .profile img {
     width: 65px;
     height: 65px;
     border-radius: 50%;
-    padding: 2px;
+    padding: 1px;
     margin: 0.5px;
-    border: 3px solid rgb(152, 213, 186);
+  }
+  #alumnos .title {
+    text-align: center;
+    padding: 1px 0;
+    color: #fff;
+    font-size: 0.8rem;
   }
 }
 </style>

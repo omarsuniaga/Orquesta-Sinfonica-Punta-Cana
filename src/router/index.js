@@ -1,32 +1,32 @@
 import { createRouter, createWebHistory } from "vue-router";
 import routes from "./routes";
-import { watchAuthState } from "../FirebaseService/auth";
+import { initializeSession } from "../FirebaseService/auth"; // Asumiendo que esta función se ha definido correctamente en tu archivo auth.js
 
 const router = createRouter({
   history: createWebHistory(),
   routes,
 });
 
-let isAuth = false;
+let isAuthenticated = false;
 
-watchAuthState((user) => {
-  isAuth = !!user;
-  if (!isAuth && router.currentRoute.value.meta.requiresAuth) {
-    router.push({ name: "login" });
-  } else if (isAuth && router.currentRoute.value.meta.noAuth) {
-    router.push({ name: "home" });
+// Inicializa la sesión de autenticación
+initializeSession().then((user) => {
+  isAuthenticated = !!user; // Establece el estado de autenticación
+  if (isAuthenticated && router.currentRoute.value.meta.noAuth) {
+    router.replace({ name: "home" }); // Redirige al home si el usuario ya está autenticado
   }
 });
 
 router.beforeEach((to, from, next) => {
   const requiresAuth = to.matched.some((record) => record.meta.requiresAuth);
   const noAuth = to.matched.some((record) => record.meta.noAuth);
-  if (requiresAuth && !isAuth) {
-    next({ name: "login" });
-  } else if (noAuth && isAuth) {
-    next({ name: "home" });
+
+  if (requiresAuth && !isAuthenticated) {
+    next({ name: "login" }); // Redirige a login si la ruta requiere autenticación y el usuario no está autenticado
+  } else if (noAuth && isAuthenticated) {
+    next({ name: "home" }); // Redirige al home si el usuario está autenticado y está tratando de acceder a una página de no autenticación
   } else {
-    next();
+    next(); // Continúa con la navegación normal
   }
 });
 

@@ -5,7 +5,7 @@
         <div class="justify-center flex">
           <div class="col-auto q-mx-sm">
             <q-btn-group>
-              <q-btn color="blue-6" icon="today" @click="visible = !visible" />
+              <q-btn color="blue-6" icon="today" @click="toggleVisible" />
               <q-btn
                 color="blue-6"
                 icon-right="save"
@@ -22,10 +22,7 @@
             ></BuscarAlumnos>
           </div>
         </div>
-        <div
-          class="justify-center flex row"
-          style="min-width: 375px; width: 100%"
-        >
+        <div class="justify-center flex row" style="min-width: 375px; width: 100%">
           <q-btn-toggle
             class="col-auto flex justify-around"
             v-model="grupo"
@@ -37,12 +34,7 @@
             toggle-color="primary"
             color="green"
             text-color="white"
-            :options="[
-              { label: 'Inicio 1', value: 'Iniciacion 1' },
-              { label: 'Inicio 2', value: 'Iniciacion 2' },
-              { label: 'Coro', value: 'Coro' },
-              { label: 'Orquesta', value: 'Orquesta' },
-            ]"
+            :options="niveles"
           >
           </q-btn-toggle>
         </div>
@@ -60,6 +52,7 @@
                   minimal
                   today-btn
                   mask="YYYY-MM-DD"
+                  event-color="red"
                 />
               </div>
             </div>
@@ -71,13 +64,7 @@
         v-else
         style="min-width: 375px; width: 100%"
       >
-        <q-btn
-          @click="visible = !visible"
-          flat
-          color="white"
-          :label="date"
-          size="18px"
-        />
+        <q-btn @click="toggleVisible" flat color="white" :label="date" size="18px" />
         <div class="q-pa-sm">
           <q-btn
             v-if="date !== hoy"
@@ -85,10 +72,10 @@
             text-color="black"
             label="Hoy"
             @click="Nuevo_Listado()"
-            round
           />
         </div>
-        <div v-if="pdf">
+        <div v-if="pdf" class="flex justify-center">
+          <q-btn color="green-3" text-color="black" label="Diario" @click="eleccion()" />
           <DescargarAsistenciasPDF
             :fecha="date"
             :grupo="grupo"
@@ -98,41 +85,26 @@
         </div>
       </div>
       <div
-        v-if="grupo === 'All'"
-        class="q-pa-xl flex justify-center text-weight-regular"
+        v-if="grupo === ''"
+        class="q-pa-xl row justify-center text-weight-regular"
         style="min-width: 375px; width: 100%"
       >
-        <span class="text-white"
-          >Para pasar la asistencia, selecciona un grupo</span
-        >
+        <span class="text-white">Para pasar la asistencia, selecciona un grupo</span>
       </div>
       <div v-else class="q-pa-xs" style="min-width: 375px; width: 100%">
         <div class="row col-12">
           <div class="col-6">
             <span class="text-body1 text-white">Ausentes</span>
             <div class="row justify-start">
-              <q-btn
-                icon="sort"
-                @click="sortAusentes"
-                class="q-ma-sm"
-                color="red-3"
-              />
+              <q-btn icon="sort" @click="sortAusentes" class="q-ma-sm" color="red-3" />
             </div>
             <div v-if="Loading">
               <q-spinner-cube color="indigo" />
             </div>
-            <div
-              v-else
-              class="row flex justify-center scrollList"
-              ref="chatRef"
-            >
+            <div v-else class="row flex justify-center scrollList" ref="chatRef">
               <div
                 v-if="Resultado_Busqueda.length > 0"
-                style="
-                  width: 100%;
-                  max-width: 700px;
-                  min-width: 140px scrollList;
-                "
+                style="width: 100%; max-width: 700px; min-width: 140px scrollList"
               >
                 <q-card
                   class="q-ma-xs bg-red-3"
@@ -211,21 +183,10 @@
           <div class="col-6">
             <span class="text-body1 row text-white justify-end">Presentes</span>
             <div class="row justify-end">
-              <q-btn
-                icon="sort"
-                @click="sortPresentes"
-                class="q-ma-sm"
-                color="green-3"
-              />
+              <q-btn icon="sort" @click="sortPresentes" class="q-ma-sm" color="green-3" />
             </div>
             <div class="row flex justify-center scrollList" ref="chatRef">
-              <div
-                style="
-                  width: 100%;
-                  max-width: 700px;
-                  min-width: 140px scrollList;
-                "
-              >
+              <div style="width: 100%; max-width: 700px; min-width: 140px scrollList">
                 <q-card v-if="Presentes.length === 0" class="q-ma-xs bg-white">
                   <q-item> No hay registros </q-item>
                 </q-card>
@@ -290,68 +251,82 @@ import {
   obtenerMarcasDelCalendario,
   buscarAsistenciasPorFechaYGrupo,
   obtenerAlumnos,
+  obtenerConfiguraciones,
 } from "../FirebaseService/database";
 import moment from "moment";
-import { ref, onMounted, watchEffect, reactive } from "vue";
+import { ref, onMounted, watchEffect, reactive, watch } from "vue";
 import BuscarAlumnos from "src/components/Buscar-Alumnos.vue";
 import { useRouter } from "vue-router";
 import { Dialog, useQuasar } from "quasar";
 import DescargarAsistenciasPDF from "src/components/DescargarAsistenciasPDF.vue";
 
-const $q = reactive(useQuasar());
+const $q = useQuasar();
 const router = useRouter();
 
+// Manejo de estados reactivamente para la fecha y otros datos
 let date = ref(moment().format("YYYY-MM-DD"));
+let marcas = ref(["2024-08-10"]); // Fechas con eventos
 let hoy = ref(moment().format("YYYY-MM-DD"));
 let Resultado_Busqueda = ref([]);
 let Presentes = ref([]);
 let Listado = ref([]);
-let marcas = ref([]);
-let grupo = ref("All");
+let grupo = ref("");
 let text = ref(null);
 let Loading = ref(false);
 let visible = ref(false);
 let pdf = ref(false);
+let niveles = ref([]);
+
 let clickCountAusentes = ref(0);
 let clickCountPresentes = ref(0);
 
+// Función para alternar la visibilidad de la selección de fecha
+const toggleVisible = () => {
+  visible.value = !visible.value;
+};
+
+// Función para ordenar la lista de presentes
 const sortPresentes = () => {
   clickCountPresentes.value = (clickCountPresentes.value + 1) % 2;
-  switch (clickCountPresentes.value) {
-    case 0:
-      Presentes.value.sort((a, b) => a.nombre.localeCompare(b.nombre));
-      break;
-    case 1:
-      Presentes.value.sort((a, b) => b.nombre.localeCompare(a.nombre));
-      break;
-  }
+  Presentes.value.sort((a, b) => {
+    return clickCountPresentes.value === 0
+      ? a.nombre.localeCompare(b.nombre)
+      : b.nombre.localeCompare(a.nombre);
+  });
 };
 
-const sortAusentes = () => {
-  clickCountAusentes.value = (clickCountAusentes.value + 1) % 2;
-  switch (clickCountAusentes.value) {
-    case 0:
-      Listado.value.sort((a, b) => a.nombre.localeCompare(b.nombre));
-      break;
-    case 1:
-      Listado.value.sort((a, b) => b.nombre.localeCompare(a.nombre));
-      break;
-  }
-};
-
-function handleHold({ evt }) {
-  const id = evt.path[2].id;
-  return router.push(`/Detalles_Alumnos/${id}`);
+// mensaje usando q
+function mensaje(mensaje, color) {
+  $q.notify({
+    message: mensaje,
+    color,
+    textColor: "white",
+    icon: "aler",
+  });
 }
 
-const eventEmittedFromChild = (res) => {
-  if (res.length !== 0) {
-    Resultado_Busqueda.value = res.map((e) => ({ ...e }));
-  } else {
-    Resultado_Busqueda.value = [];
-  }
+// Función para ordenar la lista de ausentes
+const sortAusentes = () => {
+  clickCountAusentes.value = (clickCountAusentes.value + 1) % 2;
+  Listado.value.sort((a, b) => {
+    return clickCountAusentes.value === 0
+      ? a.nombre.localeCompare(b.nombre)
+      : b.nombre.localeCompare(a.nombre);
+  });
 };
 
+// Función para manejar el evento de mantener presionado
+function handleHold({ evt }) {
+  const id = evt.path[2].id;
+  router.push(`/Detalles_Alumnos/${id}`);
+}
+
+// Función para manejar eventos del componente hijo BuscarAlumnos
+const eventEmittedFromChild = (res) => {
+  Resultado_Busqueda.value = res.length ? res.map((e) => ({ ...e })) : [];
+};
+
+// Función para comprobar si un alumno ya está en la lista de presentes
 const comprobar = (item) => {
   const index = Presentes.value.findIndex((e) => e.id === item.id);
   if (index !== -1) {
@@ -366,6 +341,7 @@ const comprobar = (item) => {
   }
 };
 
+// Función para agregar un alumno a la lista de presentes
 const agregar = (item) => {
   const index = Listado.value.findIndex((e) => e.id === item.id);
   if (index !== -1) {
@@ -375,6 +351,7 @@ const agregar = (item) => {
   Listado.value = Listado.value.filter((e) => e.id !== item.id);
 };
 
+// Función para quitar un alumno de la lista de presentes
 const quitar = (item) => {
   const index = Presentes.value.findIndex((e) => e.id === item.id);
   if (index !== -1) {
@@ -384,44 +361,56 @@ const quitar = (item) => {
   Presentes.value = Presentes.value.filter((e) => e.id !== item.id);
 };
 
+// Función para guardar la asistencia en Firebase
 const guardar = async () => {
   const Array_Ausentes = Listado.value.map((e) => e.id);
   const Array_Presentes = Presentes.value.map((e) => e.id);
   const Fecha = date.value;
   const Grupo = grupo.value;
-  await registrarAsistenciaDeHoy(Array_Presentes, Array_Ausentes, Fecha, Grupo)
-  // cuando registrarAsistenciaDeHoy termine de ejecutarse, mostrar notificación
-    .then(() => {
-      $q.notify({
-        message: "Listado Guardado con éxito",
-        color: "green-4",
-        textColor: "white",
-        icon: "cloud_done",
-      });
-    })
-    .catch((error) => {
-      $q.notify({
-        message: `Ha ocurrido un Error: ${error}`,
-        color: "red-4",
-        textColor: "white",
-        icon: "priority_high",
-      });
+  try {
+    await registrarAsistenciaDeHoy(Array_Presentes, Array_Ausentes, Fecha, Grupo);
+    $q.notify({
+      message: "Listado Guardado con éxito",
+      color: "green-4",
+      textColor: "white",
+      icon: "cloud_done",
     });
+  } catch (error) {
+    $q.notify({
+      message: `Ha ocurrido un Error: ${error}`,
+      color: "red-4",
+      textColor: "white",
+      icon: "priority_high",
+    });
+  }
 };
 
+// Función para crear un nuevo listado de asistencia
 const Nuevo_Listado = () => {
   resetear();
   date.value = hoy.value;
   Buscar();
 };
 
+// Función para resetear las listas de presentes y ausentes
 const resetear = () => {
   Presentes.value = [];
   Listado.value = [];
 };
 
+// Función para cargar las marcas del calendario
+const cargarMarcasDelCalendario = async () => {
+  try {
+    const fechasConEventos = await obtenerMarcasDelCalendario();
+    marcas.value = fechasConEventos; // Asigna las fechas a la variable reactiva
+  } catch (error) {
+    console.error("Error al cargar marcas del calendario: ", error);
+  }
+};
+// Función para filtrar los registros por fecha y grupo
 const Filtrar = async (fecha, grupo) => {
   if (!fecha || !grupo) {
+    mensaje("La fecha o el grupo están indefinidos", "red-4");
     console.error("La fecha o el grupo están indefinidos");
     return;
   }
@@ -449,14 +438,14 @@ const Filtrar = async (fecha, grupo) => {
   }
 };
 
+// Función para mostrar alumnos ausentes si no hay registros
 const mostrarAusentes = (Alumnos, grupo) => {
   let alumnosFiltrados = Alumnos.filter((elem) => elem.grupo.includes(grupo));
-  alumnosFiltrados.forEach((elem) =>
-    Listado.value.push({ ...elem, asistencia: false })
-  );
+  alumnosFiltrados.forEach((elem) => Listado.value.push({ ...elem, asistencia: false }));
   Listado.value.sort((a, b) => a.nombre.localeCompare(b.nombre));
 };
 
+// Función para agregar un alumno a la lista de presentes o ausentes
 const agregarAlumnoALista = async (id, asistencia) => {
   try {
     const doc = await buscarAlumnoPorId(id);
@@ -469,6 +458,7 @@ const agregarAlumnoALista = async (id, asistencia) => {
   }
 };
 
+// Función para buscar asistencias por fecha
 const Buscar = async (fecha) => {
   try {
     const Data = await buscarAsistenciasPorFecha(fecha);
@@ -482,15 +472,31 @@ const Buscar = async (fecha) => {
 };
 
 watchEffect(async () => {
-  date.value ? Buscar(date.value) : hoy.value;
-  await Filtrar(date.value, grupo.value);
-  // si presentes esta vacio entonces ocultar boton de  pdf
-  Presentes.value.length === 0 ? (pdf.value = false) : (pdf.value = true);
+  if (date.value) {
+    await Buscar(date.value);
+  }
 });
 
+watch([date, grupo], async ([newDate, newGroup], [oldDate, oldGroup]) => {
+  if (newDate !== oldDate || newGroup !== oldGroup) {
+    await Filtrar(newDate, newGroup);
+  }
+});
+
+// Función para convertir el array de configuraciones a objetos de nivel
+function convertirArrayAObjeto(array) {
+  niveles.value = array.map((item) => ({
+    label: item,
+    value: item,
+  }));
+}
+
+// Configuración inicial al montar el componente
 onMounted(async () => {
   try {
-    marcas.value = await obtenerMarcasDelCalendario();
+    cargarMarcasDelCalendario();
+    let grupos = await obtenerConfiguraciones();
+    convertirArrayAObjeto(grupos);
   } catch (error) {
     console.error("Error al obtener marcas del calendario:", error);
   }

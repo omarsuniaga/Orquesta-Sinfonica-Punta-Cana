@@ -12,6 +12,7 @@
         <GroupCard />
       </div>
     </div>
+    <NivelManager />
 
     <q-toolbar>
       <div class="myCards">
@@ -32,11 +33,15 @@
 <script setup>
 import { ref, onMounted, watchEffect } from "vue";
 import { useRouter } from "vue-router";
+import { signOutUser } from "../FirebaseService/auth";
 import HistorialAsistencias from "src/components/Historial-Asistencias.vue";
+import NivelManager from "src/components/NivelManager.vue";
 import GenderCard from "src/pages/GenderCard.vue";
 import GroupCard from "../pages/GroupCard.vue";
 const loading = ref(true);
 const model = ref("7");
+const router = useRouter();
+
 const options = [
   {
     label: "Últimos 7 días",
@@ -61,6 +66,13 @@ const options = [
 ];
 //Esta funcion intenta almacenar en un objeto a los alumnos fecha y asistencia
 onMounted(async () => {});
+
+// funcion para cerrar sesion
+async function Salir() {
+  await signOutUser();
+  router.push("/login");
+}
+
 //crear observador watch efectt
 watchEffect(async () => {});
 </script>

@@ -33,6 +33,6 @@ let data = ref({ masculinos: 0, femeninos: 0 });
 
 onMounted(async () => {
   data.value = await conteoGeneros();
-  console.log("data", data);
+  console.log("data", data.value);
 });
 </script>

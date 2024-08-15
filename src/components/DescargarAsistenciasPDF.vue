@@ -1,13 +1,5 @@
 <template>
-  <div class="q-pa-sm">
-    <q-btn
-      color="warning"
-      text-color="black"
-      label="PDF"
-      @click="descargarPDF"
-      round
-    />
-  </div>
+  <q-btn color="warning" text-color="black" label="PDF" @click="descargarPDF" />
 </template>
 
 <script setup>
@@ -67,11 +59,7 @@ async function descargarPDF() {
     doc.addImage(imgData, "JPEG", 135, 10, 60, 30);
 
     doc.setFontSize(18);
-    doc.text(
-      `Asistencia de ${convertDateFormatToSpanish(props.fecha)}`,
-      15,
-      30
-    );
+    doc.text(`Asistencia de ${convertDateFormatToSpanish(props.fecha)}`, 15, 30);
     doc.setFontSize(12);
     doc.text(`Grupo: ${props.grupo}`, 15, 40);
 

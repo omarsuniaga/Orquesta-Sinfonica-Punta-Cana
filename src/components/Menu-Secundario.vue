@@ -6,7 +6,7 @@
         :icon="item.icon"
         size="25px"
         round
-        color="teal"
+        color="purple-6"
         @click="$router.push(item.to)"
         stack
         glossy
@@ -28,14 +28,14 @@ const MenuSecundario = ref([
     value: "Asistencia",
   },
   {
-    icon: "people",
+    icon: "add",
     to: "/Nuevo-Alumno",
     value: "Nuevo Alumno",
   },
   {
     icon: "search",
-    to: "/instruments",
-    value: "InstrumentsDetails",
+    to: "/Buscar",
+    value: "Buscar",
   },
 ]);
 </script>

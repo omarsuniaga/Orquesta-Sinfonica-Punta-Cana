@@ -1,5 +1,5 @@
 <script setup>
-import { ref, onMounted, watchEffect } from "vue";
+import { ref, onMounted } from "vue";
 import { obtenerAsistencias } from "../FirebaseService/database";
 import VueApexCharts from "vue3-apexcharts";
 
@@ -9,7 +9,10 @@ const linea = ref({
     chart: {
       type: "area",
       height: 550,
-      title: "Orquesta",
+      title: {
+        text: "Asistencia por Grupo",
+        align: "left",
+      },
     },
     dataLabels: {
       enabled: false,
@@ -30,7 +33,7 @@ const linea = ref({
 });
 
 const asistencias = ref([]);
-const MesesRegistrados = ref({});
+const pagination = ref({ rowsPerPage: 10 });
 const separator = ref("cell");
 const rows = ref([]);
 const columns = [
@@ -87,61 +90,69 @@ const columns = [
   },
 ];
 
-const pagination = ref({ rowsPerPage: 10 });
-
 onMounted(async () => {
-  asistencias.value = await obtenerAsistencias();
-
-  let asistenciasPorMesYGrupo = {};
-
-  asistencias.value.forEach((asistencia) => {
-    let fecha = new Date(asistencia.Fecha);
-    let mes = fecha.getMonth() + 1;
-    let año = fecha.getFullYear();
-    let clave = `${mes}-${año}-${asistencia.grupo}`;
-
-    if (!asistenciasPorMesYGrupo[clave]) {
-      asistenciasPorMesYGrupo[clave] = [];
+  try {
+    const data = await obtenerAsistencias();
+    if (Array.isArray(data)) {
+      asistencias.value = data;
+    } else {
+      console.error("obtenerAsistencias no devolvió un array");
     }
 
-    asistenciasPorMesYGrupo[clave].push(asistencia);
-  });
+    let asistenciasPorMesYGrupo = {};
 
-  let totalAsistenciasPorMesYGrupo = Object.keys(asistenciasPorMesYGrupo).map(
-    (clave) => {
-      let [mes, año, grupo] = clave.split("-");
-      return {
-        mes,
-        año,
-        grupo,
-        totalAsistencias: asistenciasPorMesYGrupo[clave].length,
-      };
-    }
-  );
+    // Agrupar asistencias por mes, año y grupo
+    asistencias.value.forEach((asistencia) => {
+      let fecha = new Date(asistencia.Fecha);
+      let mes = fecha.getMonth() + 1;
+      let año = fecha.getFullYear();
+      let clave = `${mes}-${año}-${asistencia.Grupo}`;
 
-  let seriesPorGrupo = {};
+      if (!asistenciasPorMesYGrupo[clave]) {
+        asistenciasPorMesYGrupo[clave] = [];
+      }
 
-  totalAsistenciasPorMesYGrupo.forEach((asistencia) => {
-    if (!seriesPorGrupo[asistencia.grupo]) {
-      seriesPorGrupo[asistencia.grupo] = [];
-    }
+      asistenciasPorMesYGrupo[clave].push(asistencia);
+    });
 
-    seriesPorGrupo[asistencia.grupo].push([
-      new Date(`${asistencia.mes}/01/${asistencia.año}`).getTime(),
-      asistencia.totalAsistencias,
-    ]);
-  });
+    let totalAsistenciasPorMesYGrupo = Object.keys(asistenciasPorMesYGrupo).map(
+      (clave) => {
+        let [mes, año, grupo] = clave.split("-");
+        return {
+          mes,
+          año,
+          grupo,
+          totalAsistencias: asistenciasPorMesYGrupo[clave].length,
+        };
+      }
+    );
 
-  linea.value.series = Object.keys(seriesPorGrupo).map((grupo) => {
-    return { name: grupo, data: seriesPorGrupo[grupo] };
-  });
+    let seriesPorGrupo = {};
 
-  linea.value.chartOptions.xaxis.categories = totalAsistenciasPorMesYGrupo.map(
-    (asistencia) => `${asistencia.mes}/01/${asistencia.año}`
-  );
+    // Construir series de datos para cada grupo
+    totalAsistenciasPorMesYGrupo.forEach((asistencia) => {
+      if (!seriesPorGrupo[asistencia.grupo]) {
+        seriesPorGrupo[asistencia.grupo] = [];
+      }
+
+      seriesPorGrupo[asistencia.grupo].push([
+        new Date(`${asistencia.mes}/01/${asistencia.año}`).getTime(),
+        asistencia.totalAsistencias,
+      ]);
+    });
+
+    linea.value.series = Object.keys(seriesPorGrupo).map((grupo) => {
+      return { name: grupo, data: seriesPorGrupo[grupo] };
+    });
+
+    linea.value.chartOptions.xaxis.categories =
+      totalAsistenciasPorMesYGrupo.map(
+        (asistencia) => `${asistencia.mes}/01/${asistencia.año}`
+      );
+  } catch (error) {
+    console.error("Error al obtener asistencias:", error);
+  }
 });
-
-watchEffect(async () => {});
 </script>
 
 <template>
@@ -154,6 +165,7 @@ watchEffect(async () => {});
     ></VueApexCharts>
   </div>
 </template>
+
 <style>
 .cols {
   display: grid;

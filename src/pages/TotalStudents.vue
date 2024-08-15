@@ -38,5 +38,5 @@ let data = ref({ femeninoCoro: 12, masculinoCoro: 33 });
 onMounted(async () => {
   data.value = await conteoGeneros();
 });
-console.log("asdasdas", data.value);
+console.log("GENERO: ", data.value);
 </script>

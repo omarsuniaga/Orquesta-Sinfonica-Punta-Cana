@@ -82,3 +82,12 @@ export async function initializeSession() {
     });
   });
 }
+// onAuthStateChanged(auth, (user) => {
+//   if (user) {
+//     // Usuario autenticado, redirige al panel de control o página principal
+//     router.push({ name: "Dashboard" });
+//   } else {
+//     // Usuario no autenticado, redirige a la página de inicio de sesión
+//     router.push({ name: "Login" });
+//   }
+// });

@@ -124,6 +124,16 @@ const routes = [
     ],
     meta: { requiresAuth: true },
   },
+  // Crearemos una vista llamada ClaseGrupos
+  {
+    path: "/ClaseGrupos",
+    name: "ClaseGrupos",
+    component: () => import("layouts/MainLayout.vue"),
+    children: [
+      { path: "", component: () => import("src/pages/ClaseGrupos.vue") },
+    ],
+    meta: { requiresAuth: true },
+  },
 ];
 
 export default routes;
