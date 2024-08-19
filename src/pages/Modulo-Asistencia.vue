@@ -1,7 +1,7 @@
 <template>
   <q-layout>
     <q-page-container>
-      <div class="q-my-sm col-12" style="min-width: 375px; width: 100%">
+      <div class="q-my-sm col-12" style="min-width: 275px; width: 100%">
         <div class="justify-center flex">
           <div class="col-auto q-mx-sm">
             <q-btn-group>
@@ -29,8 +29,6 @@
             rounded
             spread
             stack
-            no-caps
-            no-wrap
             toggle-color="primary"
             color="green"
             text-color="white"
@@ -45,15 +43,10 @@
         <div class="q-pa-sm flex justify-center scrollList">
           <div style="width: 100%; max-width: 400px; min-width: 100px">
             <div class="q-pa-md">
-              <div class="q-gutter-md row items-center">
-                <q-date
-                  v-model="date"
-                  :events="marcas"
-                  minimal
-                  today-btn
-                  mask="YYYY-MM-DD"
-                  event-color="red"
-                />
+              <div class="row">
+                <!-- <q-date v-model="date" :events="marcas" minimal event-color="red" /> -->
+
+                <q-date v-model="date" :events="events" minimal />
               </div>
             </div>
           </div>
@@ -71,16 +64,27 @@
             color="green-3"
             text-color="black"
             label="Hoy"
-            @click="Nuevo_Listado()"
+            @click="Nuevo_Listado"
           />
         </div>
-        <div v-if="pdf" class="flex justify-center">
-          <q-btn color="green-3" text-color="black" label="Diario" @click="eleccion()" />
+        <div class="row no-wrap q-mx-ms">
+          <q-btn
+            color="green-3"
+            text-color="black"
+            label="Repertorio"
+            @click="irRepertorio"
+          />
           <DescargarAsistenciasPDF
             :fecha="date"
             :grupo="grupo"
             :ausentes="Listado"
             :presentes="Presentes"
+          />
+          <q-btn
+            color="green-3"
+            text-color="black"
+            label="Clase Diaria"
+            @click="irClaseDiaria"
           />
         </div>
       </div>
@@ -115,10 +119,10 @@
                 >
                   <q-item v-if="!item.asistencia" :id="item.id">
                     <q-item-section>
-                      <q-item-label class=""
-                        >{{ item.nombre }}
-                        {{ $q.screen.gt.sm ? item.apellido : "" }}</q-item-label
-                      >
+                      <q-item-label class="">
+                        {{ item.nombre }}
+                        {{ $q.screen.gt.sm ? item.apellido : "" }}
+                      </q-item-label>
                       <q-item-label class="">
                         <q-virtual-scroll
                           :items="item.grupo"
@@ -159,10 +163,10 @@
                       </q-avatar>
                     </q-item-section>
                     <q-item-section>
-                      <q-item-label class="text-weight-regular"
-                        >{{ item.nombre }}
-                        {{ $q.screen.gt.xs ? item.apellido : "" }}</q-item-label
-                      >
+                      <q-item-label class="text-weight-regular">
+                        {{ item.nombre }}
+                        {{ $q.screen.gt.xs ? item.apellido : "" }}
+                      </q-item-label>
                       <q-item-label>
                         <q-virtual-scroll
                           :items="item.grupo"
@@ -188,7 +192,7 @@
             <div class="row flex justify-center scrollList" ref="chatRef">
               <div style="width: 100%; max-width: 700px; min-width: 140px scrollList">
                 <q-card v-if="Presentes.length === 0" class="q-ma-xs bg-white">
-                  <q-item> No hay registros </q-item>
+                  <q-item>No hay registros</q-item>
                 </q-card>
                 <q-card
                   v-else
@@ -215,10 +219,10 @@
                       </q-avatar>
                     </q-item-section>
                     <q-item-section class="text-weight-regular">
-                      <q-item-label
-                        >{{ item.nombre }}
-                        {{ $q.screen.gt.xs ? item.apellido : "" }}</q-item-label
-                      >
+                      <q-item-label>
+                        {{ item.nombre }}
+                        {{ $q.screen.gt.xs ? item.apellido : "" }}
+                      </q-item-label>
                       <q-item-label caption>
                         <q-virtual-scroll
                           :items="item.grupo"
@@ -254,35 +258,80 @@ import {
   obtenerConfiguraciones,
 } from "../FirebaseService/database";
 import moment from "moment";
-import { ref, onMounted, watchEffect, reactive, watch } from "vue";
 import BuscarAlumnos from "src/components/Buscar-Alumnos.vue";
 import { useRouter } from "vue-router";
 import { Dialog, useQuasar } from "quasar";
 import DescargarAsistenciasPDF from "src/components/DescargarAsistenciasPDF.vue";
+import { ref, onMounted, watchEffect, reactive, watch, toRaw } from "vue";
+import { useRoute } from "vue-router"; // Importa useRoute para obtener los parámetros de la URL
 
 const $q = useQuasar();
 const router = useRouter();
+// Define props para recibir fecha y grupo desde el componente padre
+const props = defineProps({
+  fecha: {
+    type: String,
+    required: true,
+  },
+  grupo: {
+    type: String,
+    required: true,
+  },
+});
 
+// Define emits para notificar al componente padre cuando los valores cambian
+const emit = defineEmits(["update:fecha", "update:grupo"]);
+
+// Inicializamos los valores usando los props recibidos
+let date = ref(props.fecha || "");
+let grupo = ref(props.grupo || "");
+
+// Funciones para emitir los eventos cuando cambian los valores
+const updateFecha = (value) => emit("update:fecha", value);
+const updateGrupo = (value) => emit("update:grupo", value);
+let events = ref([]);
 // Manejo de estados reactivamente para la fecha y otros datos
-let date = ref(moment().format("YYYY-MM-DD"));
-let marcas = ref(["2024-08-10"]); // Fechas con eventos
+let marcas = ref([]); // Fechas con eventos
 let hoy = ref(moment().format("YYYY-MM-DD"));
 let Resultado_Busqueda = ref([]);
 let Presentes = ref([]);
 let Listado = ref([]);
-let grupo = ref("");
 let text = ref(null);
 let Loading = ref(false);
 let visible = ref(false);
 let pdf = ref(false);
 let niveles = ref([]);
-
 let clickCountAusentes = ref(0);
 let clickCountPresentes = ref(0);
 
 // Función para alternar la visibilidad de la selección de fecha
 const toggleVisible = () => {
   visible.value = !visible.value;
+};
+
+const irRepertorio = () => {
+  // Convertir los datos a un objeto regular antes de pasarlos
+  const grupoSeleccionadoSinProxy = toRaw(grupo.value);
+  router.push({
+    name: "GestionarRepertorio",
+    params: {
+      grupoSeleccionado: grupoSeleccionadoSinProxy,
+    },
+  });
+};
+
+const irClaseDiaria = () => {
+  // Convertir los datos a un objeto regular antes de pasarlos
+  const grupoSeleccionadoSinProxy = toRaw(grupo.value);
+
+  if (grupoSeleccionadoSinProxy === "") {
+    mensaje("Seleccione un grupo primero", "red-4");
+    return;
+  }
+  router.push({
+    name: "ClaseDiaria",
+    params: { grupoSeleccionado: grupo.value },
+  });
 };
 
 // Función para ordenar la lista de presentes
@@ -401,17 +450,16 @@ const resetear = () => {
 // Función para cargar las marcas del calendario
 const cargarMarcasDelCalendario = async () => {
   try {
-    const fechasConEventos = await obtenerMarcasDelCalendario();
-    marcas.value = fechasConEventos; // Asigna las fechas a la variable reactiva
+    marcas.value = await obtenerMarcasDelCalendario();
   } catch (error) {
     console.error("Error al cargar marcas del calendario: ", error);
   }
 };
+
 // Función para filtrar los registros por fecha y grupo
 const Filtrar = async (fecha, grupo) => {
   if (!fecha || !grupo) {
     mensaje("La fecha o el grupo están indefinidos", "red-4");
-    console.error("La fecha o el grupo están indefinidos");
     return;
   }
 
@@ -490,11 +538,16 @@ function convertirArrayAObjeto(array) {
     value: item,
   }));
 }
-
+function eventsFn(date) {
+  const parts = date.split("/");
+  return parts[2] % 2 === 0;
+}
 // Configuración inicial al montar el componente
 onMounted(async () => {
   try {
-    cargarMarcasDelCalendario();
+    // Llamar a la función para obtener la lista de configuraciones
+    // marcas.value = await cargarMarcasDelCalendario();
+    events.value = await obtenerMarcasDelCalendario();
     let grupos = await obtenerConfiguraciones();
     convertirArrayAObjeto(grupos);
   } catch (error) {

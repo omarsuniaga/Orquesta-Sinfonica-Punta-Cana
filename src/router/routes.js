@@ -1,3 +1,5 @@
+import Asistencia from "../pages/Modulo-Asistencia.vue";
+
 const routes = [
   {
     path: "/login",
@@ -35,7 +37,13 @@ const routes = [
     name: "Asistencia",
     component: () => import("layouts/MainLayout.vue"),
     children: [
-      { path: "", component: () => import("src/pages/Modulo-Asistencia.vue") },
+      {
+        path: "",
+        component: Asistencia,
+        props: (route) => ({
+          grupoSeleccionado: route.params.grupoSeleccionado,
+        }),
+      },
     ],
     meta: { requiresAuth: true },
   },
@@ -126,14 +134,52 @@ const routes = [
   },
   // Crearemos una vista llamada ClaseGrupos
   {
-    path: "/ClaseGrupos",
-    name: "ClaseGrupos",
+    path: "/GestionarRepertorio",
     component: () => import("layouts/MainLayout.vue"),
     children: [
-      { path: "", component: () => import("src/pages/ClaseGrupos.vue") },
+      {
+        path: "", // Deja el path vacío aquí para que coincida con la ruta padre
+        name: "GestionarRepertorio",
+        component: () => import("src/pages/GestionarRepertorio.vue.vue"), // Lazy load del componente
+        props: (route) => ({
+          grupoSeleccionado: route.params.grupoSeleccionado,
+        }),
+      },
+    ],
+    meta: { requiresAuth: true },
+  },
+  {
+    path: "/ClaseDiaria",
+    component: () => import("layouts/MainLayout.vue"),
+    children: [
+      {
+        path: "", // Deja el path vacío aquí para que coincida con la ruta padre
+        name: "ClaseDiaria",
+        component: () => import("src/pages/ClaseDiaria.vue"), // Lazy load del componente
+        props: (route) => ({
+          grupoSeleccionado: route.params.grupoSeleccionado,
+        }),
+      },
     ],
     meta: { requiresAuth: true },
   },
 ];
 
 export default routes;
+/*  {
+  path: "/ClaseDiaria",
+  name: "ClaseDiaria",
+  props: true,
+  component: () => import("layouts/MainLayout.vue"), // Utiliza MainLayout.vue
+  children: [
+    {
+      path: "",
+      component: ClaseDiaria, // Anida ClaseDiaria dentro del layout
+      props: (route) => ({
+        grupoSeleccionado: route.params.grupoSeleccionado,
+      }),
+    },
+  ],
+  meta: { requiresAuth: true },
+},
+*/

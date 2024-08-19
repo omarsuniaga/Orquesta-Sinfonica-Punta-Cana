@@ -15,7 +15,6 @@ import {
   limit,
 } from "firebase/firestore";
 import { getStorage, ref, uploadBytes, getDownloadURL } from "firebase/storage";
-
 const asistenciaCache = [];
 
 /**
@@ -39,14 +38,41 @@ export async function guardarAlumno(alumno) {
  * @returns {Promise<Array>}
  */
 export async function obtenerAlumnos() {
-  let Alumnos = loadFromLocalStorage("ALUMNOS");
-  if (!Alumnos) {
-    Alumnos = await fetchAlumnosFromFirebase();
-    saveToLocalStorage("ALUMNOS", Alumnos);
+  try {
+    let Alumnos = loadFromLocalStorage("ALUMNOS");
+    if (!Alumnos) {
+      Alumnos = await fetchAlumnosFromFirebase();
+      saveToLocalStorage("ALUMNOS", Alumnos);
+    }
+    return Alumnos;
+  } catch (error) {
+    console.error("Error: ", error);
+    throw error;
   }
-  return Alumnos;
 }
 
+export async function obtenerAlumnosPorId(id) {
+  const alumnosRef = collection(db, "ALUMNOS");
+
+  try {
+    // Convertir el ID de string a número
+    const idNumerico = Number(id);
+
+    // Crear la consulta con `where` para obtener el alumno con el ID especificado
+    const q = firestoreQuery(alumnosRef, where("id", "==", idNumerico));
+    const snapshot = await getDocs(q);
+
+    // Si se encuentra un documento, devolver sus datos
+    if (snapshot.docs.length > 0) {
+      return snapshot.docs[0].data(); // Retorna el primer documento encontrado
+    } else {
+      return null; // Retorna null si no se encontró ningún documento
+    }
+  } catch (error) {
+    console.error("Error al obtener el alumno por ID: ", error);
+    throw error;
+  }
+}
 /**
  * Obtiene todos los alumnos desde Firebase.
  * @returns {Promise<Array>}
@@ -92,8 +118,20 @@ export async function eliminarAlumno(id) {
  * @param {Object} datosActualizados - Objeto con los datos actualizados del alumno.
  * @returns {Promise<void>}
  */
+
 export async function actualizarAlumno(id, datosActualizados) {
-  const alumnoRef = doc(db, "ALUMNOS", id);
+  // Asegúrate de que el ID es numérico
+  const idNumerico = Number(id);
+
+  // Verifica que el ID sea un número válido
+  if (isNaN(idNumerico)) {
+    console.error("El ID proporcionado no es un número válido.");
+    return;
+  }
+
+  // Crear referencia al documento con el ID numérico
+  const alumnoRef = doc(db, "ALUMNOS", idNumerico.toString()); // Convertir a string solo al referenciar
+
   try {
     await updateDoc(alumnoRef, datosActualizados);
     console.log("Alumno actualizado exitosamente.");
@@ -412,11 +450,11 @@ export async function contarAlumnosPorInstrumento() {
   return conteoInstrumentos;
 }
 
-// /**
-//  * Obtiene el historial de inasistencias de un alumno por mes.
-//  * @param {string} id - El ID del alumno.
-//  * @returns {Promise<Object>}
-//  */ // historial de asistencias
+/**
+ * Obtiene el historial de inasistencias de un alumno por mes.
+ * @param {string} id - El ID del alumno.
+ * @returns {Promise<Object>}
+ */ // historial de asistencias
 // export async function obtenerMarcasDelCalendario() {
 //   const asistencias = await obtenerAsistencias();
 //   // comprobar si hay datos en asistencias
@@ -544,8 +582,6 @@ const loadFromLocalStorage = (key) => {
       localStorage.removeItem(key);
       return null;
     }
-    console.log("item.data", item.data);
-
     return item.data;
   } catch (error) {
     console.error("Error al cargar datos del localStorage: ", error);
@@ -661,7 +697,12 @@ function cambiarFormatoFecha(fecha) {
     console.error("Formato de fecha no válido: ", fecha);
     return null;
   }
-  return fecha; // Mantener el formato original
+
+  // Separar el año, mes y día
+  const [year, month, day] = fecha.split("-");
+
+  // Devolver la fecha en formato AAAA/MM/DD
+  return `${year}/${month}/${day}`;
 }
 
 /**
@@ -691,9 +732,6 @@ export async function obtenerMarcasDelCalendario() {
 
     // Solo devuelve las fechas únicas en formato correcto
     const fechasUnicas = Object.keys(historial);
-
-    console.log("Fechas con eventos:", fechasUnicas);
-
     return fechasUnicas; // Devuelve las fechas formateadas
   } catch (error) {
     console.error("Error al obtener marcas del calendario: ", error);
@@ -818,8 +856,10 @@ export const classificationByGroup = async () => {
 };
 
 export async function Actualizar_Alumno(alumno) {
-  const alumnoRef = doc(db, "ALUMNOS", alumno.id);
+  const idNumerico = Number(alumno.id);
+  const alumnoRef = doc(db, "ALUMNOS", idNumerico);
   try {
+    console.log("Datos del alumno a actualizar:", alumno); // Agregar esta línea para verificar los datos
     await updateDoc(alumnoRef, alumno);
     console.log("Alumno actualizado exitosamente.");
   } catch (error) {
@@ -828,28 +868,29 @@ export async function Actualizar_Alumno(alumno) {
   }
 }
 
-// Función para buscar un alumno en el documento ALUMNOS y extraer toda la data del alumno, recibe el id
-export const Buscar_Alumno = async (alumno) => {
-  const alumnoRef = collection(db, "ALUMNOS");
-  try {
-    const q = firestoreQuery(alumnoRef, where("id", "==", alumno)); // Usar "==" en lugar de "==="
-    const snapshot = await getDocs(q);
+// // Función para buscar un alumno en el documento ALUMNOS y extraer toda la data del alumno, recibe el id
+// export const Buscar_Alumno = async (id) => {
+//   const alumnoRef = collection(db, "ALUMNOS");
+//   try {
+//     const q = firestoreQuery(alumnoRef, where("id", "==", id));
+//     const snapshot = await getDocs(q);
 
-    if (snapshot.empty) {
-      console.log("No se encontró el alumno con el ID especificado.");
-      return null;
-    }
+//     if (snapshot.empty) {
+//       console.log("No se encontró el alumno con el ID especificado.");
+//       return null;
+//     }
 
-    const datosAlumno = snapshot.docs.map((doc) => doc.data());
+//     const datosAlumno = snapshot.docs.map((doc) => doc.data());
 
-    // Si esperas un único documento, retorna el primero de la lista
+//     console.log("Buscar alumnos", datosAlumno);
 
-    return datosAlumno[0];
-  } catch (error) {
-    console.error("Error al buscar al alumno: ", error);
-    throw error;
-  }
-};
+//     // Si esperas un único documento, retorna el primero de la lista
+//     return datosAlumno[0];
+//   } catch (error) {
+//     console.error("Error al buscar al alumno: ", error);
+//     throw error;
+//   }
+// };
 
 export const ObtenerAlumnosPorGrupo = async (grupo) => {
   const alumnosRef = collection(db, "ALUMNOS");
@@ -873,7 +914,7 @@ export const cargarNiveles = async () => {
     const docSnapshot = await getDoc(docRef);
     if (docSnapshot.exists()) {
       const data = docSnapshot.data();
-      console.log(data);
+      console.log(data.Niveles);
       // return data.Niveles; // Asume que el array de niveles se llama "niveles" en el documento de configuración
     } else {
       console.warn("El documento de configuración no existe.");

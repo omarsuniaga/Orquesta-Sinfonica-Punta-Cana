@@ -3,9 +3,9 @@ import { useRouter } from "vue-router";
 import { reactive, onMounted } from "vue";
 import {
   moverAlumnoAInactivos,
-  Buscar_Alumno,
-  Actualizar_Alumno,
+  actualizarAlumno,
   obtenerConfiguraciones,
+  obtenerAlumnosPorId,
 } from "src/FirebaseService/database";
 import {
   ref as storageRef,
@@ -15,9 +15,10 @@ import {
 import { useQuasar } from "quasar";
 import CarruselImagenes from "src/components/Carrusel-imagenes.vue";
 import { storage } from "../FirebaseService/constants";
+import { start } from "@cloudinary/url-gen/qualifiers/textAlignment";
 const $q = useQuasar();
 const router = useRouter();
-const id = router.currentRoute.value.params.id;
+const id = Number(router.currentRoute.value.params.id);
 
 let state = reactive({
   sexo: ["Masculino", "Femenino"],
@@ -50,7 +51,7 @@ async function addNewImage(file) {
     const url = await getDownloadURL(newImageRef);
     state.imageUrl = url;
 
-    const alumno = await Buscar_Alumno(id);
+    const alumno = await obtenerAlumnosPorId(id);
     if (alumno) {
       alumno.avatar = url;
       await Actualizar_Alumno(alumno);
@@ -95,13 +96,43 @@ function cambiarFormatoFecha1(fecha) {
 }
 
 const calcularEdad = (fechaNacimiento) => {
-  const hoy = new Date();
-  const partesFecha = fechaNacimiento.split("-"); // separa la fecha en partes
-  const fechaNac = new Date(partesFecha[2], partesFecha[1] - 1, partesFecha[0]); // crea un objeto Date a partir de las partes
-  let edad = hoy.getFullYear() - fechaNac.getFullYear();
-  const mes = hoy.getMonth() - fechaNac.getMonth();
+  if (!fechaNacimiento) {
+    console.error("fechaNacimiento está vacío o no está definido.");
+    return null;
+  }
 
-  if (mes < 0 || (mes === 0 && hoy.getDate() < fechaNac.getDate())) {
+  // Verificar si `fechaNacimiento` es un string y convertirlo a Date
+  if (typeof fechaNacimiento === "string") {
+    const partesFecha = fechaNacimiento.split("-");
+    if (partesFecha.length === 3) {
+      fechaNacimiento = new Date(
+        `${partesFecha[2]}-${partesFecha[1]}-${partesFecha[0]}`
+      );
+    } else {
+      console.error("Formato de fecha string incorrecto");
+      return null;
+    }
+  }
+
+  // Verificar si `fechaNacimiento` es un objeto Date
+  if (!(fechaNacimiento instanceof Date) || isNaN(fechaNacimiento)) {
+    console.error(
+      "El valor de fechaNacimiento no es un string ni un objeto Date válido"
+    );
+    return null;
+  }
+
+  const hoy = new Date();
+  let edad = hoy.getFullYear() - fechaNacimiento.getFullYear();
+
+  if (
+    hoy <
+    new Date(
+      hoy.getFullYear(),
+      fechaNacimiento.getMonth(),
+      fechaNacimiento.getDate()
+    )
+  ) {
     edad--;
   }
 
@@ -131,7 +162,7 @@ function calcularTiempoTranscurrido(desdeFecha) {
 // Mostrar datos del alumno
 const mostrar_ficha = async (id) => {
   try {
-    const elem = await Buscar_Alumno(id);
+    const elem = await obtenerAlumnosPorId(id);
     if (elem) {
       state.alumno = {
         ...state.alumno,
@@ -162,10 +193,11 @@ const mostrar_ficha = async (id) => {
         tlf_padre: elem.tlf_padre || "Vacio",
         grupo: elem.grupo || [],
         instrumento: elem.instrumento || "Vacio",
+        start: elem.start || 0,
       };
     }
   } catch (error) {
-    console.error("Error al obtener los datos del alumno:", error);
+    console.error("Eror al obtener los datos del alumno:", error);
     $q.notify({
       message: "Error al cargar los datos del alumno",
       color: "red-4",
@@ -178,7 +210,7 @@ const mostrar_ficha = async (id) => {
 // Guardar cambios en el perfil del alumno
 const guardar = async (alumno) => {
   try {
-    await Actualizar_Alumno(alumno);
+    await actualizarAlumno(id, alumno);
     $q.notify({
       message: "Cambios Realizados con éxito",
       color: "green-4",
@@ -510,7 +542,6 @@ onMounted(async () => {
                 <q-tooltip :offset="[0, 8]">Subiendo</q-tooltip>
               </div>
               <q-btn
-                round
                 dense
                 flat
                 icon="send"
@@ -525,9 +556,4 @@ onMounted(async () => {
   </div>
 </template>
 
-<style>
-.q-card {
-  width: 100%;
-  max-width: 100%;
-}
-</style>
+<style></style>

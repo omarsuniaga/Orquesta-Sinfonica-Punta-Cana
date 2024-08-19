@@ -2,7 +2,7 @@
   <div v-if="loading" class="loading-container">
     <div class="loading"></div>
   </div>
-  <div v-else class="q-pa-md main-content">
+  <div v-else class="q-pa-md">
     <MenuSecundario />
     <div class="row justify-center q-ma-md">
       <div class="col-12 col-md-6 q-pa-md">
@@ -19,10 +19,9 @@
         </div>
       </div>
     </div>
-    <div class="group-list q-pa-md">
+    <div class="main-content">
       <h2 class="text-center text-primary q-mb-md">Grupos</h2>
-      <div v-for="(grupo, index) in Grupos" :key="index" class="q-mb-md">
-        <h3 class="text-h5 q-mb-sm">{{ grupo.nombre }}</h3>
+      <div v-for="(grupo, index) in Grupos" :key="index" class="">
         <ListadoHorizontal :grupo="grupo" :Alumnos="Alumnos" />
       </div>
     </div>
@@ -60,9 +59,9 @@ onMounted(async () => {
 <style>
 .main-content {
   background-color: #2e405c; /* Color de fondo suave */
-  border-radius: 10px;
+  border-radius: 35px;
   box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
-  overflow-x: auto;
+  overflow-x: hidden;
   overflow-y: hidden;
 }
 
