@@ -8,46 +8,55 @@
       label="Buscar Alumnos"
       bg-color="white"
       dense
-      background-color="#ff0000"
-      @keyup.enter="$emit('onFire', res)"
+      @keyup.enter="emitBuscar"
     >
       <template v-slot:append>
         <q-icon
           v-if="text !== ''"
           name="close"
-          @click="Resetear"
+          @click="resetear"
           class="cursor-pointer"
         />
-        <q-icon name="search" @click="$emit('onFire', res)" />
+        <q-icon name="search" @click="emitBuscar" />
       </template>
     </q-input>
   </div>
 </template>
+
 <script setup>
-import { ref, watchEffect } from "vue";
-import { defineProps, defineEmits } from "vue";
+import { ref, watch } from "vue";
 import { buscarAlumnoPorNombre } from "../FirebaseService/database";
-const props = defineProps({
-  text: String,
-});
 
-let text = ref("");
-let res = ref([]);
-
+// Definir las propiedades y los eventos emitidos
+const text = ref("");
+const res = ref([]);
 const emit = defineEmits(["onFire"]);
-emit("onFire", res.value);
-const Resetear = () => {
-  text.value = "";
-  emit("onFire", (res.value.length = []));
-};
-const Buscar = async () => {
-  res.value = await buscarAlumnoPorNombre(text.value.toLowerCase()).then();
+
+// Función para emitir los resultados de la búsqueda
+const emitBuscar = () => {
   emit("onFire", res.value);
 };
 
-watchEffect(async () => {
-  if (text.value.length > 0) {
-    Buscar();
+// Función para resetear el campo de búsqueda
+const resetear = () => {
+  text.value = "";
+  res.value = [];
+  emitBuscar();
+};
+
+// Función para buscar alumnos
+const buscar = async () => {
+  res.value = await buscarAlumnoPorNombre(text.value.toLowerCase());
+  emitBuscar();
+};
+
+// Usar `watch` para observar cambios en `text` y activar la búsqueda
+watch(text, async (newValue) => {
+  if (newValue.length > 0) {
+    await buscar();
+  } else {
+    res.value = [];
+    emitBuscar(); // Emitir resultados vacíos si el texto está vacío
   }
 });
 </script>

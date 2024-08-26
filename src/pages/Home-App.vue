@@ -40,12 +40,17 @@ import ListadoHorizontal from "src/components/Listado-Horizontal.vue";
 import AgruparPorGenero from "src/components/Poblacion-Genero.vue";
 import PoblacionAlumnos from "src/components/Poblacion-Alumnos.vue";
 import LapsoAsistencias from "src/components/LapsoAsistencias.vue";
+import { useRouter } from "vue-router";
 
 const data = ref({ masculinos: 0, femeninos: 0 });
 const Alumnos = ref([]);
 const Grupos = ref([]);
 const loading = ref(true);
 const totalAlumnos = ref(0);
+const router = useRouter();
+const irACatedras = () => {
+  router.push({ name: "Catedras" });
+};
 
 onMounted(async () => {
   Grupos.value = await classificationByGroup();

@@ -1,252 +1,234 @@
 <template>
-  <q-layout>
-    <q-page-container>
-      <div class="q-my-sm col-12" style="min-width: 275px; width: 100%">
-        <div class="justify-center flex">
-          <div class="col-auto q-mx-sm">
-            <q-btn-group>
-              <q-btn color="blue-6" icon="today" @click="toggleVisible" />
-              <q-btn
-                color="blue-6"
-                icon-right="save"
-                @click="guardar"
-                :disable="Presentes.length === 0"
-              />
-            </q-btn-group>
-          </div>
-          <div class="row">
-            <BuscarAlumnos
-              :text="text"
-              style="width: 100%"
-              @onFire="eventEmittedFromChild"
-            ></BuscarAlumnos>
-          </div>
-        </div>
-        <div class="justify-center flex row" style="min-width: 375px; width: 100%">
-          <q-btn-toggle
-            class="col-auto flex justify-around"
-            v-model="grupo"
-            rounded
-            spread
-            stack
-            toggle-color="primary"
-            color="green"
-            text-color="white"
-            :options="niveles"
-          >
-          </q-btn-toggle>
-        </div>
+  <div>
+    <!-- Selección de Fecha -->
+    <div class="date-selection" v-show="visible">
+      <span class="text-white q-px-md">Selecciona una fecha</span>
+      <div class="date-container">
+        <q-date v-model="date" :events="eventos" minimal />
       </div>
+    </div>
 
-      <div class="col-12" v-if="visible">
-        <span class="text-white q-px-md">Selecciona una fecha</span>
-        <div class="q-pa-sm flex justify-center scrollList">
-          <div style="width: 100%; max-width: 400px; min-width: 100px">
-            <div class="q-pa-md">
-              <div class="row">
-                <!-- <q-date v-model="date" :events="marcas" minimal event-color="red" /> -->
+    <div class="actions-container">
+      <q-btn @click="toggleVisible" flat color="white" :label="date" size="18px" />
+      <q-btn
+        v-if="date !== hoy"
+        color="green-3"
+        text-color="black"
+        label="Hoy"
+        @click="Nuevo_Listado"
+      />
 
-                <q-date v-model="date" :events="events" minimal />
-              </div>
-            </div>
-          </div>
-        </div>
-      </div>
-      <div
-        class="q-px-md flex justify-center"
-        v-else
-        style="min-width: 375px; width: 100%"
-      >
-        <q-btn @click="toggleVisible" flat color="white" :label="date" size="18px" />
-        <div class="q-pa-sm">
-          <q-btn
-            v-if="date !== hoy"
-            color="green-3"
-            text-color="black"
-            label="Hoy"
-            @click="Nuevo_Listado"
-          />
-        </div>
-        <div class="row no-wrap q-mx-ms">
-          <q-btn
-            color="green-3"
-            text-color="black"
-            label="Repertorio"
-            @click="irRepertorio"
-          />
-          <DescargarAsistenciasPDF
-            :fecha="date"
-            :grupo="grupo"
-            :ausentes="Listado"
-            :presentes="Presentes"
-          />
-          <q-btn
-            color="green-3"
-            text-color="black"
-            label="Clase Diaria"
-            @click="irClaseDiaria"
-          />
-        </div>
-      </div>
-      <div
-        v-if="grupo === ''"
-        class="q-pa-xl row justify-center text-weight-regular"
-        style="min-width: 375px; width: 100%"
-      >
-        <span class="text-white">Para pasar la asistencia, selecciona un grupo</span>
-      </div>
-      <div v-else class="q-pa-xs" style="min-width: 375px; width: 100%">
-        <div class="row col-12">
-          <div class="col-6">
-            <span class="text-body1 text-white">Ausentes</span>
-            <div class="row justify-start">
-              <q-btn icon="sort" @click="sortAusentes" class="q-ma-sm" color="red-3" />
-            </div>
+      <BuscarAlumnos
+        :text="text"
+        style="width: 100%"
+        @onFire="eventEmittedFromChild"
+      ></BuscarAlumnos>
+
+      <q-btn-group>
+        <q-btn color="blue-6" icon="today" @click="toggleVisible" />
+        <q-btn
+          color="blue-6"
+          icon-right="save"
+          @click="guardar"
+          :disable="Presentes.length === 0"
+        />
+      </q-btn-group>
+    </div>
+
+    <!-- Botones adicionales -->
+    <div class="row no-wrap q-mx-ms">
+      <q-btn
+        color="green-3"
+        text-color="black"
+        label="Repertorio"
+        @click="irRepertorio"
+      />
+      <DescargarAsistenciasPDF
+        :fecha="date"
+        :grupo="grupo"
+        :ausentes="Listado"
+        :presentes="Presentes"
+      />
+      <q-btn
+        color="green-3"
+        text-color="black"
+        label="Clase Diaria"
+        @click="irClaseDiaria"
+      />
+    </div>
+
+    <!-- Mensaje si no hay grupo seleccionado -->
+    <div
+      v-if="grupo === ''"
+      class="q-pa-xl row justify-center text-weight-regular main-content"
+    >
+      <span class="text-white">Para pasar la asistencia, selecciona un grupo</span>
+    </div>
+
+    <!-- Listado de alumnos -->
+    <div v-else class="q-pa-xs main-content">
+      <div class="row col-12 col-md-6">
+        <div class="col-6">
+          <div class="row justify-center">
             <div v-if="Loading">
               <q-spinner-cube color="indigo" />
             </div>
-            <div v-else class="row flex justify-center scrollList" ref="chatRef">
-              <div
-                v-if="Resultado_Busqueda.length > 0"
-                style="width: 100%; max-width: 700px; min-width: 140px scrollList"
-              >
-                <q-card
-                  class="q-ma-xs bg-red-3"
-                  v-for="(item, index) in Resultado_Busqueda"
-                  :key="index"
+            <div v-if="Resultado_Busqueda.length > 0" class="q-gutter-sm q-pa-md">
+              <q-list bordered>
+                <q-slide-item
+                  v-for="item in Resultado_Busqueda"
+                  :key="item.id"
+                  class="q-my-md"
+                  @left="toggleDemorado(item)"
+                  @right="toggleJustificado(item)"
                   @click="comprobar(item)"
-                  v-touch-hold:2000.mouse="handleHold"
+                  :class="getItemClass(item)"
                 >
-                  <q-item v-if="!item.asistencia" :id="item.id">
+                  <template v-slot:left>
+                    <q-icon name="alarm" color="orange" />
+                    <q-item-label>{{ item.nombre }}</q-item-label>
+                    <q-item-label caption>{{ item.apellido }}</q-item-label>
+                  </template>
+                  <template v-slot:right>
+                    <q-icon name="description" color="teal" />
+                    <q-item-label>{{ item.nombre }}</q-item-label>
+                    <q-item-label caption>{{ item.apellido }}</q-item-label>
+                  </template>
+
+                  <q-item>
                     <q-item-section>
-                      <q-item-label class="">
-                        {{ item.nombre }}
-                        {{ $q.screen.gt.sm ? item.apellido : "" }}
-                      </q-item-label>
-                      <q-item-label class="">
-                        <q-virtual-scroll
-                          :items="item.grupo"
-                          virtual-scroll-horizontal
-                          v-slot="{ item, index }"
-                        >
-                          <div :key="index" :class="item.class" class="q-px-sm">
-                            <q-badge top color="red" :label="item" />
-                          </div>
-                        </q-virtual-scroll>
-                      </q-item-label>
+                      <q-item-label class="text-weight-bold text-h6">{{
+                        item.nombre
+                      }}</q-item-label>
+                      <q-item-label caption>{{ item.apellido }}</q-item-label>
+                    </q-item-section>
+                    <q-item-section v-if="isDemorado(item)" avatar right>
+                      <q-icon name="alarm" color="orange" />
+                      <q-item-label class="text-weight-bold text-h6">{{
+                        item.nombre
+                      }}</q-item-label>
+                      <q-item-label caption>{{ item.apellido }}</q-item-label>
+                    </q-item-section>
+                    <q-item-section v-if="isJustificado(item)" avatar right>
+                      <q-icon name="description" color="orange" />
+                      <q-item-label class="text-weight-bold text-h6">{{
+                        item.nombre
+                      }}</q-item-label>
+                      <q-item-label caption>{{ item.apellido }}</q-item-label>
                     </q-item-section>
                   </q-item>
-                </q-card>
-              </div>
-              <div v-else>
-                <q-card
-                  class="q-ma-xs bg-red-3"
-                  v-for="(item, index) in Listado"
-                  :key="index"
-                  @click="agregar(item)"
-                  v-touch-hold:2000.mouse="handleHold"
-                >
-                  <q-item v-if="!item.asistencia" :id="item.id">
-                    <q-item-section avatar>
-                      <q-avatar>
-                        <q-icon
-                          :name="item.nombre[0]"
-                          size="sm"
-                          style="
-                            background-color: rgba(152, 80, 54, 0.685);
-                            border-radius: 50%;
-                            padding: 10px;
-                            align-items: center;
-                            color: white;
-                          "
-                        />
-                      </q-avatar>
-                    </q-item-section>
-                    <q-item-section>
-                      <q-item-label class="text-weight-regular">
-                        {{ item.nombre }}
-                        {{ $q.screen.gt.xs ? item.apellido : "" }}
-                      </q-item-label>
-                      <q-item-label>
-                        <q-virtual-scroll
-                          :items="item.grupo"
-                          virtual-scroll-horizontal
-                          v-slot="{ item, index }"
-                        >
-                          <div :key="index" :class="item.class" class="q-ma-xs">
-                            <q-badge top color="red-6" :label="item" />
-                          </div>
-                        </q-virtual-scroll>
-                      </q-item-label>
-                    </q-item-section>
-                  </q-item>
-                </q-card>
-              </div>
+                </q-slide-item>
+              </q-list>
             </div>
-          </div>
-          <div class="col-6">
-            <span class="text-body1 row text-white justify-end">Presentes</span>
-            <div class="row justify-end">
-              <q-btn icon="sort" @click="sortPresentes" class="q-ma-sm" color="green-3" />
-            </div>
-            <div class="row flex justify-center scrollList" ref="chatRef">
-              <div style="width: 100%; max-width: 700px; min-width: 140px scrollList">
-                <q-card v-if="Presentes.length === 0" class="q-ma-xs bg-white">
-                  <q-item>No hay registros</q-item>
-                </q-card>
-                <q-card
-                  v-else
-                  class="q-ma-xs bg-green-3"
-                  v-for="(item, index) in Presentes"
-                  :key="index"
-                  v-touch-hold:2000.mouse="handleHold"
-                  @click="quitar(item)"
-                >
-                  <q-item :id="item.id">
-                    <q-item-section avatar>
-                      <q-avatar>
-                        <q-icon
-                          :name="item.nombre[0]"
-                          size="sm"
-                          style="
-                            background-color: rgba(46, 119, 63, 0.685);
-                            border-radius: 50%;
-                            padding: 10px;
-                            align-items: center;
-                            color: white;
-                          "
-                        />
-                      </q-avatar>
-                    </q-item-section>
-                    <q-item-section class="text-weight-regular">
-                      <q-item-label>
-                        {{ item.nombre }}
-                        {{ $q.screen.gt.xs ? item.apellido : "" }}
-                      </q-item-label>
-                      <q-item-label caption>
-                        <q-virtual-scroll
-                          :items="item.grupo"
-                          virtual-scroll-horizontal
-                          v-slot="{ item, index }"
-                        >
-                          <div :key="index" :class="item.class" class="q-ma-xs">
-                            <q-badge top color="green-6" :label="item" />
-                          </div>
-                        </q-virtual-scroll>
-                      </q-item-label>
-                    </q-item-section>
-                  </q-item>
-                </q-card>
+            <!-- Columna de Ausentes -->
+            <div v-else>
+              <div class="q-pa-md" style="max-width: 400px">
+                <q-toolbar class="bg-primary text-white shadow-2">
+                  <q-toolbar-title>Ausentes</q-toolbar-title>
+                  <q-avatar
+                    clickable
+                    :icon="AusentesisAscending ? 'arrow_upward' : 'arrow_downward'"
+                    color="primary"
+                    text-color="white"
+                    @click="sortAusentes"
+                  />
+                </q-toolbar>
+                <q-list bordered>
+                  <q-slide-item
+                    v-for="item in Listado"
+                    :key="item.id"
+                    class="q-my-md"
+                    @left="toggleDemorado(item)"
+                    @right="toggleJustificado(item)"
+                    @click="agregar(item)"
+                    :class="getItemClass(item)"
+                  >
+                    <template v-slot:left>
+                      <q-icon name="alarm" color="orange" />
+                      <q-item-label>{{ item.nombre }}</q-item-label>
+                    </template>
+                    <template v-slot:right>
+                      <q-icon name="done" color="teal" />
+                      <q-item-label>Justificado</q-item-label>
+                    </template>
+
+                    <q-item>
+                      <q-item-section>
+                        <q-item-label class="text-weight-bold text-h6">{{
+                          item.nombre
+                        }}</q-item-label>
+                        <q-item-label caption>{{ item.apellido }}</q-item-label>
+                      </q-item-section>
+                      <q-item-section v-if="isDemorado(item)" avatar right>
+                        <q-icon name="alarm" color="orange" />
+                      </q-item-section>
+                      <q-item-section v-if="isJustificado(item)" avatar right>
+                        <q-icon name="description" color="orange" />
+                      </q-item-section>
+                    </q-item>
+                  </q-slide-item>
+                </q-list>
               </div>
             </div>
           </div>
         </div>
-      </div>
-      <router-view />
-    </q-page-container>
-  </q-layout>
-</template>
 
+        <!-- Columna de Presentes -->
+        <div class="col-6">
+          <div class="row justify-center">
+            <div class="q-pa-md" style="max-width: 400px">
+              <q-toolbar class="bg-primary text-white shadow-2">
+                <q-toolbar-title>Presentes</q-toolbar-title>
+                <q-avatar
+                  clickable
+                  :icon="PresentesisAscending ? 'arrow_upward' : 'arrow_downward'"
+                  color="primary"
+                  text-color="white"
+                  @click="sortPresentes"
+                />
+              </q-toolbar>
+              <q-list bordered separator>
+                <q-slide-item
+                  v-for="item in Presentes"
+                  :key="item.id"
+                  class="q-my-md"
+                  @left="toggleDemorado(item)"
+                  @right="toggleJustificado(item)"
+                  @click="quitar(item)"
+                  :class="getItemClass(item)"
+                  left-color="red"
+                  right-color="purple"
+                >
+                  <template v-slot:left>
+                    <div class="row items-center">
+                      Quitar<q-icon right name="alarm" />
+                    </div>
+                  </template>
+                  <template v-slot:right>
+                    <q-icon name="done" color="teal" />
+                    <q-item-label>Justificado</q-item-label>
+                  </template>
+
+                  <q-item>
+                    <q-item-section>
+                      <q-item-label class="text-weight-bold text-h6">{{
+                        item.nombre
+                      }}</q-item-label>
+                      <q-item-label caption>{{ item.apellido }}</q-item-label>
+                    </q-item-section>
+                    <q-item-section v-if="isDemorado(item)" avatar right>
+                      <q-icon name="alarm" color="orange" />
+                    </q-item-section>
+                  </q-item>
+                </q-slide-item>
+              </q-list>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</template>
 <script setup>
 import {
   registrarAsistenciaDeHoy,
@@ -255,127 +237,115 @@ import {
   obtenerMarcasDelCalendario,
   buscarAsistenciasPorFechaYGrupo,
   obtenerAlumnos,
-  obtenerConfiguraciones,
 } from "../FirebaseService/database";
 import moment from "moment";
 import BuscarAlumnos from "src/components/Buscar-Alumnos.vue";
 import { useRouter } from "vue-router";
-import { Dialog, useQuasar } from "quasar";
+import { useQuasar } from "quasar";
 import DescargarAsistenciasPDF from "src/components/DescargarAsistenciasPDF.vue";
-import { ref, onMounted, watchEffect, reactive, watch, toRaw } from "vue";
-import { useRoute } from "vue-router"; // Importa useRoute para obtener los parámetros de la URL
+import { ref, onMounted, toRaw } from "vue";
+import { useRoute } from "vue-router";
 
+const route = useRoute();
 const $q = useQuasar();
 const router = useRouter();
-// Define props para recibir fecha y grupo desde el componente padre
-const props = defineProps({
-  fecha: {
-    type: String,
-    required: true,
-  },
-  grupo: {
-    type: String,
-    required: true,
-  },
-});
 
-// Define emits para notificar al componente padre cuando los valores cambian
-const emit = defineEmits(["update:fecha", "update:grupo"]);
-
-// Inicializamos los valores usando los props recibidos
-let date = ref(props.fecha || "");
-let grupo = ref(props.grupo || "");
-
-// Funciones para emitir los eventos cuando cambian los valores
-const updateFecha = (value) => emit("update:fecha", value);
-const updateGrupo = (value) => emit("update:grupo", value);
-let events = ref([]);
-// Manejo de estados reactivamente para la fecha y otros datos
-let marcas = ref([]); // Fechas con eventos
+let grupo = ref(route.params.catedra || "");
+let date = ref(moment().format("YYYY-MM-DD"));
 let hoy = ref(moment().format("YYYY-MM-DD"));
 let Resultado_Busqueda = ref([]);
 let Presentes = ref([]);
 let Listado = ref([]);
+let Demorados = ref([]);
+let Justificados = ref([]);
 let text = ref(null);
 let Loading = ref(false);
 let visible = ref(false);
 let pdf = ref(false);
-let niveles = ref([]);
-let clickCountAusentes = ref(0);
-let clickCountPresentes = ref(0);
-
-// Función para alternar la visibilidad de la selección de fecha
-const toggleVisible = () => {
-  visible.value = !visible.value;
+let eventos = ref([]);
+let AusentesisAscending = ref(true);
+let PresentesisAscending = ref(true);
+let timer = null;
+const getItemClass = (item) => {
+  if (isDemorado(item)) return "bg-morado-claro";
+  if (isJustificado(item)) return "bg-naranja-claro";
+  if (isPresente(item)) return "bg-verde-claro";
+  return "bg-rojo-claro";
 };
 
-const irRepertorio = () => {
-  // Convertir los datos a un objeto regular antes de pasarlos
-  const grupoSeleccionadoSinProxy = toRaw(grupo.value);
-  router.push({
-    name: "GestionarRepertorio",
-    params: {
-      grupoSeleccionado: grupoSeleccionadoSinProxy,
-    },
-  });
-};
+const isPresente = (item) => Presentes.value.some((e) => e.id === item.id);
 
-const irClaseDiaria = () => {
-  // Convertir los datos a un objeto regular antes de pasarlos
-  const grupoSeleccionadoSinProxy = toRaw(grupo.value);
+const isDemorado = (item) => Demorados.value.some((e) => e.id === item.id);
 
-  if (grupoSeleccionadoSinProxy === "") {
-    mensaje("Seleccione un grupo primero", "red-4");
-    return;
+const isJustificado = (item) => Justificados.value.some((e) => e.id === item.id);
+
+const toggleDemorado = (item) => {
+  // Marcar como demorado
+  if (!isDemorado(item)) {
+    // si no hay coincidencias
+    Demorados.value.push(item); // agregar al array demorado
+    moverAlListadoPresente(item); // mover al listado presente
+    Listado.value = Listado.value.filter((e) => e.id !== item.id); // Quitar del listado Ausente
+  } else {
+    // Si ya estaba demorado
+    Demorados.value = Demorados.value.filter((e) => e.id !== item.id);
+    moverAlListadoAusente(item); // mover al listado Ausente
+    Presentes.value = Presentes.value.filter((e) => e.id !== item.id); // Quitar del listado Presente
+    quitar(item);
   }
-  router.push({
-    name: "ClaseDiaria",
-    params: { grupoSeleccionado: grupo.value },
-  });
 };
 
-// Función para ordenar la lista de presentes
+const toggleJustificado = (item) => {
+  // Marcar como justificado y moverlo después de 2 segundos
+  if (!isJustificado(item)) {
+    Justificados.value.push(item);
+    const index = Listado.value.findIndex((e) => e.id === item.id);
+    if (index !== -1) {
+      Listado.value.splice(index, 1);
+    }
+    Listado.value.unshift({ ...item, asistencia: false });
+    moverAlListadoAusente(item);
+  } else {
+    // Si ya estaba justificado, quitarlo de la lista
+    Justificados.value = Justificados.value.filter((e) => e.id !== item.id);
+  }
+};
+
+const moverAlListadoPresente = (item) => {
+  if (!isPresente(item)) {
+    Presentes.value.push(item);
+  }
+};
+
+const moverAlListadoAusente = (item) => {
+  if (!Listado.value.some((e) => e.id === item.id)) {
+    Listado.value.push(item);
+  }
+  const index = Listado.value.findIndex((e) => e.id === item.id);
+  if (index !== -1) {
+    Listado.value.splice(index, 1);
+  }
+  Listado.value.unshift({ ...item, asistencia: false });
+};
+
 const sortPresentes = () => {
-  clickCountPresentes.value = (clickCountPresentes.value + 1) % 2;
-  Presentes.value.sort((a, b) => {
-    return clickCountPresentes.value === 0
-      ? a.nombre.localeCompare(b.nombre)
-      : b.nombre.localeCompare(a.nombre);
-  });
+  if (PresentesisAscending.value) {
+    Presentes.value.sort((a, b) => a.nombre.localeCompare(b.nombre));
+  } else {
+    Presentes.value.sort((a, b) => b.nombre.localeCompare(a.nombre));
+  }
+  PresentesisAscending.value = !PresentesisAscending.value;
 };
 
-// mensaje usando q
-function mensaje(mensaje, color) {
-  $q.notify({
-    message: mensaje,
-    color,
-    textColor: "white",
-    icon: "aler",
-  });
-}
-
-// Función para ordenar la lista de ausentes
 const sortAusentes = () => {
-  clickCountAusentes.value = (clickCountAusentes.value + 1) % 2;
-  Listado.value.sort((a, b) => {
-    return clickCountAusentes.value === 0
-      ? a.nombre.localeCompare(b.nombre)
-      : b.nombre.localeCompare(a.nombre);
-  });
+  if (AusentesisAscending.value) {
+    Listado.value.sort((a, b) => a.nombre.localeCompare(b.nombre));
+  } else {
+    Listado.value.sort((a, b) => b.nombre.localeCompare(a.nombre));
+  }
+  AusentesisAscending.value = !AusentesisAscending.value;
 };
 
-// Función para manejar el evento de mantener presionado
-function handleHold({ evt }) {
-  const id = evt.path[2].id;
-  router.push(`/Detalles_Alumnos/${id}`);
-}
-
-// Función para manejar eventos del componente hijo BuscarAlumnos
-const eventEmittedFromChild = (res) => {
-  Resultado_Busqueda.value = res.length ? res.map((e) => ({ ...e })) : [];
-};
-
-// Función para comprobar si un alumno ya está en la lista de presentes
 const comprobar = (item) => {
   const index = Presentes.value.findIndex((e) => e.id === item.id);
   if (index !== -1) {
@@ -383,102 +353,73 @@ const comprobar = (item) => {
       message: "Ya está en la lista de presentes",
       color: "red-2",
       textColor: "red-9",
-      icon: "priority_high",
     });
   } else {
     agregar(item);
   }
 };
 
-// Función para agregar un alumno a la lista de presentes
 const agregar = (item) => {
   const index = Listado.value.findIndex((e) => e.id === item.id);
   if (index !== -1) {
     Listado.value.splice(index, 1);
   }
   Presentes.value.unshift({ ...item, asistencia: true });
-  Listado.value = Listado.value.filter((e) => e.id !== item.id);
 };
 
-// Función para quitar un alumno de la lista de presentes
 const quitar = (item) => {
-  const index = Presentes.value.findIndex((e) => e.id === item.id);
-  if (index !== -1) {
-    Presentes.value.splice(index, 1);
-  }
-  Listado.value.unshift({ ...item, asistencia: false });
   Presentes.value = Presentes.value.filter((e) => e.id !== item.id);
+  Listado.value.unshift({ ...item, asistencia: false });
 };
 
-// Función para guardar la asistencia en Firebase
 const guardar = async () => {
-  const Array_Ausentes = Listado.value.map((e) => e.id);
-  const Array_Presentes = Presentes.value.map((e) => e.id);
-  const Fecha = date.value;
-  const Grupo = grupo.value;
   try {
-    await registrarAsistenciaDeHoy(Array_Presentes, Array_Ausentes, Fecha, Grupo);
+    await registrarAsistenciaDeHoy(
+      Presentes.value.map((e) => e.id),
+      Listado.value.map((e) => e.id),
+      date.value,
+      grupo.value
+    );
     $q.notify({
       message: "Listado Guardado con éxito",
       color: "green-4",
       textColor: "white",
-      icon: "cloud_done",
     });
   } catch (error) {
     $q.notify({
       message: `Ha ocurrido un Error: ${error}`,
       color: "red-4",
       textColor: "white",
-      icon: "priority_high",
     });
   }
 };
 
-// Función para crear un nuevo listado de asistencia
-const Nuevo_Listado = () => {
-  resetear();
-  date.value = hoy.value;
-  Buscar();
-};
-
-// Función para resetear las listas de presentes y ausentes
-const resetear = () => {
-  Presentes.value = [];
-  Listado.value = [];
-};
-
-// Función para cargar las marcas del calendario
-const cargarMarcasDelCalendario = async () => {
-  try {
-    marcas.value = await obtenerMarcasDelCalendario();
-  } catch (error) {
-    console.error("Error al cargar marcas del calendario: ", error);
-  }
-};
-
-// Función para filtrar los registros por fecha y grupo
 const Filtrar = async (fecha, grupo) => {
   if (!fecha || !grupo) {
-    mensaje("La fecha o el grupo están indefinidos", "red-4");
+    $q.notify({
+      message: "La fecha o el grupo están indefinidos",
+      color: "red-4",
+      textColor: "white",
+    });
     return;
   }
 
   visible.value = false;
-  resetear();
+  Listado.value = [];
+  Presentes.value = [];
+  Demorados.value = [];
+  Justificados.value = [];
 
   try {
-    let registros = await buscarAsistenciasPorFechaYGrupo(fecha, grupo);
-    let Alumnos = await obtenerAlumnos();
+    const registros = await buscarAsistenciasPorFechaYGrupo(fecha, grupo);
+    const Alumnos = await obtenerAlumnos();
 
     if (registros && registros.length > 0) {
       const { presentes, ausentes } = registros[0].Data;
-
-      await Promise.all([
-        ...presentes.map((id) => agregarAlumnoALista(id, true)),
-        ...ausentes.map((id) => agregarAlumnoALista(id, false)),
-      ]);
+      presentes.forEach((id) => agregarAlumnoALista(id, true));
+      ausentes.forEach((id) => agregarAlumnoALista(id, false));
     } else {
-      mostrarAusentes(Alumnos, grupo);
+      mostrarAlumnosPorGrupoOInstrumento(Alumnos, grupo);
     }
     pdf.value = fecha && grupo !== "All";
   } catch (error) {
@@ -486,14 +427,18 @@ const Filtrar = async (fecha, grupo) => {
   }
 };
 
-// Función para mostrar alumnos ausentes si no hay registros
-const mostrarAusentes = (Alumnos, grupo) => {
-  let alumnosFiltrados = Alumnos.filter((elem) => elem.grupo.includes(grupo));
-  alumnosFiltrados.forEach((elem) => Listado.value.push({ ...elem, asistencia: false }));
-  Listado.value.sort((a, b) => a.nombre.localeCompare(b.nombre));
+const mostrarAlumnosPorGrupoOInstrumento = (Alumnos, grupo) => {
+  let alumnosFiltrados = Alumnos.filter(
+    (alumno) =>
+      (Array.isArray(alumno.grupo) && alumno.grupo.includes(grupo)) ||
+      (Array.isArray(alumno.instrumento) && alumno.instrumento.includes(grupo))
+  );
+
+  alumnosFiltrados.forEach((alumno) => {
+    Listado.value.push({ ...alumno, asistencia: false });
+  });
 };
 
-// Función para agregar un alumno a la lista de presentes o ausentes
 const agregarAlumnoALista = async (id, asistencia) => {
   try {
     const doc = await buscarAlumnoPorId(id);
@@ -506,59 +451,69 @@ const agregarAlumnoALista = async (id, asistencia) => {
   }
 };
 
-// Función para buscar asistencias por fecha
-const Buscar = async (fecha) => {
-  try {
-    const Data = await buscarAsistenciasPorFecha(fecha);
-    if (Data !== null || date.value === hoy.value) {
-      resetear();
-      visible.value = false;
-    }
-  } catch (error) {
-    console.error("Error al buscar asistencias por fecha:", error);
-  }
+const toggleVisible = () => {
+  visible.value = !visible.value;
 };
 
-watchEffect(async () => {
-  if (date.value) {
-    await Buscar(date.value);
-  }
-});
+const irRepertorio = () => {
+  router.push({
+    name: "GestionarRepertorio",
+    params: { grupoSeleccionado: toRaw(grupo.value) },
+  });
+};
 
-watch([date, grupo], async ([newDate, newGroup], [oldDate, oldGroup]) => {
-  if (newDate !== oldDate || newGroup !== oldGroup) {
-    await Filtrar(newDate, newGroup);
+const irClaseDiaria = () => {
+  if (grupo.value === "") {
+    $q.notify({
+      message: "Seleccione un grupo primero",
+      color: "red-4",
+      textColor: "white",
+    });
+    return;
   }
-});
+  router.push({
+    name: "ClaseDiaria",
+    params: { grupoSeleccionado: grupo.value },
+  });
+};
 
-// Función para convertir el array de configuraciones a objetos de nivel
-function convertirArrayAObjeto(array) {
-  niveles.value = array.map((item) => ({
-    label: item,
-    value: item,
-  }));
+// Filtrar alumnos por nombre o apellido
+const eventEmittedFromChild = (res) => {
+  if (res.length !== 0) {
+    Resultado_Busqueda.value = res.map((e) => ({ ...e }));
+  } else {
+    Resultado_Busqueda.value = [];
+  }
+};
+function finalize(reset) {
+  timer = setTimeout(() => {
+    reset();
+  }, 1000);
 }
-function eventsFn(date) {
-  const parts = date.split("/");
-  return parts[2] % 2 === 0;
-}
-// Configuración inicial al montar el componente
+
 onMounted(async () => {
   try {
-    // Llamar a la función para obtener la lista de configuraciones
-    // marcas.value = await cargarMarcasDelCalendario();
-    events.value = await obtenerMarcasDelCalendario();
-    let grupos = await obtenerConfiguraciones();
-    convertirArrayAObjeto(grupos);
+    eventos.value = await obtenerMarcasDelCalendario();
+    await Filtrar(date.value, grupo.value);
   } catch (error) {
-    console.error("Error al obtener marcas del calendario:", error);
+    console.error("Error al inicializar:", error);
   }
 });
 </script>
-
 <style scoped>
-.scrollList {
-  height: calc(100vh - (60px + 60px));
-  overflow-y: scroll;
+.bg-morado-claro {
+  background-color: #d8b3ff; /* Morado claro */
+}
+
+.bg-naranja-claro {
+  background-color: #ffcc99; /* Naranja claro */
+}
+
+.bg-rojo-claro {
+  background-color: #ffcccc; /* Rojo claro */
+}
+
+.bg-verde-claro {
+  background-color: #ccffcc; /* Verde claro */
 }
 </style>

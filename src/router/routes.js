@@ -1,5 +1,4 @@
-import Asistencia from "../pages/Modulo-Asistencia.vue";
-
+import ModuloAsistencia from "../pages/Modulo-Asistencia.vue";
 const routes = [
   {
     path: "/login",
@@ -39,9 +38,25 @@ const routes = [
     children: [
       {
         path: "",
-        component: Asistencia,
+        component: () => import("src/pages/Catedras_Seleccion.vue"),
+        //props: (route) => ({
+        //grupoSeleccionado: route.params.grupoSeleccionado,
+        // }),
+      },
+    ],
+    meta: { requiresAuth: true },
+  },
+  {
+    path: "/Asistencia/:catedra",
+    name: "ModuloAsistencia",
+    component: ModuloAsistencia,
+    props: true,
+    children: [
+      {
+        path: "",
+        component: () => import("src/pages/Modulo-Asistencia.vue"),
         props: (route) => ({
-          grupoSeleccionado: route.params.grupoSeleccionado,
+          catedra: route.params.catedra,
         }),
       },
     ],
@@ -140,7 +155,7 @@ const routes = [
       {
         path: "", // Deja el path vacío aquí para que coincida con la ruta padre
         name: "GestionarRepertorio",
-        component: () => import("src/pages/GestionarRepertorio.vue.vue"), // Lazy load del componente
+        component: () => import("src/pages/GestionarRepertorio.vue"), // Lazy load del componente
         props: (route) => ({
           grupoSeleccionado: route.params.grupoSeleccionado,
         }),

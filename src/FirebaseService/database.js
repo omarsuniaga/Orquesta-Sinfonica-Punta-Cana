@@ -182,8 +182,8 @@ export const registrarAsistenciaDeHoy = async (
       asistencias = [];
     }
     asistencias.push(asistenciaData);
-    saveToLocalStorage("ASISTENCIAS", asistencias);
-    console.log("Asistencia guardada en localStorage.");
+    // saveToLocalStorage("ASISTENCIAS", asistencias);
+    // console.log("Asistencia guardada en localStorage.");
   } catch (error) {
     console.error("Error al registrar asistencia: ", error);
     throw error;
@@ -526,7 +526,7 @@ export const buscarAsistenciasPorFecha = async (fecha) => {
     const q = firestoreQuery(asistenciasRef, where("Fecha", "==", fecha));
     const snapshot = await getDocs(q);
     asistencias = snapshot.docs.map((doc) => doc.data());
-    saveToLocalStorage("ASISTENCIAS", asistencias);
+    //saveToLocalStorage("ASISTENCIAS", asistencias);
   }
   return asistencias;
 };
@@ -536,22 +536,32 @@ export const buscarAsistenciasPorFecha = async (fecha) => {
  * @param {string} nombre - Nombre o apellido del alumno.
  * @returns {Promise<Array>}
  */
-export async function buscarAlumnoPorNombre(nombre) {
-  const alumnosRef = collection(db, "ALUMNOS");
+// Función para buscar alumnos por nombre o apellido
+// Función para buscar alumnos por nombre o apellido
+export const buscarAlumnoPorNombre = async (nombre) => {
   try {
-    const snapshot = await getDocs(alumnosRef);
-    return snapshot.docs
-      .map((doc) => doc.data())
-      .filter(
-        (alumno) =>
-          alumno.nombre.toLowerCase().includes(nombre.toLowerCase()) ||
-          alumno.apellido.toLowerCase().includes(nombre.toLowerCase())
+    // Supongamos que obtienes una lista de alumnos desde Firebase o alguna otra fuente
+    const alumnos = await obtenerAlumnos(); // Esta es tu función que obtiene los alumnos
+
+    // Filtrar alumnos por nombre o apellido
+    return alumnos.filter((alumno) => {
+      const nombreAlumno =
+        typeof alumno.nombre === "string" ? alumno.nombre.toLowerCase() : "";
+      const apellidoAlumno =
+        typeof alumno.apellido === "string"
+          ? alumno.apellido.toLowerCase()
+          : "";
+
+      return (
+        nombreAlumno.includes(nombre.toLowerCase()) ||
+        apellidoAlumno.includes(nombre.toLowerCase())
       );
+    });
   } catch (error) {
     console.error("Error al buscar alumno por nombre: ", error);
-    throw error;
+    return [];
   }
-}
+};
 
 /**
  * Genera un resumen global de asistencias combinando información de alumnos y asistencias.
@@ -681,7 +691,7 @@ export const fetchItems = async (lastVisibleItem, firestoreLimit = 10) => {
     lastVisible = snapshot.docs[snapshot.docs.length - 1];
     items = snapshot.docs.map((doc) => ({ id: doc.id, ...doc.data() }));
 
-    saveToLocalStorage("ASISTENCIAS", items);
+    // saveToLocalStorage("ASISTENCIAS", items);
   }
 
   return { items, lastVisible };
@@ -831,6 +841,7 @@ export const actualizarLocalStorage = async (alumno) => {
  * @returns {Promise<Array>}
  */
 export const obtenerConfiguraciones = async () => {
+  // Metodo para obtener las configuraciones
   const configuracionesRef = collection(db, "CONFIGURACIONES");
   try {
     const snapshot = await getDocs(configuracionesRef);
@@ -846,10 +857,15 @@ export const obtenerConfiguraciones = async () => {
 };
 export const classificationByGroup = async () => {
   try {
-    const alumnos = await obtenerAlumnos();
-    let set = new Set();
-    alumnos.forEach((alumno) => alumno.grupo.forEach((g) => set.add(g)));
-    return [...set];
+    // const alumnos = await obtenerAlumnos();
+    // let set = new Set();
+    // alumnos.forEach((alumno) => alumno.grupo.forEach((g) => set.add(g)));
+    // return [...set];
+    const grupos = await cargarNiveles();
+    // desesctructurar los grupos
+    console.log("Grupos", grupos);
+
+    return grupos;
   } catch (error) {
     console.log(error);
   }
@@ -874,16 +890,12 @@ export async function Actualizar_Alumno(alumno) {
 //   try {
 //     const q = firestoreQuery(alumnoRef, where("id", "==", id));
 //     const snapshot = await getDocs(q);
-
 //     if (snapshot.empty) {
 //       console.log("No se encontró el alumno con el ID especificado.");
 //       return null;
 //     }
-
 //     const datosAlumno = snapshot.docs.map((doc) => doc.data());
-
 //     console.log("Buscar alumnos", datosAlumno);
-
 //     // Si esperas un único documento, retorna el primero de la lista
 //     return datosAlumno[0];
 //   } catch (error) {
@@ -909,20 +921,17 @@ export const ObtenerAlumnosPorGrupo = async (grupo) => {
 
 // Función para cargar niveles desde Firebase
 export const cargarNiveles = async () => {
-  const docRef = doc(db, "CONFIGURACION", "UBNvhQi4Nphm2ZJNdkh2"); // Asegúrate de usar el ID correcto del documento de configuración
+  // Cargar niveles de firebase del Documento CONFIGURACIONES >> Niveles
+  const configuracionesRef = collection(db, "CONFIGURACIONES");
   try {
-    const docSnapshot = await getDoc(docRef);
-    if (docSnapshot.exists()) {
-      const data = docSnapshot.data();
-      console.log(data.Niveles);
-      // return data.Niveles; // Asume que el array de niveles se llama "niveles" en el documento de configuración
-    } else {
-      console.warn("El documento de configuración no existe.");
-      return [];
+    const snapshot = await getDocs(configuracionesRef);
+    const configuraciones = snapshot.docs.map((doc) => doc.data());
+    if (configuraciones.length > 0) {
+      let set = new Set();
     }
   } catch (error) {
-    console.error("Error al cargar los niveles de Firebase:", error);
-    return [];
+    console.error("Error al cargar los niveles: ", error);
+    throw error;
   }
 };
 // Función para guardar niveles en Firebase
@@ -934,4 +943,41 @@ export const guardarNivelesEnFirebase = async () => {
   } catch (error) {
     console.log(error);
   }
+};
+
+export const obtenerInstrumentosYAlumnos = async () => {
+  // Obtener los alumnos y sus instrumentos
+  const alumnos = await obtenerAlumnos();
+  const instrumentos = new Set();
+
+  // iterar los alumnos y obtener sus instrumentos
+  alumnos.forEach((alumno) => {
+    if (alumno.instrumento) {
+      instrumentos.add(alumno.instrumento);
+    }
+  });
+
+  return {
+    alumnos,
+    instrumentos: Array.from(instrumentos), // Convertir Set a Array
+  };
+};
+
+// Obtener los alumnos y sus grupos
+export const obtenerGruposYAlumnos = async () => {
+  // Obtener los alumnos y sus grupos
+  const alumnos = await obtenerAlumnos();
+  const grupos = new Set();
+
+  // Iterar los alumnos y obtener sus grupos
+  alumnos.forEach((alumno) => {
+    if (alumno.grupo) {
+      alumno.grupo.forEach((grupo) => grupos.add(grupo));
+    }
+  });
+
+  return {
+    alumnos,
+    grupos: Array.from(grupos), // Convertir Set a Array
+  };
 };
