@@ -56,5 +56,17 @@ export const useAlumnoStore = defineStore("alumnoStore", {
         (alumnoId) => alumnoId !== id
       );
     },
+    // guardarAsistencia
+    // async guardarAsistencia() {
+    //   const asistencia = {
+    //     presentes: this.presentes,
+    //     ausentes: this.ausentes,
+    //     demorados: this.demorados,
+    //     justificados: this.justificados,
+    //   };
+    //   // Aquí se debería hacer la petición a la API
+    //   console.log(asistencia);
+    //   this.resetEstados();
+    // },
   },
 });

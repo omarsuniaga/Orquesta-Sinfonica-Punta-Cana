@@ -152,6 +152,8 @@ export async function actualizarAlumno(id, datosActualizados) {
 export const registrarAsistenciaDeHoy = async (
   presentes,
   ausentes,
+  demorados,
+  justificados,
   fecha,
   grupo
 ) => {
@@ -160,7 +162,7 @@ export const registrarAsistenciaDeHoy = async (
   const asistenciaData = {
     Fecha: fecha,
     grupo,
-    Data: { presentes, ausentes },
+    Data: { presentes, ausentes, demorados, justificados },
   };
 
   try {

@@ -8,7 +8,7 @@
   >
     <template v-slot:left>
       <q-icon name="alarm" color="orange" />
-      <q-item-label>Demorado</q-item-label>
+      <q-item-label>Tarde</q-item-label>
     </template>
     <template v-slot:right>
       <q-icon name="description" color="teal" />
