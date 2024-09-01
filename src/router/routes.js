@@ -39,9 +39,9 @@ const routes = [
       {
         path: "",
         component: () => import("src/pages/Catedras_Seleccion.vue"),
-        //props: (route) => ({
-        //grupoSeleccionado: route.params.grupoSeleccionado,
-        // }),
+        props: (route) => ({
+          grupoSeleccionado: route.params.grupoSeleccionado,
+        }),
       },
     ],
     meta: { requiresAuth: true },
@@ -50,6 +50,7 @@ const routes = [
     path: "/Asistencia/:catedra",
     name: "ModuloAsistencia",
     component: ModuloAsistencia,
+    // () => import("layouts/MainLayout.vue"),
     props: true,
     children: [
       {

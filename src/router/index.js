@@ -1,6 +1,6 @@
 import { createRouter, createWebHistory } from "vue-router";
 import routes from "./routes";
-import { initializeSession } from "../FirebaseService/auth"; // Asumiendo que esta función se ha definido correctamente en tu archivo auth.js
+import { initializeSession } from "../FirebaseService/auth"; // Asegúrate de que esta función esté correctamente definida
 
 const router = createRouter({
   history: createWebHistory(),
@@ -8,25 +8,44 @@ const router = createRouter({
 });
 
 let isAuthenticated = false;
+let sessionInitialized = false;
 
-// Inicializa la sesión de autenticación
-initializeSession().then((user) => {
-  isAuthenticated = !!user; // Establece el estado de autenticación
+const initializeAuth = async () => {
+  const user = await initializeSession();
+  isAuthenticated = !!user;
+  sessionInitialized = true;
+
   if (isAuthenticated && router.currentRoute.value.meta.noAuth) {
     router.replace({ name: "home" }); // Redirige al home si el usuario ya está autenticado
   }
-});
+};
+
+// Inicializa la autenticación
+initializeAuth();
 
 router.beforeEach((to, from, next) => {
   const requiresAuth = to.matched.some((record) => record.meta.requiresAuth);
   const noAuth = to.matched.some((record) => record.meta.noAuth);
 
-  if (requiresAuth && !isAuthenticated) {
-    next({ name: "login" }); // Redirige a login si la ruta requiere autenticación y el usuario no está autenticado
-  } else if (noAuth && isAuthenticated) {
-    next({ name: "home" }); // Redirige al home si el usuario está autenticado y está tratando de acceder a una página de no autenticación
+  if (!sessionInitialized) {
+    // Espera a que la autenticación esté inicializada antes de continuar
+    initializeAuth().then(() => {
+      if (requiresAuth && !isAuthenticated) {
+        next({ name: "login" });
+      } else if (noAuth && isAuthenticated) {
+        next({ name: "home" });
+      } else {
+        next(); // Continúa con la navegación normal
+      }
+    });
   } else {
-    next(); // Continúa con la navegación normal
+    if (requiresAuth && !isAuthenticated) {
+      next({ name: "login" });
+    } else if (noAuth && isAuthenticated) {
+      next({ name: "home" });
+    } else {
+      next(); // Continúa con la navegación normal
+    }
   }
 });
 

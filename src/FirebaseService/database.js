@@ -145,8 +145,11 @@ export async function actualizarAlumno(id, datosActualizados) {
  * Asigna la asistencia para un grupo en una fecha específica.
  * @param {Array} presentes - IDs de los alumnos presentes.
  * @param {Array} ausentes - IDs de los alumnos ausentes.
+ * @param {Array} demorados - IDs de los alumnos demorados.
+ * @param {Array} justificados - IDs de los alumnos justificados.
  * @param {string} fecha - Fecha de la asistencia en formato 'YYYY-MM-DD'.
  * @param {string} grupo - Identificador del grupo.
+ * @param {Array} nota - Nota adicional para la asistencia.
  * @returns {Promise<void>}
  */
 export const registrarAsistenciaDeHoy = async (
@@ -155,7 +158,8 @@ export const registrarAsistenciaDeHoy = async (
   demorados,
   justificados,
   fecha,
-  grupo
+  grupo,
+  nota
 ) => {
   const docId = `${fecha}_${grupo}`;
   const docRef = doc(db, "ASISTENCIAS", docId);
@@ -163,6 +167,7 @@ export const registrarAsistenciaDeHoy = async (
     Fecha: fecha,
     grupo,
     Data: { presentes, ausentes, demorados, justificados },
+    nota,
   };
 
   try {
@@ -843,30 +848,30 @@ export const actualizarLocalStorage = async (alumno) => {
  * @returns {Promise<Array>}
  */
 export const obtenerConfiguraciones = async () => {
-  // Metodo para obtener las configuraciones
   const configuracionesRef = collection(db, "CONFIGURACIONES");
   try {
     const snapshot = await getDocs(configuracionesRef);
     const configuraciones = snapshot.docs.map((doc) => doc.data());
     if (configuraciones.length > 0) {
-      const { Grupos, Niveles } = configuraciones[0];
-      return Grupos, Niveles;
+      let set = new Set();
     }
   } catch (error) {
-    console.error("Error al obtener las configuraciones: ", error);
+    console.error("Error al cargar los niveles: ", error);
     throw error;
   }
 };
 export const classificationByGroup = async () => {
   try {
-    // const alumnos = await obtenerAlumnos();
-    // let set = new Set();
-    // alumnos.forEach((alumno) => alumno.grupo.forEach((g) => set.add(g)));
-    // return [...set];
-    const grupos = await cargarNiveles();
-    // desesctructurar los grupos
-    console.log("Grupos", grupos);
-
+    //obtener alumnos
+    const alumnos = await obtenerAlumnos();
+    //iterar los alumnos y obtener sus grupos
+    const grupos = new Set();
+    alumnos.forEach((alumno) => {
+      if (alumno.grupo) {
+        alumno.grupo.forEach((grupo) => grupos.add(grupo));
+      }
+    });
+    //devolver los grupos
     return grupos;
   } catch (error) {
     console.log(error);
@@ -885,27 +890,6 @@ export async function Actualizar_Alumno(alumno) {
     throw error;
   }
 }
-
-// // Función para buscar un alumno en el documento ALUMNOS y extraer toda la data del alumno, recibe el id
-// export const Buscar_Alumno = async (id) => {
-//   const alumnoRef = collection(db, "ALUMNOS");
-//   try {
-//     const q = firestoreQuery(alumnoRef, where("id", "==", id));
-//     const snapshot = await getDocs(q);
-//     if (snapshot.empty) {
-//       console.log("No se encontró el alumno con el ID especificado.");
-//       return null;
-//     }
-//     const datosAlumno = snapshot.docs.map((doc) => doc.data());
-//     console.log("Buscar alumnos", datosAlumno);
-//     // Si esperas un único documento, retorna el primero de la lista
-//     return datosAlumno[0];
-//   } catch (error) {
-//     console.error("Error al buscar al alumno: ", error);
-//     throw error;
-//   }
-// };
-
 export const ObtenerAlumnosPorGrupo = async (grupo) => {
   const alumnosRef = collection(db, "ALUMNOS");
   try {
@@ -951,7 +935,6 @@ export const obtenerInstrumentosYAlumnos = async () => {
   // Obtener los alumnos y sus instrumentos
   const alumnos = await obtenerAlumnos();
   const instrumentos = new Set();
-
   // iterar los alumnos y obtener sus instrumentos
   alumnos.forEach((alumno) => {
     if (alumno.instrumento) {
@@ -982,4 +965,27 @@ export const obtenerGruposYAlumnos = async () => {
     alumnos,
     grupos: Array.from(grupos), // Convertir Set a Array
   };
+};
+
+// Funcion para agregar notas de alumnos justificados en la coleccion ASISTENCIAS >>> Data >>> Justificados
+export const agregarJustificados = async (id, justificados) => {
+  const asistenciasRef = collection(db, "ASISTENCIAS");
+  try {
+    const q = firestoreQuery(
+      asistenciasRef,
+      where("Data.ausentes", "array-contains", id)
+    );
+    const snapshot = await getDocs(q);
+    snapshot.docs.forEach(async (doc) => {
+      const asistencia = doc.data();
+      if (asistencia.Data.presentes.includes(id)) {
+        asistencia.Data.justificados = justificados;
+        await updateDoc(doc.ref, asistencia);
+      }
+    });
+    console.log("Justificados agregados exitosamente.");
+  } catch (error) {
+    console.error("Error al agregar los justificados: ", error);
+    throw error;
+  }
 };

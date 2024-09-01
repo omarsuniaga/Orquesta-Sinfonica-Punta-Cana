@@ -146,7 +146,45 @@
                     @click="sortAusentes"
                   />
                 </q-toolbar>
-                <q-list bordered>
+                <q-list>
+                  <q-slide-item
+                    v-for="item in Justificados"
+                    :key="item.id"
+                    class="q-my-md"
+                    @left="toggleDemorado(item)"
+                    @right="toggleJustificado(item)"
+                    @click="agregarNota(item)"
+                    :class="getItemClass(item)"
+                    left-color="purple"
+                    right-color="red"
+                  >
+                    <template v-slot:left>
+                      <div class="row items-center">
+                        Tarde<q-icon left name="alarm" />
+                      </div>
+                    </template>
+                    <template v-slot:right>
+                      <div class="row items-center">
+                        Justificado<q-icon right name="description" />
+                      </div>
+                    </template>
+                    <q-item>
+                      <q-item-section>
+                        <q-item-label class="text-weight-bold text-h6">{{
+                          item.nombre
+                        }}</q-item-label>
+                        <q-item-label caption>{{ item.apellido }}</q-item-label>
+                      </q-item-section>
+                      <q-item-section v-if="isDemorado(item)" avatar right>
+                        <q-icon name="alarm" color="orange" />
+                      </q-item-section>
+                      <q-item-section v-if="isJustificado(item)" avatar right>
+                        <q-icon name="description" color="orange" />
+                      </q-item-section>
+                    </q-item>
+                  </q-slide-item>
+                </q-list>
+                <q-list>
                   <q-slide-item
                     v-for="item in Listado"
                     :key="item.id"
@@ -155,14 +193,18 @@
                     @right="toggleJustificado(item)"
                     @click="agregar(item)"
                     :class="getItemClass(item)"
+                    left-color="purple"
+                    right-color="red"
                   >
                     <template v-slot:left>
-                      <q-icon name="alarm" color="orange" />
-                      <q-item-label>Tarde</q-item-label>
+                      <div class="row items-center">
+                        Tarde<q-icon left name="alarm" />
+                      </div>
                     </template>
                     <template v-slot:right>
-                      <q-icon name="done" color="teal" />
-                      <q-item-label>Justificado</q-item-label>
+                      <div class="row items-center">
+                        Justificar<q-icon right name="description" />
+                      </div>
                     </template>
 
                     <q-item>
@@ -202,26 +244,28 @@
                   @click="sortPresentes"
                 />
               </q-toolbar>
-              <q-list bordered separator>
+              <!-- q-slider-item para los alumnos Demorados si no hay no mostrar slider -->
+              <q-list>
                 <q-slide-item
-                  v-for="item in Presentes"
+                  v-for="item in Demorados"
                   :key="item.id"
                   class="q-my-md"
                   @left="toggleDemorado(item)"
                   @right="toggleJustificado(item)"
                   @click="quitar(item)"
                   :class="getItemClass(item)"
-                  left-color="red"
-                  right-color="purple"
+                  left-color="purple"
+                  right-color="red"
                 >
                   <template v-slot:left>
                     <div class="row items-center">
-                      Tarde<q-icon right name="alarm" />
+                      Tarde<q-icon left name="alarm" />
                     </div>
                   </template>
                   <template v-slot:right>
-                    <q-icon name="done" color="teal" />
-                    <q-item-label>Justificado</q-item-label>
+                    <div class="row items-center">
+                      Justificar<q-icon right name="alarm" />
+                    </div>
                   </template>
 
                   <q-item>
@@ -232,7 +276,45 @@
                       <q-item-label caption>{{ item.apellido }}</q-item-label>
                     </q-item-section>
                     <q-item-section v-if="isDemorado(item)" avatar right>
-                      <q-icon name="alarm" color="orange" />
+                      <q-icon name="alarm" color="white" />
+                    </q-item-section>
+                  </q-item>
+                </q-slide-item>
+              </q-list>
+
+              <q-list bordered separator>
+                <q-slide-item
+                  v-for="item in Presentes"
+                  :key="item.id"
+                  class="q-my-md"
+                  @left="toggleDemorado(item)"
+                  @right="toggleJustificado(item)"
+                  @click="quitar(item)"
+                  :class="getItemClass(item)"
+                  left-color="purple"
+                  right-color="red"
+                >
+                  <template v-slot:left>
+                    <div class="row items-center">
+                      Tarde<q-icon left name="alarm" />
+                    </div>
+                  </template>
+                  <template v-slot:right>
+                    <div class="row items-center">
+                      {{ item.nombre }} Justificado
+                      <q-icon right name="description" />
+                    </div>
+                  </template>
+
+                  <q-item>
+                    <q-item-section>
+                      <q-item-label class="text-weight-bold text-h6">{{
+                        item.nombre
+                      }}</q-item-label>
+                      <q-item-label caption>{{ item.apellido }}</q-item-label>
+                    </q-item-section>
+                    <q-item-section v-if="isDemorado(item)" avatar right>
+                      <q-icon name="alarm" color="white" />
                     </q-item-section>
                   </q-item>
                 </q-slide-item>
@@ -252,6 +334,7 @@ import {
   obtenerMarcasDelCalendario,
   buscarAsistenciasPorFechaYGrupo,
   obtenerAlumnos,
+  agregarJustificados,
 } from "../FirebaseService/database";
 import moment from "moment";
 import BuscarAlumnos from "src/components/Buscar-Alumnos.vue";
@@ -264,7 +347,7 @@ import { useRoute } from "vue-router";
 const route = useRoute();
 const $q = useQuasar();
 const router = useRouter();
-
+let nota = ref([]);
 let grupo = ref(route.params.catedra || "");
 let date = ref(moment().format("YYYY-MM-DD"));
 let hoy = ref(moment().format("YYYY-MM-DD"));
@@ -298,60 +381,31 @@ const isJustificado = (item) =>
 const toggleDemorado = (item) => {
   // Marcar como demorado
   if (!isDemorado(item)) {
-    // agregar al array demorado
-    Demorados.value.push(item);
-    // agregar a la lista de presentes
-    moverAlListadoPresente(item);
-    // quitar de Listado
-    Listado.value = Listado.value.filter((e) => e.id !== item.id);
-  }
-  if (isDemorado(item)) {
-    // si esta en el listado presente y esta demorado dejarlo en el listado presente
-    if (isPresente(item)) {
-      moverAlListadoPresente(item);
-    } else {
-      // si no esta en el listado presente, moverlo al listado Ausente
-      moverAlListadoAusente(item);
-    }
+    Demorados.value.push(item); // agregar al array demorados
+    Presentes.value = Presentes.value.filter((e) => e.id !== item.id); // quitar de presentes
+    Justificados.value = Justificados.value.filter((e) => e.id !== item.id); // quitar de Justificados
+    Listado.value = Listado.value.filter((e) => e.id !== item.id); //quitar de ausentes
+  } else {
+    Presentes.value = Presentes.value.filter((e) => e.id !== item.id); //quitar de presentes
+    Demorados.value = Demorados.value.filter((e) => e.id !== item.id); // quitar de Demorados
+    Listado.value = Listado.value.filter((e) => e.id !== item.id); //quitar de ausentes
+    Justificados.value = Justificados.value.filter((e) => e.id !== item.id); // quitar de Justificados
   }
 };
 
 const toggleJustificado = (item) => {
   // Marcar como justificado
   if (!isJustificado(item)) {
-    Justificados.value.push(item); // agregar al array justificado
-    const index = Listado.value.findIndex((e) => e.id === item.id); // buscar en el listado
-    if (index !== -1) {
-      Listado.value.splice(index, 1); // Quitar del listado
-    }
-    Listado.value.unshift({ ...item, asistencia: false }); // Agregar al listado Ausente
-    moverAlListadoAusente(item); // mover al listado Ausente
-    // quitar de presentes
-    Presentes.value = Presentes.value.filter((e) => e.id !== item.id);
+    Justificados.value.push(item); // agregar al array justificados
+    Presentes.value = Presentes.value.filter((e) => e.id !== item.id); // quitar de Presentes
+    Listado.value = Listado.value.filter((e) => e.id !== item.id); //quitar de ausentes
+    // Listado.value.unshift({ ...item, asistencia: false }); // agregar a Listado
+    Demorados.value = Demorados.value.filter((e) => e.id !== item.id); // quitar de Demorados
   } else {
-    // Si ya estaba justificado, quitarlo de la lista
-    Justificados.value = Justificados.value.filter((e) => e.id !== item.id);
-    // quitar de Presentes
-    Presentes.value = Presentes.value.filter((e) => e.id !== item.id);
-    moverAlListadoAusente(item); // mover al listado Ausente
+    Demorados.value = Demorados.value.filter((e) => e.id !== item.id); // quitar de Demorados
+    Listado.value.unshift({ ...item, asistencia: false }); // agregar a Listado
+    Justificados.value = Justificados.value.filter((e) => e.id !== item.id); // quitar de Justificados
   }
-};
-
-const moverAlListadoPresente = (item) => {
-  if (!isPresente(item)) {
-    Presentes.value.push(item);
-  }
-};
-
-const moverAlListadoAusente = (item) => {
-  if (!Listado.value.some((e) => e.id === item.id)) {
-    Listado.value.push(item);
-  }
-  const index = Listado.value.findIndex((e) => e.id === item.id);
-  if (index !== -1) {
-    Listado.value.splice(index, 1);
-  }
-  Listado.value.unshift({ ...item, asistencia: false });
 };
 
 const sortPresentes = () => {
@@ -370,6 +424,25 @@ const sortAusentes = () => {
     Listado.value.sort((a, b) => b.nombre.localeCompare(a.nombre));
   }
   AusentesisAscending.value = !AusentesisAscending.value;
+};
+
+//agregar nota
+const agregarNota = (item) => {
+  $q.dialog({
+    title: "Agregar Nota",
+    message:
+      "Ingresa la justificación de  " + item.nombre + " " + item.apellido,
+    prompt: {
+      model: "",
+      type: "text",
+    },
+    cancel: true,
+    persistent: true,
+  }).onOk((data) => {
+    if (data) {
+      nota.value.push({ id: item.id, justificacion: data, fecha: date.value });
+    }
+  });
 };
 
 const comprobar = (item) => {
@@ -410,7 +483,8 @@ const guardar = async () => {
       Demorados.value.map((e) => e.id),
       Justificados.value.map((e) => e.id),
       date.value,
-      grupo.value
+      grupo.value,
+      nota.value
     );
     $q.notify({
       message: "Listado Guardado con éxito",
@@ -423,6 +497,41 @@ const guardar = async () => {
       color: "red-4",
       textColor: "white",
     });
+  }
+};
+
+const mostrarAlumnosPorGrupoOInstrumento = (Alumnos, grupo) => {
+  let alumnosFiltrados = Alumnos.filter(
+    (alumno) =>
+      (Array.isArray(alumno.grupo) && alumno.grupo.includes(grupo)) ||
+      (alumno.instrumento && alumno.instrumento.includes(grupo))
+  );
+
+  alumnosFiltrados.forEach((alumno) => {
+    Listado.value.push({ ...alumno, asistencia: false });
+  });
+};
+
+const agregarAlumnoALista = async (id, estado) => {
+  try {
+    const doc = await buscarAlumnoPorId(id);
+    if (doc && doc.id === id) {
+      // Agrupar alumnos según su estado
+      if (estado === "presente") {
+        Presentes.value.push({ ...doc, estado });
+      }
+      if (estado === "ausente") {
+        Listado.value.push({ ...doc, estado });
+      }
+      if (estado === "justificado") {
+        Justificados.value.push({ ...doc, estado });
+      }
+      if (estado === "demorado") {
+        Demorados.value.push({ ...doc, estado });
+      }
+    }
+  } catch (error) {
+    console.error("Error al agregar alumno a la lista:", error);
   }
 };
 
@@ -447,39 +556,19 @@ const Filtrar = async (fecha, grupo) => {
     const Alumnos = await obtenerAlumnos();
 
     if (registros && registros.length > 0) {
-      const { presentes, ausentes } = registros[0].Data;
-      presentes.forEach((id) => agregarAlumnoALista(id, true));
-      ausentes.forEach((id) => agregarAlumnoALista(id, false));
+      const { presentes, ausentes, justificados, demorados } =
+        registros[0].Data;
+      presentes.forEach((id) => agregarAlumnoALista(id, "presente"));
+      demorados.forEach((id) => agregarAlumnoALista(id, "demorado"));
+      ausentes.forEach((id) => agregarAlumnoALista(id, "ausente"));
+      justificados.forEach((id) => agregarAlumnoALista(id, "justificado"));
+      console.log("Justificado:", justificados);
     } else {
       mostrarAlumnosPorGrupoOInstrumento(Alumnos, grupo);
     }
     pdf.value = fecha && grupo !== "All";
   } catch (error) {
-    console.error("Error al filtrar asistencias:", error);
-  }
-};
-
-const mostrarAlumnosPorGrupoOInstrumento = (Alumnos, grupo) => {
-  let alumnosFiltrados = Alumnos.filter(
-    (alumno) =>
-      (Array.isArray(alumno.grupo) && alumno.grupo.includes(grupo)) ||
-      (Array.isArray(alumno.instrumento) && alumno.instrumento.includes(grupo))
-  );
-
-  alumnosFiltrados.forEach((alumno) => {
-    Listado.value.push({ ...alumno, asistencia: false });
-  });
-};
-
-const agregarAlumnoALista = async (id, asistencia) => {
-  try {
-    const doc = await buscarAlumnoPorId(id);
-    if (doc && doc.id === id) {
-      const lista = asistencia ? Presentes.value : Listado.value;
-      lista.push({ ...doc, asistencia });
-    }
-  } catch (error) {
-    console.error("Error al agregar alumno a la lista:", error);
+    console.error("Error al filtrar:", error);
   }
 };
 
@@ -493,22 +582,6 @@ const irRepertorio = () => {
     params: { grupoSeleccionado: toRaw(grupo.value) },
   });
 };
-
-const irClaseDiaria = () => {
-  if (grupo.value === "") {
-    $q.notify({
-      message: "Seleccione un grupo primero",
-      color: "red-4",
-      textColor: "white",
-    });
-    return;
-  }
-  router.push({
-    name: "ClaseDiaria",
-    params: { grupoSeleccionado: grupo.value },
-  });
-};
-
 // Filtrar alumnos por nombre o apellido
 const eventEmittedFromChild = (res) => {
   if (res.length !== 0) {

@@ -1,10 +1,10 @@
 <template>
   <q-layout view="hHh lpR fFf" class="">
     <!-- Header -->
-    <q-header reveal class="fondo q-py-xs">
+    <q-header reveal class="fondo">
       <div class="no-wrap">
-        <q-btn flat no-wrap class="flex justify-center" to="/">
-          <img src="~assets/funeyca.png" style="width: 60px; height: 60px" />
+        <q-btn flat no-wrap class="flex justify-center" to="/" @click="goBack">
+          <img src="~assets/funeyca.png" style="width: 50px; height: 50px" />
         </q-btn>
       </div>
     </q-header>
@@ -20,9 +20,9 @@
           no-caps
           unelevated
           text-color="green-9"
-          :options="Botones"
-        >
-        </q-btn-toggle>
+          :options="filteredBotones"
+          @click="onButtonClick"
+        />
       </div>
     </q-footer>
 
@@ -34,41 +34,64 @@
 </template>
 
 <script setup>
-import { ref, watchEffect } from "vue";
+import { ref, computed, watch } from "vue";
 import { useRouter } from "vue-router";
 import { auth } from "../firebase";
 
-const $route = useRouter();
-let model = ref($route.currentRoute._rawValue);
+const router = useRouter();
+const model = ref(router.currentRoute.value.path); // Inicializa con la ruta actual
 
-let Botones = ref([
+// Definición de botones con rutas exactas
+const Botones = ref([
   {
     icon: "home",
     to: "/",
-    value: "",
-    auth: auth.currentUser?.displayName >= 0 ? true : false,
+    value: "/",
+    auth: auth.currentUser?.displayName >= 0,
   },
   {
     icon: "group",
     to: "/Asistencia",
-    value: "Asistencia",
+    value: "/Asistencia",
     auth: auth.currentUser?.displayName >= 0,
   },
   {
     icon: "dashboard",
     to: "/Dashboard",
-    value: "dashboard",
+    value: "/Dashboard",
     auth: auth.currentUser?.displayName >= 0,
   },
 ]);
 
-// Filtrar botones basados en la autenticación del usuario
-Botones = Botones.value.filter((elem) => elem.auth === true);
-
-// Asegurar que el valor predeterminado del modelo sea "home"
-watchEffect(() => {
-  model.value ??= "home";
+// Filtra y marca los botones activos según la ruta actual
+const filteredBotones = computed(() => {
+  return Botones.value
+    .filter((elem) => elem.auth) // Filtra según autenticación
+    .map((elem) => ({
+      ...elem,
+      active: elem.to === model.value, // Compara ruta exacta para activar botón
+    }));
 });
+
+// Monitorea cambios en la ruta y actualiza el botón activo
+watch(
+  () => router.currentRoute.value.path,
+  (newPath) => {
+    model.value = newPath;
+    filteredBotones.value.forEach((elem) => {
+      elem.active = elem.to === newPath;
+    });
+  }
+);
+
+// Función para manejar clics en los botones del footer
+const onButtonClick = (to) => {
+  model.value = to;
+};
+
+const goBack = () => {
+  router.go(-1);
+};
 </script>
 
 <style>
@@ -89,9 +112,13 @@ watchEffect(() => {
 }
 
 .footer-container {
-  width: 100%; /* Asegurar que el footer ocupe todo el ancho disponible */
-  max-width: 100%; /* Evitar restricciones de ancho máximo */
-  padding: 0 8px; /* Añadir un pequeño padding para evitar que los botones toquen los bordes */
-  box-sizing: border-box; /* Incluir padding en el tamaño total */
+  width: 100%;
+  max-width: 100%;
+  padding: 0 8px;
+  box-sizing: border-box;
+}
+
+.q-footer {
+  margin-top: 10px;
 }
 </style>

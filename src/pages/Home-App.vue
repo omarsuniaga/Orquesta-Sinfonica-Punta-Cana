@@ -5,7 +5,7 @@
   <div v-else class="q-pa-md">
     <MenuSecundario />
     <div class="row justify-center q-ma-md">
-      <div class="col-12 col-md-6 q-pa-md">
+      <div class="col-12 col-md-12 q-pa-md">
         <LapsoAsistencias />
       </div>
       <div class="col-12 col-md-6 q-pa-md">

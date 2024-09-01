@@ -25,7 +25,7 @@ async function cargarMasDatos() {
 }
 
 onMounted(async () => {
-  groupOrder.value = await obtenerConfiguraciones();
+  //groupOrder.value = await obtenerConfiguraciones();
   listadoAgrupado.value = props.Alumnos.filter((elem) =>
     elem.grupo.includes(props.grupo)
   ).sort((a, b) => {
