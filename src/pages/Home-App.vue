@@ -8,14 +8,12 @@
       <div class="col-12 col-md-12 q-pa-md">
         <LapsoAsistencias />
       </div>
-      <div class="col-12 col-md-6 q-pa-md">
+      <div class="col-12 col-md-12 q-pa-md">
         <div class="row justify-around items-center">
-          <AgruparPorGenero
-            :varones="data.masculinos"
-            :hembras="data.femeninos"
-            class="q-ma-md"
-          />
-          <PoblacionAlumnos :totales="totalAlumnos" class="q-ma-md" />
+          <!-- ver y agregar repertorios -->
+          <div class="col-12">
+            <RepertorioManager />
+          </div>
         </div>
       </div>
     </div>
@@ -38,9 +36,10 @@ import {
 import MenuSecundario from "src/components/Menu-Secundario.vue";
 import ListadoHorizontal from "src/components/Listado-Horizontal.vue";
 import AgruparPorGenero from "src/components/Poblacion-Genero.vue";
-import PoblacionAlumnos from "src/components/Poblacion-Alumnos.vue";
 import LapsoAsistencias from "src/components/LapsoAsistencias.vue";
 import { useRouter } from "vue-router";
+import GestionarRepertorio from "./GestionarRepertorio.vue";
+import RepertorioManager from "src/components/Repertorios/RepertorioManager.vue";
 
 const data = ref({ masculinos: 0, femeninos: 0 });
 const Alumnos = ref([]);
@@ -48,8 +47,20 @@ const Grupos = ref([]);
 const loading = ref(true);
 const totalAlumnos = ref(0);
 const router = useRouter();
+const grupo = ref({});
+const irAAlumnos = () => {
+  router.push({ name: "Alumnos" });
+};
+
 const irACatedras = () => {
   router.push({ name: "Catedras" });
+};
+
+const irRepertorio = () => {
+  router.push({
+    name: "GestionarRepertorio",
+    // params: { grupoSeleccionado: toRaw(grupo.value) },
+  });
 };
 
 onMounted(async () => {

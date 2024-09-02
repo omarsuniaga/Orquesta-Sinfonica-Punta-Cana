@@ -1,252 +1,142 @@
 <template>
-  <q-layout>
-    <q-page-container>
-      <q-page class="bg-dark text-white">
-        <div class="q-mb-md q-pt-md text-h5 text-center">
-          {{ grupoSelecionado }}
+  <q-list
+    bordered
+    class="rounded-borders"
+    style="max-width: 100vw; background-color: aliceblue"
+  >
+    <q-item-label header>Repertorio General</q-item-label>
+
+    <q-item>
+      <q-item-section top class="col-2 gt-sm">
+        <q-item-label class="q-mt-sm">GitHub</q-item-label>
+      </q-item-section>
+
+      <q-item-section top>
+        <q-item-label lines="1">
+          <span class="text-weight-medium">Te Deum</span>
+          <span class="text-grey-8"> - Orquesta</span>
+        </q-item-label>
+        <q-item-label caption lines="1"> Compases: 1 - 41 </q-item-label>
+        <q-item-label
+          lines="1"
+          class="q-mt-xs text-body2 text-weight-bold text-primary text-uppercase"
+        >
+          <span class="cursor-pointer">Agregar Avances</span>
+        </q-item-label>
+      </q-item-section>
+
+      <q-item-section top side>
+        <div class="text-grey-8 q-gutter-xs">
+          <q-btn class="gt-xs" size="12px" flat dense round icon="delete" />
+          <q-btn class="gt-xs" size="12px" flat dense round icon="done" />
+          <q-btn size="12px" flat dense round icon="more_vert" />
         </div>
-        <!-- <div class="q-mb-md q-pt-md text-h5 text-center">Gestión de Repertorio</div> -->
-        <!-- Botón para agregar nueva obra -->
-        <div class="q-mb-md text-center">
-          <q-btn color="primary" @click="abrirDialogoObra">Añadir Nueva Obra</q-btn>
-        </div>
+      </q-item-section>
+    </q-item>
+    <q-separator spaced />
+  </q-list>
 
-        <!-- Listado de Repertorio -->
-        <q-list bordered dark>
-          <q-item v-for="(obra, index) in repertorios" :key="obra.id" clickable>
-            <q-item-section>
-              <q-item-label class="text-h6">{{ obra.Titulo }}</q-item-label>
-              <q-item-label caption>{{ obra.Compositor }}</q-item-label>
-              <q-item-label caption>Dificultad: {{ obra.Dificultad }}</q-item-label>
-              <q-item-label caption>Grupo: {{ obra.Grupo }}</q-item-label>
-              <q-item-label caption>
-                Área de Trabajo: Compases
-                {{ obra.AreaTrabajo?.desde ?? "N/A" }} -
-                {{ obra.AreaTrabajo?.hasta ?? "N/A" }}
-              </q-item-label>
-            </q-item-section>
-            <q-item-section side>
-              <q-btn flat icon="edit" @click="editarObra(index)" />
-              <q-btn flat icon="delete" color="negative" @click="eliminarObra(index)" />
-            </q-item-section>
-          </q-item>
-        </q-list>
+  <q-list bordered dark>
+    <ObraCard
+      v-for="(obra, index) in repertorios"
+      :key="obra.id"
+      :obra="obra"
+      @editar="abrirDialogoObra(index)"
+      @eliminar="eliminarObra(obra.id)"
+    />
+  </q-list>
 
-        <!-- Dialogo para agregar/modificar obra -->
-        <q-dialog v-model="dialogoObraVisible" persistent>
-          <q-card>
-            <q-card-section>
-              <div class="text-h6">
-                {{ editando ? "Modificar Obra" : "Añadir Nueva Obra" }}
-              </div>
-            </q-card-section>
-
-            <q-card-section>
-              <q-input
-                v-model="nuevaObra.Titulo"
-                label="Título"
-                outlined
-                dense
-                class="q-mb-sm"
-              />
-              <q-input
-                v-model="nuevaObra.Compositor"
-                label="Compositor"
-                outlined
-                dense
-                class="q-mb-sm"
-              />
-              <q-select
-                v-model="nuevaObra.Dificultad"
-                :options="['Fácil', 'Intermedio', 'Difícil']"
-                label="Dificultad"
-                outlined
-                dense
-                class="q-mb-sm"
-              />
-              <q-input
-                v-model="nuevaObra.Grupo"
-                label="Grupo"
-                outlined
-                dense
-                class="q-mb-sm"
-              />
-              <q-input
-                v-model="nuevaObra.AreaTrabajo.desde"
-                label="Compás Desde"
-                type="number"
-                outlined
-                dense
-                class="q-mb-sm"
-              />
-              <q-input
-                v-model="nuevaObra.AreaTrabajo.hasta"
-                label="Compás Hasta"
-                type="number"
-                outlined
-                dense
-                class="q-mb-sm"
-              />
-            </q-card-section>
-
-            <q-card-actions align="right">
-              <q-btn flat label="Cancelar" color="primary" @click="cerrarDialogoObra" />
-              <q-btn flat label="Guardar" color="primary" @click="guardarObra" />
-            </q-card-actions>
-          </q-card>
-        </q-dialog>
-      </q-page>
-    </q-page-container>
-  </q-layout>
+  <ObraForm
+    v-if="dialogoObraVisible"
+    :obra="obraActual"
+    @guardar="guardarObraLocal"
+    @cancelar="cerrarDialogoObra"
+  />
 </template>
+
 <script setup>
 import { ref, onMounted } from "vue";
-import {
-  collection,
-  getDocs,
-  addDoc,
-  updateDoc,
-  deleteDoc,
-  doc,
-} from "firebase/firestore";
-import { db } from "../FirebaseService/constants";
+import { useRepertorioStore } from "../stores/repertorioStore";
+import ObraCard from "../components/Repertorios/ObraCard.vue";
+import ObraForm from "../components/Repertorios/ObraForm.vue";
+import { useQuasar } from "quasar";
+
+const $q = useQuasar();
+
+// Inicializamos el store de Pinia
+const repertorioStore = useRepertorioStore();
+const { obtenerRepertorio, guardarObra, eliminarObra } = repertorioStore;
 
 // Variables reactivas
-const repertorios = ref([]);
 const dialogoObraVisible = ref(false);
-const editando = ref(false);
-const obraIndex = ref(-1);
-
-// Datos del formulario para nueva obra
-const nuevaObra = ref({
-  Titulo: "",
-  Compositor: "",
-  Dificultad: "",
-  Grupo: "",
-  AreaTrabajo: {
-    desde: 0,
-    hasta: 0,
-    fecha: new Date().toISOString().split("T")[0],
+const obraActual = ref(null);
+const repertorios = ref([
+  {
+    id: 1,
+    Compases: {
+      desde: 1,
+      hasta: 10,
+    },
+    Compositor: "Chanpertier",
+    Dificultad: "Intermedio",
+    EstadoObra: [1, 2, 3, 2, 1, 1, 2, 3, 3, 2],
+    FilaEvaluacion: {
+      cuerdas: 1,
+      vientoMetal: 1,
+      vientoMadera: 1,
+    },
+    Grupo: "Orquesta",
+    Participantes: [],
+    TiempoEstimado: "3 semanas",
+    Titulo: "Te Deum",
   },
+]);
+onMounted(async () => {
+  // repertorios.value = await obtenerRepertorio();
 });
 
-// Función para obtener el repertorio desde Firebase
-const obtenerRepertorio = async () => {
-  try {
-    const q = collection(db, "REPERTORIO");
-    const querySnapshot = await getDocs(q);
-    repertorios.value = querySnapshot.docs.map((doc) => ({
-      id: doc.id,
-      ...doc.data(),
-      AreaTrabajo: doc.data().AreaTrabajo || {
-        desde: 0,
-        hasta: 0,
-        fecha: new Date().toISOString().split("T")[0],
-      },
-    }));
-  } catch (error) {
-    console.error("Error al obtener el repertorio:", error);
-  }
-};
-
-// Llamar a la función al montar el componente
-onMounted(() => {
-  obtenerRepertorio();
-});
-
-// Función para abrir el diálogo para agregar o editar obra
 const abrirDialogoObra = (index = -1) => {
-  if (index >= 0) {
-    editando.value = true;
-    obraIndex.value = index;
-    nuevaObra.value = { ...repertorios.value[index] };
-  } else {
-    editando.value = false;
-    obraIndex.value = -1;
-    nuevaObra.value = {
-      Titulo: "",
-      Compositor: "",
-      Dificultad: "",
-      Grupo: "",
-      AreaTrabajo: {
-        desde: 0,
-        hasta: 0,
-        fecha: new Date().toISOString().split("T")[0],
-      },
-    };
-  }
-  dialogoObraVisible.value = true;
-};
-
-// Función para cerrar el diálogo sin guardar cambios
-const cerrarDialogoObra = () => {
-  dialogoObraVisible.value = false;
-};
-
-// Función para guardar la obra (agregar o modificar)
-const guardarObra = async () => {
-  if (nuevaObra.value.Titulo && nuevaObra.value.Compositor && nuevaObra.value.Grupo) {
-    if (editando.value) {
-      // Modificar obra existente
-      try {
-        const docRef = doc(db, "REPERTORIO", repertorios.value[obraIndex.value].id);
-        await updateDoc(docRef, nuevaObra.value);
-        repertorios.value[obraIndex.value] = { ...nuevaObra.value };
-      } catch (error) {
-        console.error("Error al modificar la obra:", error);
-      }
+  $q.dialog({
+    component: ObraForm,
+    componentProps: {
+      obra: index === -1 ? null : repertorios.value[index],
+    },
+  }).onOk(async (data) => {
+    if (index === -1) {
+      await guardarObra(data);
     } else {
-      // Añadir nueva obra
-      try {
-        const docRef = await addDoc(collection(db, "REPERTORIO"), nuevaObra.value);
-        repertorios.value.push({ id: docRef.id, ...nuevaObra.value });
-      } catch (error) {
-        console.error("Error al añadir la obra:", error);
-      }
+      repertorios.value[index] = data;
     }
-    cerrarDialogoObra();
-  } else {
-    console.error("Por favor, completa todos los campos requeridos.");
-  }
+  });
 };
 
-// Función para eliminar una obra del repertorio
-const eliminarObra = async (index) => {
-  try {
-    const docRef = doc(db, "REPERTORIO", repertorios.value[index].id);
-    await deleteDoc(docRef);
-    repertorios.value.splice(index, 1);
-  } catch (error) {
-    console.error("Error al eliminar la obra:", error);
-  }
+const cerrarDialogoObra = () => {
+  $q.dialog({
+    component: ObraForm,
+  }).hide();
 };
 
-// Función para editar una obra
-const editarObra = (index) => {
-  abrirDialogoObra(index);
+console.log("repertorios", repertorios.value);
+
+const guardarObraLocal = async (obra) => {
+  await guardarObra(obra);
+  cerrarDialogoObra();
 };
 </script>
+
 <style scoped>
 .bg-dark {
-  background-color: #121212;
+  background-color: #306b86;
 }
 
 .text-white {
   color: #ffffff;
 }
 
-/* Estilos para mejorar la apariencia del listado y los diálogos */
+/* Estilos adicionales para la lista */
 .q-list {
-  background-color: #1f1f1f;
+  background-color: #21177a;
   border-radius: 8px;
-}
-
-.q-item {
-  border-bottom: 1px solid #333;
-}
-
-.q-item-label {
-  color: #e0e0e0;
 }
 
 .q-btn {
