@@ -1,5 +1,5 @@
 <template>
-  <div class="q-pa-md">
+  <div>
     <q-table
       title="Inasistencias Importantes"
       :rows="ObjetoGlobal"
@@ -7,8 +7,10 @@
       row-key="name"
       :loading="loading"
     />
-    <q-btn label="Descargar Excel" color="primary" @click="descargarExcel" />
-    <q-btn label="Descargar PDF" color="secondary" @click="descargarPDF" />
+    <div class="flex justify-around q-pa-sm">
+      <q-btn label="Descargar Excel" color="primary" @click="descargarExcel" />
+      <q-btn label="Descargar PDF" color="secondary" @click="descargarPDF" />
+    </div>
   </div>
 </template>
 
@@ -38,21 +40,21 @@ const columns = ref([
   },
   {
     name: "Semanal",
-    label: "Semanal",
+    label: "Sem",
     align: "left",
     field: "Semanal",
     sortable: true,
   },
   {
     name: "Mensual",
-    label: "Mensual",
+    label: "Men",
     align: "left",
     field: "Mensual",
     sortable: true,
   },
   {
     name: "Trimestral",
-    label: "Trimestral",
+    label: "Trim",
     align: "left",
     field: "Trimestral",
     sortable: true,
@@ -221,12 +223,8 @@ onMounted(loadData);
 </script>
 
 <style scoped>
-.q-pa-md {
-  background-color: #f5f5f5;
-}
-
 .q-table {
-  max-height: 400px;
+  max-height: 100%;
   overflow-y: auto;
   scrollbar-width: none;
   -ms-overflow-style: none;

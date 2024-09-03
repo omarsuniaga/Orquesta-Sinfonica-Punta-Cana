@@ -111,6 +111,16 @@ const routes = [
     meta: { requiresAuth: true },
   },
   {
+    path: "/detalles-alumnos/:id",
+    name: "DetallesAlumnos",
+    props: true,
+    component: () => import("layouts/MainLayout.vue"),
+    children: [
+      { path: "", component: () => import("src/pages/Detalles_Alumnos.vue") },
+    ],
+    meta: { requiresAuth: true },
+  },
+  {
     path: "/Calificacion_Alumno/:id",
     name: "Calificacion_Alumno",
     props: true,

@@ -363,7 +363,13 @@ let pdf = ref(false);
 let eventos = ref([]);
 let AusentesisAscending = ref(true);
 let PresentesisAscending = ref(true);
-
+// const grupo = ref(route.params.catedra || "");
+const irClaseDiaria = () => {
+  router.push({
+    name: "ClaseDiaria",
+    params: { grupoSeleccionado: toRaw(grupo.value) },
+  });
+};
 const getItemClass = (item) => {
   if (isDemorado(item)) return "bg-morado-claro";
   if (isJustificado(item)) return "bg-naranja-claro";

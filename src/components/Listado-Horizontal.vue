@@ -20,7 +20,9 @@ function handleScroll() {
 }
 
 async function cargarMasDatos() {
-  const nuevosDatos = props.Alumnos.filter((elem) => elem.grupo.includes(props.grupo));
+  const nuevosDatos = props.Alumnos.filter((elem) =>
+    elem.grupo.includes(props.grupo)
+  );
   listadoAgrupado.value.push(...nuevosDatos);
 }
 
@@ -30,8 +32,12 @@ onMounted(async () => {
     elem.grupo.includes(props.grupo)
   ).sort((a, b) => {
     return (
-      groupOrder.value.indexOf(a.grupo.find((g) => groupOrder.value.includes(g))) -
-      groupOrder.value.indexOf(b.grupo.find((g) => groupOrder.value.includes(g)))
+      groupOrder.value.indexOf(
+        a.grupo.find((g) => groupOrder.value.includes(g))
+      ) -
+      groupOrder.value.indexOf(
+        b.grupo.find((g) => groupOrder.value.includes(g))
+      )
     );
   });
 

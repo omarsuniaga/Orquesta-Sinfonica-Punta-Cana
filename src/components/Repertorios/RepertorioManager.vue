@@ -2,7 +2,6 @@
   <q-page class="text-white">
     <div class="q-pa-md text-h5 text-left header">
       <h3>Gestión del Repertorio</h3>
-      <!-- Botón Flotante para Agregar Repertorio -->
       <q-btn
         fab
         color="primary"
@@ -12,14 +11,12 @@
       />
     </div>
 
-    <!-- Listado de Repertorios -->
     <q-list dark bordered class="q-pa-xs" separator>
       <q-item
         v-for="(obra, index) in repertorios"
         :key="obra.id"
         :style="calcularColorPromedio(obra.id)"
       >
-        <!-- Sección para el promedio y botón Progreso -->
         <q-item-section class="col-2 justify-center" side>
           <div class="text-center">
             <q-item-label class="text-h6 q-mb-sm">{{
@@ -37,7 +34,6 @@
           </div>
         </q-item-section>
 
-        <!-- Sección principal con título, grupo y compases -->
         <q-item-section class="col-grow">
           <q-item-label lines="1">
             <span class="text-weight-medium text-white">{{ obra.Titulo }}</span>
@@ -48,7 +44,6 @@
           </q-item-label>
         </q-item-section>
 
-        <!-- Sección para los botones Editar y Eliminar -->
         <q-item-section class="col-2 q-gutter-sm justify-end">
           <q-btn
             size="sm"
@@ -76,7 +71,6 @@
       </q-item>
     </q-list>
 
-    <!-- Formulario para agregar/editar obra -->
     <q-dialog
       v-model="dialogoObraVisible"
       persistent
@@ -84,17 +78,15 @@
     >
       <q-card>
         <q-toolbar>
-          <q-avatar>
-            <img src="../../assets/favicon-32x32-orquesta.jpg" />
-          </q-avatar>
-
+          <q-avatar
+            ><img src="../../assets/favicon-32x32-orquesta.jpg"
+          /></q-avatar>
           <q-toolbar-title
             ><span class="text-weight-bold">{{
               obraActual?.id ? "Editar" : "Nuevo"
             }}</span>
-            Repertorio
-          </q-toolbar-title>
-
+            Repertorio</q-toolbar-title
+          >
           <q-btn flat round dense icon="close" v-close-popup />
         </q-toolbar>
 
@@ -148,11 +140,20 @@
             class="q-mb-sm"
             min="1"
           />
+          <q-select
+            v-if="esEnsamble"
+            v-model="obraActual.Alumnos"
+            :options="alumnos"
+            label="Seleccionar Alumnos"
+            outlined
+            dense
+            multiple
+            use-chips
+          />
         </q-card-section>
       </q-card>
-      <q-card> </q-card>
     </q-dialog>
-    <!-- Diálogo para registrar progreso -->
+
     <q-dialog
       v-model="dialogoProgresoVisible"
       persistent
@@ -186,18 +187,21 @@ const {
   eliminarObra: eliminarObraStore,
 } = repertorioStore;
 
-// Variables reactivas
 const dialogoProgresoVisible = ref(false);
 const secciones = ref([]);
 const clasificacion = ref({
   Orquesta: ["Cuerdas", "Madera", "Metal", "Percusión"],
   Coro: ["Sopranos", "Contraltos", "Tenores", "Bajos"],
-  Ensamble: ["Alumnos"],
+  Ensamble: [],
 });
+const dialogoObraVisible = ref(false);
+const obraActual = ref(null);
+const repertorios = computed(() => repertorioStore.repertorios);
+const grupos = ref([]);
+const esEnsamble = ref(false);
+const alumnos = ref([]);
 
-// Consultar promedio según el id de la obra en Firebase
-const promedios = ref({}); // Para almacenar los promedios de cada obra
-// Crear una función que, según el id de la obra, consulte el promedio en Firebase
+const promedios = ref({});
 const obtenerPromedio = async (id) => {
   const docRef = doc(db, "PROGRESOS", id);
   const docSnap = await getDoc(docRef);
@@ -210,21 +214,16 @@ const obtenerPromedio = async (id) => {
   return promedios.value[id];
 };
 
-// Calcular el color de fondo según el promedio
 const calcularColorPromedio = (id) => {
   const promedio = promedios.value[id] || 0;
   const color = calcularColor(promedio);
-  return {
-    backgroundColor: color,
-  };
+  return { backgroundColor: color };
 };
 
 const calcularColor = (promedio) => {
-  // Color de inicio (rojo oscuro) y fin (verde)
   const rojoOscuro = { r: 200, g: 0, b: 0 };
   const verde = { r: 0, g: 128, b: 0 };
 
-  // Interpolación lineal de color según el promedio
   const r = Math.floor(
     rojoOscuro.r + (verde.r - rojoOscuro.r) * (promedio / 3)
   );
@@ -238,18 +237,13 @@ const calcularColor = (promedio) => {
   return `rgb(${r}, ${g}, ${b})`;
 };
 
-const dialogoObraVisible = ref(false);
-const obraActual = ref(null);
-const repertorios = computed(() => repertorioStore.repertorios);
-const grupos = ref([]);
-
-// Cargar el repertorio y los grupos desde Firebase al montar el componente
 onMounted(async () => {
   await obtenerRepertorio();
-  grupos.value = await obtenerGruposYAlumnos(); // Cargar los grupos disponibles
-  grupos.value = grupos.value.grupos;
+  // grupos.value = await obtenerGruposYAlumnos();
+  // grupos.value = grupos.value.grupos;
+  alumnos.value = await obtenerGruposYAlumnos();
+  alumnos.value = alumnos.value.alumnos;
 
-  // Obtener promedios para todas las obras
   for (const obra of repertorios.value) {
     await obtenerPromedio(obra.id);
   }
@@ -266,15 +260,14 @@ const abrirDialogoObra = (index = -1) => {
       Compases: 1,
     };
   }
+  // esEnsamble.value = obraActual.value.Grupo === "Ensamble";
   dialogoObraVisible.value = true;
 };
 
-// Cerrar el diálogo de obra
 const cerrarDialogoObra = () => {
   dialogoObraVisible.value = false;
 };
 
-// Guardar la obra en Firebase y actualizar el listado
 const guardarObraLocal = async () => {
   if (
     obraActual.value.Titulo &&
@@ -291,16 +284,13 @@ const guardarObraLocal = async () => {
     });
   }
 };
-// Función para guardar el progreso en Firebase
+
 const guardarProgreso = async (progreso) => {
   try {
     const progresoRef = doc(collection(db, "PROGRESOS"), obraActual.value.id);
     await setDoc(
       progresoRef,
-      {
-        obraId: obraActual.value.id,
-        ...progreso,
-      },
+      { obraId: obraActual.value.id, ...progreso },
       { merge: true }
     );
 
@@ -310,11 +300,11 @@ const guardarProgreso = async (progreso) => {
       position: "top-right",
     });
 
-    await obtenerPromedio(obraActual.value.id); // Actualizar el promedio en la lista
+    await obtenerPromedio(obraActual.value.id);
 
     cerrarDialogoProgreso();
   } catch (error) {
-    console.error("Error al registrar el progreso:", error); // Log detallado del error
+    console.error("Error al registrar el progreso:", error);
     $q.notify({
       message: "Error al registrar el progreso.",
       color: "negative",
@@ -340,7 +330,6 @@ const confirmar = (id) => {
   });
 };
 
-// Eliminar una obra del repertorio
 const eliminarObra = async (id) => {
   await eliminarObraStore(id);
   $q.notify({
@@ -349,15 +338,18 @@ const eliminarObra = async (id) => {
     position: "top-right",
   });
 };
-
-// Función para abrir el formulario de progreso
 const registrarProgreso = async (obra) => {
   obraActual.value = { ...obra };
 
-  if (clasificacion.value.hasOwnProperty(obra.Grupo)) {
-    secciones.value = clasificacion.value[obra.Grupo];
+  if (obraActual.value.Grupo === "Ensamble") {
+    // Si es un ensamble, las secciones serán los alumnos seleccionados
+    secciones.value = obraActual.value.Alumnos || []; // Asegúrate de que Alumnos esté definido
+  } else if (clasificacion.value.hasOwnProperty(obra.Grupo)) {
+    // Si es un grupo tradicional, las secciones se mantienen como estaban
+    secciones.value = clasificacion.value[obra.Grupo] || [];
   } else {
     console.log("La variable no es igual a ninguna clave del objeto");
+    secciones.value = []; // Si no se encuentra un grupo válido, inicializar como un arreglo vacío
   }
 
   dialogoProgresoVisible.value = true;

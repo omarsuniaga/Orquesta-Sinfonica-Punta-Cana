@@ -2,13 +2,13 @@
   <div v-if="loading" class="loading-container">
     <div class="loading"></div>
   </div>
-  <div v-else class="q-pa-md">
+  <div v-else class="q-px-xs">
     <MenuSecundario />
-    <div class="row justify-center q-ma-md">
-      <div class="col-12 col-md-12 q-pa-md">
+    <div class="row justify-center">
+      <div class="col-12">
         <LapsoAsistencias />
       </div>
-      <div class="col-12 col-md-12 q-pa-md">
+      <div class="col-12">
         <div class="row justify-around items-center">
           <!-- ver y agregar repertorios -->
           <div class="col-12">
@@ -25,7 +25,6 @@
     </div>
   </div>
 </template>
-
 <script setup>
 import { onMounted, ref } from "vue";
 import {

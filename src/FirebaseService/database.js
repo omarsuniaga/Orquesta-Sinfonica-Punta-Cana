@@ -102,13 +102,19 @@ export const fetchAlumnosFromFirebase = async () => {
  * @returns {Promise<void>}
  */
 export async function eliminarAlumno(id) {
+  if (!id) {
+    console.error("El ID del alumno es requerido para eliminar.");
+    return;
+  }
+
   const alumnoRef = doc(db, "ALUMNOS", id);
+
   try {
     await deleteDoc(alumnoRef);
-    console.log("Alumno eliminado exitosamente.");
+    console.log(`Alumno con ID ${id} eliminado exitosamente.`);
   } catch (error) {
-    console.error("Error al eliminar el alumno: ", error);
-    throw error;
+    console.error(`Error al eliminar el alumno con ID ${id}: `, error);
+    throw error; // Re-lanzar el error para que pueda ser manejado en el contexto donde se llame la función
   }
 }
 

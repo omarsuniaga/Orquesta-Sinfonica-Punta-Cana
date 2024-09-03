@@ -1,69 +1,101 @@
 <script setup>
-import { useRouter } from "vue-router";
 import { reactive, onMounted } from "vue";
+import { useRoute, useRouter } from "vue-router";
 import {
-  moverAlumnoAInactivos,
-  actualizarAlumno,
-  obtenerConfiguraciones,
   obtenerAlumnosPorId,
+  eliminarAlumno,
+  actualizarAlumno,
+  obtenerGruposYAlumnos,
 } from "src/FirebaseService/database";
+import { useQuasar } from "quasar";
 import {
   ref as storageRef,
   uploadBytes,
   getDownloadURL,
 } from "firebase/storage";
-import { useQuasar } from "quasar";
-import CarruselImagenes from "src/components/Carrusel-imagenes.vue";
 import { storage } from "../FirebaseService/constants";
-import { start } from "@cloudinary/url-gen/qualifiers/textAlignment";
-const $q = useQuasar();
-const router = useRouter();
-const id = Number(router.currentRoute.value.params.id);
 
-let state = reactive({
-  sexo: ["Masculino", "Femenino"],
-  options: [],
-  nivel: "0",
-  alumno: {},
-  editable: true,
-  file: null,
-  loading: null,
-  imagen: "",
+// Instancias de router y Quasar
+const route = useRoute();
+const router = useRouter();
+const $q = useQuasar();
+
+// Obtener el ID de la ruta
+const id = route.params.id;
+// Estado reactivo
+const state = reactive({
+  grupo: [],
+  destino: `galeria/${id}`,
+  alumno: {
+    start: 0, // Valor predeterminado
+  },
+  editable: false,
   imageUrl:
     "https://www.asofiduciarias.org.co/wp-content/uploads/2018/06/sin-foto-300x300.png",
-  destino: `galeria/${id}`,
-  avatar: `avatar/${id}`,
-  stars: 2,
-  ver: true,
+  file: null,
 });
 
-/** @type {any} */
-const metadata = {
-  contentType: "image/jpeg",
-};
-
-// Función para subir archivo
-async function addNewImage(file) {
+// Función para cargar los detalles del alumno
+async function cargarDetallesAlumno() {
   try {
-    const imagesRef = storageRef(storage, state.avatar);
-    const newImageRef = storageRef(imagesRef, file.name);
-    await uploadBytes(newImageRef, file);
-    const url = await getDownloadURL(newImageRef);
-    state.imageUrl = url;
-
     const alumno = await obtenerAlumnosPorId(id);
     if (alumno) {
-      alumno.avatar = url;
-      await Actualizar_Alumno(alumno);
-      state.alumno.avatar = url;
-
-      $q.notify({
-        message: "Imagen Guardada",
-        color: "green-4",
-        textColor: "white",
-        icon: "save",
-      });
+      state.alumno = {
+        ...alumno,
+        start: alumno.start || 0, // Asegúrate de que 'start' siempre tenga un valor numérico
+      };
+      state.imageUrl = alumno.avatar || state.imageUrl;
     }
+  } catch (error) {
+    console.error("Error al cargar los datos del alumno:", error);
+    $q.notify({
+      message: "Error al cargar los datos del alumno",
+      color: "red-4",
+      textColor: "white",
+      icon: "error",
+    });
+  }
+}
+
+// Función para eliminar el alumno
+async function eliminar() {
+  try {
+    await eliminarAlumno(id);
+    $q.notify({
+      message: "Alumno eliminado exitosamente",
+      color: "green-4",
+      textColor: "white",
+      icon: "delete",
+    });
+    router.push("/");
+  } catch (error) {
+    console.error("Error al eliminar el alumno:", error);
+    $q.notify({
+      message: "Error al eliminar el alumno",
+      color: "red-4",
+      textColor: "white",
+      icon: "error",
+    });
+  }
+}
+
+// Función para subir una nueva imagen
+async function addNewImage(file) {
+  try {
+    const imagesRef = storageRef(storage, `avatar/${id}`);
+    await uploadBytes(imagesRef, file);
+    const url = await getDownloadURL(imagesRef);
+    state.imageUrl = url;
+
+    await actualizarAlumno(id, { avatar: url });
+    state.alumno.avatar = url;
+
+    $q.notify({
+      message: "Imagen guardada exitosamente",
+      color: "green-4",
+      textColor: "white",
+      icon: "save",
+    });
   } catch (error) {
     console.error("Error al subir la imagen:", error);
     $q.notify({
@@ -78,141 +110,42 @@ async function addNewImage(file) {
 // Manejador de eventos para el cambio de archivo
 function onFileChange(event) {
   const files = event.target.files;
-  for (const file of files) {
-    addNewImage(file);
+  if (files.length) {
+    addNewImage(files[0]);
   }
 }
 
-// Cambiar Formato de la Fecha
-function cambiarFormatoFecha1(fecha) {
-  const fechaObj = new Date(fecha);
-  const dia = fechaObj.getDate();
-  const mes = fechaObj.getMonth() + 1;
-  const anio = fechaObj.getFullYear();
-  // Agregar cero inicial si el mes o día es menor a 10
-  const diaStr = dia < 10 ? `0${dia}` : dia;
-  const mesStr = mes < 10 ? `0${mes}` : mes;
-  return `${diaStr}-${mesStr}-${anio}`;
+// Función para alternar el estado de edición
+function mostrar() {
+  state.editable = !state.editable;
 }
 
-const calcularEdad = (fechaNacimiento) => {
-  if (!fechaNacimiento) {
-    console.error("fechaNacimiento está vacío o no está definido.");
-    return null;
-  }
-
-  // Verificar si `fechaNacimiento` es un string y convertirlo a Date
-  if (typeof fechaNacimiento === "string") {
-    const partesFecha = fechaNacimiento.split("-");
-    if (partesFecha.length === 3) {
-      fechaNacimiento = new Date(
-        `${partesFecha[2]}-${partesFecha[1]}-${partesFecha[0]}`
-      );
-    } else {
-      console.error("Formato de fecha string incorrecto");
-      return null;
-    }
-  }
-
-  // Verificar si `fechaNacimiento` es un objeto Date
-  if (!(fechaNacimiento instanceof Date) || isNaN(fechaNacimiento)) {
-    console.error(
-      "El valor de fechaNacimiento no es un string ni un objeto Date válido"
-    );
-    return null;
-  }
-
-  const hoy = new Date();
-  let edad = hoy.getFullYear() - fechaNacimiento.getFullYear();
-
-  if (
-    hoy <
-    new Date(
-      hoy.getFullYear(),
-      fechaNacimiento.getMonth(),
-      fechaNacimiento.getDate()
-    )
-  ) {
-    edad--;
-  }
-
-  return edad;
-};
-
-function calcularTiempoTranscurrido(desdeFecha) {
-  const fechaInicial = Date.parse(desdeFecha);
-  const fechaActual = new Date();
-  const diferenciaEnMilisegundos = fechaActual - fechaInicial;
-  const segundos = Math.floor(diferenciaEnMilisegundos / 1000);
-  const minutos = Math.floor(segundos / 60);
-  const horas = Math.floor(minutos / 60);
-  const dias = Math.floor(horas / 24);
-  const semanas = Math.floor(dias / 7);
-  const meses = Math.floor(semanas / 4);
-  const anios = Math.floor(meses / 12);
-
-  return {
-    dias,
-    semanas,
-    meses,
-    anios,
-  };
-}
-
-// Mostrar datos del alumno
-const mostrar_ficha = async (id) => {
+//obtener listado de grupos
+async function obtenerGrupos() {
   try {
-    const elem = await obtenerAlumnosPorId(id);
-    if (elem) {
-      state.alumno = {
-        ...state.alumno,
-        id: elem.id,
-        nombre: elem.nombre || "Vacio",
-        apellido: elem.apellido || "Vacio",
-        cedula: elem.cedula || "Vacio",
-        avatar: elem.avatar || state.imageUrl,
-        fecInscripcion: cambiarFormatoFecha1(elem.registro) || "Vacio",
-        nac: elem.nac || "Vacio",
-        edad: calcularEdad(elem.nac) || "Vacio",
-        sexo: elem.sexo || "Vacio",
-        email: elem.email || "Vacio",
-        tlf: elem.tlf || "Vacio",
-        emergencia: elem.emergencia || "Vacio",
-        colegio_trabajo: elem.colegio_trabajo || "Vacio",
-        direccion_colegio_trabajo: elem.direccion_colegio_trabajo || "Vacio",
-        horario_colegio_trabajo: elem.horario_colegio_trabajo || "Vacio",
-        registro: elem.registro,
-        direccion: elem.direccion || "Vacio",
-        Termino_Aporte_Mensual: elem.Termino_Aporte_Mensual || "Vacio",
-        Termino_Redes_Sociales: elem.Termino_Redes_Sociales || "Vacio",
-        madre: elem.madre || "Vacio",
-        cedula_madre: elem.cedula_madre || "Vacio",
-        tlf_madre: elem.tlf_madre || "Vacio",
-        padre: elem.padre || "Vacio",
-        cedula_padre: elem.cedula_padre || "Vacio",
-        tlf_padre: elem.tlf_padre || "Vacio",
-        grupo: elem.grupo || [],
-        instrumento: elem.instrumento || "Vacio",
-        start: elem.start || 0,
-      };
-    }
+    const { grupos } = await obtenerGruposYAlumnos();
+
+    // Asegúrate de que 'grupos' es un array antes de asignarlo al estado
+    state.grupos = Array.isArray(grupos) ? grupos : [];
+
+    console.log("Grupos:", state.grupos);
   } catch (error) {
-    console.error("Eror al obtener los datos del alumno:", error);
+    console.error("Error al obtener los grupos:", error);
     $q.notify({
-      message: "Error al cargar los datos del alumno",
+      message: "Error al obtener los grupos",
       color: "red-4",
       textColor: "white",
       icon: "error",
     });
   }
-};
+}
 
-// Guardar cambios en el perfil del alumno
-const guardar = async (alumno) => {
+// Función para guardar cambios en el perfil del alumno
+async function guardar() {
   try {
-    await actualizarAlumno(id, alumno);
+    await actualizarAlumno(id, state.alumno);
     $q.notify({
-      message: "Cambios Realizados con éxito",
+      message: "Cambios realizados con éxito",
       color: "green-4",
       textColor: "white",
       icon: "cloud_done",
@@ -227,54 +160,18 @@ const guardar = async (alumno) => {
       icon: "error",
     });
   }
-};
+}
 
-// Eliminar alumno
-const eliminar = async (id) => {
-  try {
-    const dialog = $q.dialog({
-      title: "Confirmar",
-      message: "Estas seguro que quieres eliminar este alumno?",
-      cancel: true,
-      persistent: true,
-    });
-
-    dialog.onOk(async () => {
-      await moverAlumnoAInactivos(id);
-      router.replace({ path: "/" });
-    });
-    dialog.onCancel(() => {
-      console.log("Cancelado");
-    });
-  } catch (error) {
-    console.error("Error al eliminar el alumno:", error);
-    $q.notify({
-      message: "Error al eliminar el alumno",
-      color: "red-4",
-      textColor: "white",
-      icon: "error",
-    });
-  }
-};
-
-const mostrar = () => {
-  state.editable = !state.editable;
-};
-
-onMounted(async () => {
-  state.options = await obtenerConfiguraciones();
-  await mostrar_ficha(id);
+// Cargar los datos del alumno cuando se monta el componente
+onMounted(() => {
+  cargarDetallesAlumno();
+  obtenerGrupos();
 });
 </script>
 
 <template>
   <div class="q-ma-sm row justify-center bg-white" style="min-width: 375px">
     <q-card class="my-card">
-      <CarruselImagenes
-        :mensaje="state.destino"
-        class="col-12 col-sm-6 col-xl-6 col-md-6"
-      />
-
       <q-card-section>
         <q-item-section
           avatar
@@ -282,20 +179,14 @@ onMounted(async () => {
           style="transform: translateY(-50%)"
         >
           <q-avatar size="150px">
-            <input
-              class="bg-red-300"
-              type="file"
-              @change="onFileChange($event)"
-              ref="fileInput"
-              hidden="true"
-            />
-            <img :src="state.alumno.avatar" @click="$refs.fileInput.click()" />
+            <input type="file" @change="onFileChange" ref="fileInput" hidden />
+            <img :src="state.imageUrl" @click="$refs.fileInput.click()" />
           </q-avatar>
           <div
             class="col-auto text-grey text-caption q-pt-md row no-wrap items-center"
           >
             <q-icon name="place" />
-            {{ state.alumno.instrumento }}
+            {{ state.alumno.instrumento || "Sin instrumento" }}
           </div>
         </q-item-section>
 
@@ -304,213 +195,36 @@ onMounted(async () => {
             {{ state.alumno.nombre }} {{ state.alumno.apellido }}
           </div>
         </div>
-        <div
-          v-if="state.nivel === '0'"
-          class="flex q-ma-md justify-end row no-wrap"
-        >
+
+        <q-separator />
+
+        <div class="flex q-ma-md justify-end row no-wrap">
           <q-btn
             class="q-mx-xs"
             color="primary"
             icon="save"
             size="sm"
-            @click="guardar(state.alumno)"
+            @click="guardar"
           />
           <q-btn
             class="q-mx-xs"
             color="orange-4"
             icon="edit_note"
             size="sm"
-            @click="mostrar()"
+            @click="mostrar"
           />
           <q-btn
             class="q-mx-xs"
             color="red-4"
             icon="remove_circle"
             size="sm"
-            @click="eliminar(id)"
+            @click="eliminar"
           />
         </div>
-        <div v-else></div>
-        <q-rating v-model="state.stars" :max="5" size="32px" />
-      </q-card-section>
 
-      <q-card-section class="q-pt-none">
-        <div class="text-caption text-grey">
-          <!-- <LineaTiempo /> -->
-        </div>
-      </q-card-section>
+        <q-rating v-model="state.alumno.start" :max="5" size="32px" />
 
-      <q-separator />
-
-      <q-card-actions>
-        <q-btn
-          flat
-          color="primary"
-          @click="$router.push('/Calificacion_Alumno/' + state.alumno.id)"
-          >Calificacion
-        </q-btn>
-      </q-card-actions>
-      <q-separator />
-      <main>
-        <q-list bordered separator style="width: 100%">
-          <q-card>
-            <q-card-section>
-              <q-input
-                v-model="state.alumno.nombre"
-                :disable="state.editable"
-                label="Nombre del Alumno"
-                stack-label
-              />
-              <q-input
-                v-model="state.alumno.apellido"
-                :disable="state.editable"
-                label="Apellido "
-                stack-label
-              />
-            </q-card-section>
-            <q-card-section class="col-5 offset-md-1">
-              <q-input
-                v-model="state.alumno.madre"
-                :disable="state.editable"
-                label="Nombre de la Madre"
-                stack-label
-              />
-              <q-input
-                v-model="state.alumno.cedula_madre"
-                :disable="state.editable"
-                label="Cedula de la Madre"
-                stack-label
-              />
-              <q-input
-                v-model="state.alumno.tlf_madre"
-                :disable="state.editable"
-                label="Tlf de la Madre"
-                stack-label
-              />
-            </q-card-section>
-            <q-card-section class="col-5 offset-md-1">
-              <q-input
-                v-model="state.alumno.padre"
-                :disable="state.editable"
-                label="Nombre del Padre"
-                stack-label
-              />
-              <q-input
-                v-model="state.alumno.cedula_padre"
-                :disable="state.editable"
-                label="Cedula del Padre"
-                stack-label
-              />
-              <q-input
-                v-model="state.alumno.tlf_padre"
-                :disable="state.editable"
-                label="Telefono del Padre"
-                stack-label
-              />
-            </q-card-section>
-          </q-card>
-          <q-separator />
-          <q-input
-            v-model="state.alumno.avatar"
-            :disable="state.editable"
-            label="URL del Avatar"
-            stack-label
-          />
-        </q-list>
-        <div class="row q-mx-lg bg-white">
-          <div class="col-5">
-            <q-input
-              v-model="state.alumno.edad"
-              :disable="state.editable"
-              label="Edad"
-              stack-label
-            />
-            <q-select
-              v-model="state.alumno.sexo"
-              label="sexo"
-              :options="state.sexo"
-              stack-label
-              :disable="state.editable"
-            />
-            <q-input
-              v-model="state.alumno.cedula"
-              :disable="state.editable"
-              label="Cedula"
-              stack-label
-            />
-            <q-input
-              v-model="state.alumno.nac"
-              :disable="state.editable"
-              label="Fecha de Nacimiento"
-              stack-label
-            />
-            <q-input
-              v-model="state.alumno.fecInscripcion"
-              :disable="state.editable"
-              label="Fecha de Inscripcion"
-              stack-label
-            />
-            <q-input
-              v-model="state.alumno.direccion"
-              :disable="state.editable"
-              label="Direccion de Vivienda"
-              stack-label
-            />
-            <q-input
-              v-model="state.alumno.tlf"
-              :disable="state.editable"
-              label="Telefono del Alumno"
-              stack-label
-            />
-          </div>
-
-          <div class="col-5 offset-md-1">
-            <q-input
-              v-model="state.alumno.email"
-              :disable="state.editable"
-              label="Email"
-              stack-label
-            />
-            <q-input
-              v-model="state.alumno.emergencia"
-              :disable="state.editable"
-              label="Telefono de Emergencia"
-              stack-label
-            />
-            <q-input
-              v-model="state.alumno.colegio_trabajo"
-              :disable="state.editable"
-              label="Donde Estudia o Trabaja?"
-              stack-label
-            />
-            <q-input
-              v-model="state.alumno.direccion_colegio_trabajo"
-              :disable="state.editable"
-              label="Direccion de la Institucion"
-              stack-label
-            />
-            <q-input
-              v-model="state.alumno.horario_colegio_trabajo"
-              :disable="state.editable"
-              label="Horario de Clases o Trabajo"
-              stack-label
-            />
-          </div>
-          <q-checkbox
-            :disable="state.editable"
-            v-model="state.alumno.Termino_Aporte_Mensual"
-            val="teal"
-            label="Acepta el Termino del Aporte Mensual"
-            color="teal"
-          />
-          <q-checkbox
-            :disable="state.editable"
-            v-model="state.alumno.Termino_Redes_Sociales"
-            val="teal"
-            label="Acepta el Termino hacer publica cualquier foto o video en las redes sociales de nuestra institucion "
-            color="teal"
-          />
-        </div>
+        <q-separator />
         <q-list bordered separator style="width: 100%">
           <div class="row q-col-gutter-x-md flex justify-between q-ma-sm">
             <div class="col-auto q-ma-sm row no-wrap">
@@ -518,7 +232,9 @@ onMounted(async () => {
                 filled
                 v-model="state.alumno.grupo"
                 multiple
-                :options="state.options"
+                :options="state.grupos"
+                option-label="nombre"
+                option-value="nombre"
                 use-chips
                 stack-label
                 label="Grupos"
@@ -534,26 +250,188 @@ onMounted(async () => {
                 label="Instrumento / Interesado en:"
                 stack-label
               />
-
-              <div v-if="state.loading !== null">
-                {{ state.loading }}
-                <q-linear-progress :value="state.progress" />
-                <q-spinner-hourglass color="primary" size="2em" />
-                <q-tooltip :offset="[0, 8]">Subiendo</q-tooltip>
-              </div>
-              <q-btn
-                dense
-                flat
-                icon="send"
-                @click="guardar(state.alumno)"
-                :disable="state.editable"
-              />
             </div>
           </div>
         </q-list>
-      </main>
+        <q-list bordered separator style="width: 100%">
+          <q-card>
+            <q-card-section>
+              <q-input
+                v-model="state.alumno.nombre"
+                :disable="state.editable"
+                label="Nombre del Alumno"
+                stack-label
+              />
+              <q-input
+                v-model="state.alumno.apellido"
+                :disable="state.editable"
+                label="Apellido"
+                stack-label
+              />
+            </q-card-section>
+
+            <q-card-section class="col-5 offset-md-1">
+              <q-input
+                v-model="state.alumno.madre"
+                :disable="state.editable"
+                label="Nombre de la Madre"
+                stack-label
+              />
+              <q-input
+                v-model="state.alumno.cedula_madre"
+                :disable="state.editable"
+                label="Cédula de la Madre"
+                stack-label
+              />
+              <q-input
+                v-model="state.alumno.tlf_madre"
+                :disable="state.editable"
+                label="Teléfono de la Madre"
+                stack-label
+              />
+            </q-card-section>
+
+            <q-card-section class="col-5 offset-md-1">
+              <q-input
+                v-model="state.alumno.padre"
+                :disable="state.editable"
+                label="Nombre del Padre"
+                stack-label
+              />
+              <q-input
+                v-model="state.alumno.cedula_padre"
+                :disable="state.editable"
+                label="Cédula del Padre"
+                stack-label
+              />
+              <q-input
+                v-model="state.alumno.tlf_padre"
+                :disable="state.editable"
+                label="Teléfono del Padre"
+                stack-label
+              />
+            </q-card-section>
+          </q-card>
+
+          <q-separator />
+
+          <q-input
+            v-model="state.alumno.avatar"
+            :disable="state.editable"
+            label="URL del Avatar"
+            stack-label
+          />
+        </q-list>
+
+        <div class="row q-mx-lg bg-white">
+          <div class="col-5">
+            <q-input
+              v-model="state.alumno.edad"
+              :disable="state.editable"
+              label="Edad"
+              stack-label
+            />
+            <q-select
+              v-model="state.alumno.sexo"
+              label="Sexo"
+              :options="['Masculino', 'Femenino']"
+              stack-label
+              :disable="state.editable"
+            />
+            <q-input
+              v-model="state.alumno.cedula"
+              :disable="state.editable"
+              label="Cédula"
+              stack-label
+            />
+            <q-input
+              v-model="state.alumno.nac"
+              :disable="state.editable"
+              label="Fecha de Nacimiento"
+              stack-label
+            />
+            <q-input
+              v-model="state.alumno.fecInscripcion"
+              :disable="state.editable"
+              label="Fecha de Inscripción"
+              stack-label
+            />
+            <q-input
+              v-model="state.alumno.direccion"
+              :disable="state.editable"
+              label="Dirección de Vivienda"
+              stack-label
+            />
+            <q-input
+              v-model="state.alumno.tlf"
+              :disable="state.editable"
+              label="Teléfono del Alumno"
+              stack-label
+            />
+          </div>
+
+          <div class="col-5 offset-md-1">
+            <q-input
+              v-model="state.alumno.email"
+              :disable="state.editable"
+              label="Email"
+              stack-label
+            />
+            <q-input
+              v-model="state.alumno.emergencia"
+              :disable="state.editable"
+              label="Teléfono de Emergencia"
+              stack-label
+            />
+            <q-input
+              v-model="state.alumno.colegio_trabajo"
+              :disable="state.editable"
+              label="Dónde Estudia o Trabaja?"
+              stack-label
+            />
+            <q-input
+              v-model="state.alumno.direccion_colegio_trabajo"
+              :disable="state.editable"
+              label="Dirección de la Institución"
+              stack-label
+            />
+            <q-input
+              v-model="state.alumno.horario_colegio_trabajo"
+              :disable="state.editable"
+              label="Horario de Clases o Trabajo"
+              stack-label
+            />
+          </div>
+
+          <q-checkbox
+            :disable="state.editable"
+            v-model="state.alumno.Termino_Aporte_Mensual"
+            label="Acepta el Término del Aporte Mensual"
+            color="teal"
+          />
+          <q-checkbox
+            :disable="state.editable"
+            v-model="state.alumno.Termino_Redes_Sociales"
+            label="Acepta el Término de hacer pública cualquier foto o video en las redes sociales de nuestra institución"
+            color="teal"
+          />
+        </div>
+      </q-card-section>
     </q-card>
   </div>
 </template>
 
-<style></style>
+<style scoped>
+.my-card {
+  max-width: 600px;
+  margin: 80px auto;
+  border-radius: 10px;
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+}
+/* ajustar fotos del perfil */
+.q-avatar img {
+  width: 150px;
+  height: 150px;
+  border-radius: 50%;
+}
+</style>
