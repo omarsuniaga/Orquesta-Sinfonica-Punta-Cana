@@ -53,10 +53,10 @@ const columns = ref([
     sortable: true,
   },
   {
-    name: "Trimestral",
-    label: "Trim",
+    name: "Anual",
+    label: "Anual",
     align: "left",
-    field: "Trimestral",
+    field: "Anual",
     sortable: true,
   },
 ]);
@@ -66,20 +66,16 @@ async function loadData() {
   try {
     loading.value = true;
     const today = new Date();
+
     const weekStart = new Date(today);
     weekStart.setDate(today.getDate() - today.getDay()); // Set start to Monday
-    // weekStart.setDate(today.getDate() - today.getDay() + 1); // Set start to Monday
 
     const monthStart = new Date(today.getFullYear(), today.getMonth(), 1);
-    const trimesterStart = new Date(
-      today.getFullYear(),
-      today.getMonth() - 2,
-      1
-    );
+    const yearStart = new Date(today.getFullYear(), 0, 1); // Start of the year
 
     const weekAbsences = await calculateAbsences(weekStart, today);
     const monthAbsences = await calculateAbsences(monthStart, today);
-    const trimesterAbsences = await calculateAbsences(trimesterStart, today);
+    const yearAbsences = await calculateAbsences(yearStart, today);
 
     const combinedAbsences = {};
 
@@ -90,7 +86,7 @@ async function loadData() {
             name,
             Semanal: 0,
             Mensual: 0,
-            Trimestral: 0,
+            Anual: 0,
           };
         }
         combinedAbsences[name][period] += data[period];
@@ -99,7 +95,7 @@ async function loadData() {
 
     combineAbsences(weekAbsences, "Semanal");
     combineAbsences(monthAbsences, "Mensual");
-    combineAbsences(trimesterAbsences, "Trimestral");
+    combineAbsences(yearAbsences, "Anual");
 
     ObjetoGlobal.value = Object.values(combinedAbsences);
     ObjetoGlobal.value.sort((a, b) => b.Mensual - a.Mensual);
@@ -123,13 +119,14 @@ async function calculateAbsences(periodStart, periodEnd) {
         attendanceDate <= periodEnd
       ) {
         if (!result[name])
-          result[name] = { name, Semanal: 0, Mensual: 0, Trimestral: 0 };
+          result[name] = { name, Semanal: 0, Mensual: 0, Anual: 0 };
 
         const daysDiff = (periodEnd - periodStart) / (1000 * 60 * 60 * 24);
         if (daysDiff <= 7) result[name].Semanal++;
         if (attendanceDate.getMonth() === periodStart.getMonth())
           result[name].Mensual++;
-        if (daysDiff > 60) result[name].Trimestral++;
+        if (attendanceDate.getFullYear() === periodStart.getFullYear())
+          result[name].Anual++;
       }
     });
 
@@ -141,47 +138,63 @@ async function calculateAbsences(periodStart, periodEnd) {
 }
 
 function descargarExcel() {
-  const today = new Date();
-  const weekStart = new Date(today);
-  weekStart.setDate(today.getDate() - today.getDay() + 1);
-  const weekEnd = new Date(weekStart);
-  weekEnd.setDate(weekStart.getDate() + 6);
+  const today = new Date(); // obtener el día actual
+  const threeMonthsAgo = new Date(
+    today.getFullYear(),
+    today.getMonth() - 3,
+    today.getDate()
+  ); // hace 3 meses
 
-  const monthStart = new Date(today.getFullYear(), today.getMonth(), 1);
-  const monthEnd = new Date(today.getFullYear(), today.getMonth() + 1, 0);
+  const dateFormat = { year: "numeric", month: "long", day: "numeric" }; // formato de fecha
 
-  const trimesterStart = new Date(today.getFullYear(), today.getMonth() - 2, 1);
-  const trimesterEnd = new Date(today.getFullYear(), today.getMonth() + 1, 0);
+  // Generar un array de fechas desde hace 3 meses hasta hoy
+  const dateRange = [];
+  for (
+    let d = new Date(threeMonthsAgo);
+    d <= today;
+    d.setDate(d.getDate() + 1)
+  ) {
+    dateRange.push(new Date(d));
+  }
 
-  const dateFormat = { year: "numeric", month: "long", day: "numeric" };
-  const weekRange = `${weekStart.toLocaleDateString(
-    undefined,
-    dateFormat
-  )} - ${weekEnd.toLocaleDateString(undefined, dateFormat)}`;
-  const month = monthStart.toLocaleDateString(undefined, {
-    month: "long",
-    year: "numeric",
-  });
-  const trimesterRange = `${trimesterStart.toLocaleDateString(
-    undefined,
-    dateFormat
-  )} - ${trimesterEnd.toLocaleDateString(undefined, dateFormat)}`;
-
+  // Crear la hoja de Excel
   const ws = XLSX.utils.json_to_sheet(ObjetoGlobal.value, { origin: "A7" });
   const wb = XLSX.utils.book_new();
 
+  // Agregar información de rango de fechas
   XLSX.utils.sheet_add_json(
     ws,
     [
-      { Info: "Rango de la Semana: " + weekRange },
-      { Info: "Mes Actual: " + month },
-      { Info: "Trimestre: " + trimesterRange },
+      {
+        Info:
+          "Rango de Fechas: " +
+          threeMonthsAgo.toLocaleDateString(undefined, dateFormat) +
+          " - " +
+          today.toLocaleDateString(undefined, dateFormat),
+      },
     ],
     { origin: "A1" }
   );
 
-  XLSX.utils.book_append_sheet(wb, ws, "Inasistencias");
-  XLSX.writeFile(wb, "Inasistencias_Importantes.xlsx");
+  // Agregar datos diarios
+  dateRange.forEach((date, index) => {
+    const dateStr = date.toLocaleDateString(undefined, dateFormat);
+    XLSX.utils.sheet_add_json(
+      ws,
+      [{ Fecha: dateStr, Asistencia: "Datos de asistencia aquí" }], // Reemplaza "Datos de asistencia aquí" con los datos reales
+      { origin: `A${index + 3}` } // Ajusta la posición según sea necesario
+    );
+  });
+
+  // Agregar la hoja al libro y descargar el archivo
+  XLSX.utils.book_append_sheet(wb, ws, "Asistencia Diaria"); // nombre de la hoja
+  XLSX.writeFile(
+    wb,
+    `Asistencia_Diaria_${threeMonthsAgo.toLocaleDateString(
+      undefined,
+      dateFormat
+    )}_a_${today.toLocaleDateString(undefined, dateFormat)}.xlsx`
+  ); // nombre del archivo
 }
 
 function descargarPDF() {
@@ -191,24 +204,28 @@ function descargarPDF() {
   doc.addImage(imgData, "JPEG", 80, 10, 50, 20);
 
   const today = new Date();
-  const weekStart = new Date(today);
-  weekStart.setDate(today.getDate() - today.getDay() + 1);
-  const weekEnd = new Date(weekStart);
-  weekEnd.setDate(weekStart.getDate() + 6);
-
-  const weekRange = `${weekStart.toLocaleDateString()} - ${weekEnd.toLocaleDateString()}`;
+  const yearStart = new Date(today.getFullYear(), 0, 1); // Inicio del año
+  const dateFormat = { year: "numeric", month: "long", day: "numeric" };
+  const dateRange = `${yearStart.toLocaleDateString()} - ${today.toLocaleDateString()}`;
 
   doc.setFontSize(15);
-  doc.text(`Listado de Asistencias de la Semana: ${weekRange}`, 50, 35);
+  doc.text(`Listado de Asistencias desde ${dateRange}`, 50, 35);
 
-  const headers = [["Alumnos", "Semanal", "Mensual", "Trimestral"]];
+  const headers = [
+    ["ID", "Nombre Completo", "Día", "Mes", "Año", "Asistencia"],
+  ];
 
-  const data = ObjetoGlobal.value.map((item) => [
-    item.name,
-    item.Semanal.toString(),
-    item.Mensual.toString(),
-    item.Trimestral.toString(),
-  ]);
+  const data = ObjetoGlobal.value.map((item) => {
+    const attendanceDate = new Date(item.date);
+    return [
+      item.id,
+      item.name,
+      attendanceDate.getDate(),
+      attendanceDate.toLocaleString("es-ES", { month: "long" }),
+      attendanceDate.getFullYear(),
+      item.attendanceStatus,
+    ];
+  });
 
   doc.autoTable({
     head: headers,
@@ -216,10 +233,10 @@ function descargarPDF() {
     startY: 40,
   });
 
-  doc.save(`Asistencia_${weekRange}.pdf`);
+  doc.save(`Asistencia_${dateRange}.pdf`);
 }
 
-onMounted(loadData);
+onMounted(loadData());
 </script>
 
 <style scoped>

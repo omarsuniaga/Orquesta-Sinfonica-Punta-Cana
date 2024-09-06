@@ -79,7 +79,7 @@ function cargarAvatar(url) {
                 :src="cargarAvatar(item.avatar || defaultAvatar)"
                 :alt="item.nombre"
                 loading="lazy"
-                @click="$router.push('/Detalles_Alumnos/' + item.id)"
+                @click="$router.push('/Alumnos/' + item.id)"
               />
             </div>
             <div class="title">

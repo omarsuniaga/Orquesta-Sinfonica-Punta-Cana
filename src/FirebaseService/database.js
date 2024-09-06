@@ -53,15 +53,12 @@ export async function obtenerAlumnos() {
 
 export async function obtenerAlumnosPorId(id) {
   const alumnosRef = collection(db, "ALUMNOS");
-
   try {
     // Convertir el ID de string a número
     const idNumerico = Number(id);
-
     // Crear la consulta con `where` para obtener el alumno con el ID especificado
     const q = firestoreQuery(alumnosRef, where("id", "==", idNumerico));
     const snapshot = await getDocs(q);
-
     // Si se encuentra un documento, devolver sus datos
     if (snapshot.docs.length > 0) {
       return snapshot.docs[0].data(); // Retorna el primer documento encontrado
@@ -106,10 +103,16 @@ export async function eliminarAlumno(id) {
     console.error("El ID del alumno es requerido para eliminar.");
     return;
   }
-
   const alumnoRef = doc(db, "ALUMNOS", id);
-
   try {
+    // eliminar del localStorage
+    let alumnos = loadFromLocalStorage("ALUMNOS");
+    if (!Array.isArray(alumnos)) {
+      alumnos = [];
+    }
+    alumnos = alumnos.filter((alumno) => alumno.id !== id);
+    saveToLocalStorage("ALUMNOS", alumnos);
+    // Eliminar de Firebase
     await deleteDoc(alumnoRef);
     console.log(`Alumno con ID ${id} eliminado exitosamente.`);
   } catch (error) {
@@ -611,7 +614,6 @@ const loadFromLocalStorage = (key) => {
     return null;
   }
 };
-
 export async function generarResumenGlobalDeAsistencias() {
   let items = loadFromLocalStorage("ASISTENCIAS");
   if (!items) {
@@ -619,7 +621,7 @@ export async function generarResumenGlobalDeAsistencias() {
     saveToLocalStorage("ASISTENCIAS", items);
   }
 
-  const Alumnos = await obtenerAlumnos(); // Obtenemos los alumnos solo una vez
+  const Alumnos = await obtenerAlumnos();
 
   try {
     if (!Array.isArray(items)) {
@@ -628,12 +630,33 @@ export async function generarResumenGlobalDeAsistencias() {
     }
 
     const uniqueAttendance = {};
-    const AlumnosMap = new Map(Alumnos.map((alumno) => [alumno.id, alumno])); // Mapa para acceso rápido
+    const AlumnosMap = new Map(Alumnos.map((alumno) => [alumno.id, alumno]));
 
     items.forEach((elem) => {
       if (!elem.Fecha || !elem.Data) return;
-      const { presentes, ausentes } = elem.Data;
-      [...presentes, ...ausentes].forEach((el) => {
+
+      // Aseguramos que estas variables sean arreglos vacíos si no están definidas
+      const presentes = Array.isArray(elem.Data.presentes)
+        ? elem.Data.presentes
+        : [];
+      const ausentes = Array.isArray(elem.Data.ausentes)
+        ? elem.Data.ausentes
+        : [];
+      const justificados = Array.isArray(elem.Data.justificados)
+        ? elem.Data.justificados
+        : [];
+      const demorados = Array.isArray(elem.Data.demorados)
+        ? elem.Data.demorados
+        : [];
+
+      const allStudents = [
+        ...presentes,
+        ...ausentes,
+        ...justificados,
+        ...demorados,
+      ];
+
+      allStudents.forEach((el) => {
         const key = `${el}-${elem.Fecha}`;
         if (!uniqueAttendance[key] && AlumnosMap.has(el)) {
           const alumno = AlumnosMap.get(el);
@@ -641,8 +664,17 @@ export async function generarResumenGlobalDeAsistencias() {
             id: el,
             name: `${alumno.nombre} ${alumno.apellido}`,
             date: elem.Fecha,
-            grupo: alumno.grupo,
+            grupo: alumno.grupo.join(", "),
             attended: presentes.includes(el),
+            attendanceStatus: presentes.includes(el)
+              ? "Presente"
+              : ausentes.includes(el)
+              ? "Ausente"
+              : justificados.includes(el)
+              ? "Justificado"
+              : demorados.includes(el)
+              ? "Demorado"
+              : "N/A",
           };
         }
       });

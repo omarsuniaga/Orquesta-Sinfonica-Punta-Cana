@@ -101,8 +101,10 @@ const routes = [
     meta: { requiresAuth: true },
   },
   {
-    path: "/Detalles_Alumnos/:id",
-    name: "Detalles_Alumnos",
+    // quiero usar este formato router.push(`/Alumnos/${id.value}/detalles`);
+
+    path: "/Alumnos/:id/Detalles/",
+    name: "Detalles",
     props: true,
     component: () => import("layouts/MainLayout.vue"),
     children: [
@@ -111,12 +113,22 @@ const routes = [
     meta: { requiresAuth: true },
   },
   {
-    path: "/detalles-alumnos/:id",
-    name: "DetallesAlumnos",
+    path: "/Alumnos/:id/Evaluaciones",
+    name: "Evaluaciones",
     props: true,
     component: () => import("layouts/MainLayout.vue"),
     children: [
-      { path: "", component: () => import("src/pages/Detalles_Alumnos.vue") },
+      { path: "", component: () => import("../components/Evaluaciones/EvaluacionIndicadores.vue") },
+    ],
+    meta: { requiresAuth: true },
+  },
+  {
+    path: "/Alumnos/:id",
+    name: "Alumnos",
+    props: true,
+    component: () => import("layouts/MainLayout.vue"),
+    children: [
+      { path: "", component: () => import("src/pages/Ver_Alumnos.vue") },
     ],
     meta: { requiresAuth: true },
   },

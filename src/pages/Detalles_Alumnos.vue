@@ -57,6 +57,17 @@ async function cargarDetallesAlumno() {
   }
 }
 
+const confirmar_Eliminar= () => {
+  $q.dialog({
+    title: "Eliminar",
+    message: "¿Estás seguro de que deseas eliminar este alumno?",
+    cancel: true,
+    persistent: true,
+  }).onOk(() => {
+    eliminar();
+  });
+}
+
 // Función para eliminar el alumno
 async function eliminar() {
   try {
@@ -128,7 +139,6 @@ async function obtenerGrupos() {
     // Asegúrate de que 'grupos' es un array antes de asignarlo al estado
     state.grupos = Array.isArray(grupos) ? grupos : [];
 
-    console.log("Grupos:", state.grupos);
   } catch (error) {
     console.error("Error al obtener los grupos:", error);
     $q.notify({
@@ -218,7 +228,7 @@ onMounted(() => {
             color="red-4"
             icon="remove_circle"
             size="sm"
-            @click="eliminar"
+            @click="confirmar_Eliminar"
           />
         </div>
 

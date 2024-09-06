@@ -193,6 +193,7 @@ const clasificacion = ref({
   Orquesta: ["Cuerdas", "Madera", "Metal", "Percusión"],
   Coro: ["Sopranos", "Contraltos", "Tenores", "Bajos"],
   Ensamble: [],
+
 });
 const dialogoObraVisible = ref(false);
 const obraActual = ref(null);
@@ -200,6 +201,7 @@ const repertorios = computed(() => repertorioStore.repertorios);
 const grupos = ref([]);
 const esEnsamble = ref(false);
 const alumnos = ref([]);
+const Ensamble= ref([]);
 
 const promedios = ref({});
 const obtenerPromedio = async (id) => {
@@ -243,7 +245,7 @@ onMounted(async () => {
   // grupos.value = grupos.value.grupos;
   alumnos.value = await obtenerGruposYAlumnos();
   alumnos.value = alumnos.value.alumnos;
-
+  clasificacion.value.Ensamble = alumnos.value.filter((alumno) => alumno.Grupo === "Ensamble");
   for (const obra of repertorios.value) {
     await obtenerPromedio(obra.id);
   }

@@ -1,9 +1,9 @@
 <template>
-  <div>
+  <div class="q-ma-sm">
     <!-- Selección de Fecha -->
     <div class="date-selection" v-show="visible">
       <span class="text-white q-px-md">Selecciona una fecha</span>
-      <div class="date-container">
+      <div class="date-container flex justify-center">
         <q-date v-model="date" :events="eventos" minimal />
       </div>
     </div>
@@ -42,7 +42,7 @@
     </div>
 
     <!-- Botones adicionales -->
-    <div class="row no-wrap q-mx-ms">
+    <div class="flex justify-around q-pa-md">
       <q-btn
         color="green-3"
         text-color="black"
